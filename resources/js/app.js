@@ -70,3 +70,7 @@ document.getElementById('sidebar-open')?.addEventListener('click', () => {
 
 document.getElementById('sidebar-close')?.addEventListener('click', closeSidebar);
 sidebarBackdrop?.addEventListener('click', closeSidebar);
+
+if (document.querySelector('[data-material-editor]')) {
+    import('./material-editor').then(({ initializeMaterialEditors }) => initializeMaterialEditors());
+}

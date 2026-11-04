@@ -48,10 +48,11 @@ erDiagram
         BIGINT id PK
         BIGINT module_id FK
         VARCHAR_150 title
+        VARCHAR_255 learning_objective
         VARCHAR_255 video_url
-        TEXT reading_content
+        TEXT reading_content "materi singkat; HTML terbatas tersanitasi"
         INT sequence_order
-        INT duration
+        INT duration "nullable; disimpan dalam detik, input Admin dalam menit"
     }
     unit_quizzes {
         BIGINT id PK
@@ -118,7 +119,7 @@ Keterangan: PK = Primary Key; FK = Foreign Key; UK = Unique Key. Satu baris `use
 |---|---|
 | `users` | Menyimpan seluruh data akun pengguna (Learner, Admin, Superadmin). Email unik. Atribut `is_temp_password` digunakan untuk memaksa Admin mengganti password saat login pertama (FR-S06). Atribut `consent_given` mencatat persetujuan data awal Learner (BR-L02). |
 | `modules` | Menyimpan data modul pembelajaran (misal: Supply Chain Management, Product Identity). Dibuat oleh Admin (`created_by`). Memiliki status draft atau published agar modul yang belum siap tidak tampil di aplikasi mobile. |
-| `units` | Menyimpan unit materi per modul yang disusun secara berurutan (`sequence_order`). Berisi tautan video pendek, durasi, dan bacaan ringkas. Setiap unit terikat pada tepat satu modul. |
+| `units` | Menyimpan unit materi per modul yang disusun secara berurutan (`sequence_order`). Berisi tautan video pendek, durasi opsional (kolom `duration` nullable, disimpan dalam detik; form Admin menerima menit), tujuan belajar, dan materi singkat. `reading_content` berisi HTML terbatas yang disanitasi server. Gambar materi disimpan sebagai file privat bernama acak dan dirujuk oleh HTML melalui endpoint terkontrol; tidak ada tabel baru. Dokumen impor diproses sementara, bukan disimpan. Setiap unit terikat pada tepat satu modul. |
 | `unit_quizzes` | Bank soal kuis atau studi kasus khusus tiap unit. Terikat pada `unit_id`. Setiap unit wajib memiliki 3 sampai 5 soal pilihan ganda beserta kunci dan pembahasan. |
 | `test_questions` | Bank soal untuk Pre-test dan Post-test yang terikat pada `module_id`. Berisi pertanyaan, pilihan jawaban, kunci, dan pembahasan yang diacak saat tes berlangsung. |
 | `test_attempts` | Menyimpan riwayat dan skor pengerjaan Pre-test dan Post-test oleh Learner. Memulai pre-test membuka akses ke forum modul (lihat PRD 7.4 no. 9: seragamkan menjadi "setelah pre-test selesai"). Skor otomatis dihitung dan disimpan per pengerjaan. |
@@ -196,7 +197,7 @@ flowchart TD
 Urutan proses:
 
 1. Learner memilih modul pada aplikasi Android dan diwajibkan mengerjakan Pre-test sebagai pengukur awal pengetahuan.
-2. Setelah pre-test selesai, forum diskusi modul otomatis terbuka. Learner kemudian mempelajari unit demi unit (video singkat & bacaan ringkas).
+2. Setelah pre-test selesai, forum diskusi modul otomatis terbuka. Learner kemudian mempelajari unit demi unit (video singkat & materi singkat).
 3. Di setiap akhir unit, Learner mengerjakan Kuis Unit (3–5 soal).
 4. **Mekanisme Rollback (BR-L13 / BR-L09):** jika hasil kuis kurang memuaskan, Learner dapat kembali (rollback) mempelajari ulang materi unit tanpa mengunci unit berikutnya. Skor kuis unit hanya sebagai sarana latihan dan tidak mempengaruhi skor tes akhir.
 5. Setelah seluruh unit dalam modul diselesaikan, Post-test terbuka untuk dikerjakan.

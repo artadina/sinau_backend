@@ -40,4 +40,34 @@
     .auth-glow {
         background: radial-gradient(circle, rgb(128 0 32 / 12%), transparent 70%);
     }
+
+    .material-editor-content h2,
+    .material-preview-content h2 {
+        @apply my-3 text-xl font-bold text-slate-900;
+    }
+
+    .material-editor-content h3,
+    .material-preview-content h3 {
+        @apply my-2 text-lg font-bold text-slate-900;
+    }
+
+    .material-editor-content p,
+    .material-preview-content p {
+        @apply my-2;
+    }
+
+    .material-editor-content ul,
+    .material-preview-content ul {
+        @apply my-2 list-disc pl-6;
+    }
+
+    .material-editor-content ol,
+    .material-preview-content ol {
+        @apply my-2 list-decimal pl-6;
+    }
+
+    .material-editor-content img,
+    .material-preview-content img {
+        @apply my-3 h-auto max-w-full rounded-lg;
+    }
 }

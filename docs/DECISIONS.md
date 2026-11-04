@@ -17,6 +17,7 @@ Dokumen ini mencatat audit migration saat ini terhadap [PRD](./PRD.md) bagian 7.
 | 9 | Pemicu forum tidak konsisten antar dokumen. | Tidak memerlukan perubahan skema; `test_attempts.completed_at` sudah tersedia. | Forum terbuka hanya setelah pre-test modul selesai (`completed_at` terisi), sesuai FR-L31 dan AC-32. Memulai tes saja tidak cukup. |
 | 10 | Daftar role pada deskripsi ERD terpotong. | Tiga role sudah ada pada migration lama, tetapi nilainya memakai kapitalisasi `Learner`, `Admin`, `Superadmin`. | Tetapkan nilai skema `learner`, `admin`, `superadmin` sebagaimana rekomendasi PRD; migration baru mengubah nilai yang sudah ada secara terpetakan. Role tetap ditentukan backend, bukan dari input registrasi umum. |
 | 11 | Batas 3–5 kuis per unit tidak dijamin oleh basis data. | Belum tercakup oleh constraint DB. | Tegakkan di server saat unit diterbitkan (FR-A11/AB-04); tolak penerbitan bila jumlah bukan 3–5. Ini aturan lintas-baris dan tidak ditambahkan sebagai constraint migration. |
+| 12 | Materi unit hanya berupa teks biasa dan belum mendukung penyusunan visual atau impor dokumen (FR-A16). | `units.reading_content` bertipe `TEXT`; tidak ada metadata gambar atau dokumen impor. | Ganti label menjadi **Materi singkat** dan simpan konten sebagai HTML terbatas yang disanitasi pada `units.reading_content` (tanpa perubahan skema). Editor mendukung paragraf, judul, bold, miring, daftar, serta maksimal 10 gambar JPG/JPEG/PNG masing-masing maksimal 5 MB. Simpan gambar privat dengan nama acak dan sajikan melalui endpoint terkontrol; semua Admin dapat mengakses gambar unit melalui panel, sedangkan Learner hanya gambar dari modul terbit; hapus aset unit yang tidak lagi dipakai setelah perubahan konten berhasil atau unit dihapus. Impor DOCX dan PDF maksimal 10 MB; PDF maksimal 50 halaman. Pertahankan format dasar dan ekstrak gambar JPG/JPEG/PNG pada DOCX, dengan batas gambar yang sama. Ekstrak teks PDF digital di browser. DOC lama dan PDF scan/tanpa teks belum didukung; tidak ada OCR. Berkas sumber diproses di browser dan tidak disimpan. Bila format tidak didukung atau ekstraksi gagal, berikan pesan Indonesia dan biarkan editor manual terbuka tanpa mengganti materi yang sudah ada. Gunakan komponen/pustaka tanpa biaya lisensi sesuai NFR-17. |
 
 ## 2. Pemeriksaan Constraint NFR-08
 
@@ -53,7 +54,16 @@ Tolak penghapusan modul jika terdapat riwayat tes (`test_attempts`) untuk modul 
 
 Tidak ada. Database kosong, sehingga seluruh keputusan yang diminta pada PRD 7.4 dan EC bertanda “Perlu keputusan” sudah dapat ditetapkan.
 
-## 6. ERD Final
+## 6. Materi Singkat dan Impor Dokumen
+
+- Tautan unit dapat berupa URL YouTube yang valid (`youtube.com/watch`, `youtu.be`, `shorts`, atau `embed`) atau URL file video langsung. Pemutar Admin dan Learner menggunakan embed YouTube hanya dari ID yang diekstrak dan divalidasi server; URL YouTube asli tidak dipakai langsung sebagai `iframe src`. Video privat atau yang melarang embedding dapat gagal diputar dan harus diganti dengan sumber yang mendukung embed.
+- `units.reading_content` tetap menjadi kolom penyimpanan; nama label antarmuka adalah **Materi singkat**. Nilainya adalah HTML terbatas, bukan HTML bebas.
+- HTML hasil editor atau impor disanitasi di server. Elemen yang diizinkan: paragraf, judul, bold, miring, daftar, dan gambar. Script, atribut event, serta elemen atau atribut aktif lain ditolak/dihapus.
+- Gambar yang ditambahkan editor atau diekstrak dari DOCX disimpan secara privat dengan nama acak dan referensi endpoint terkontrol pada HTML. Endpoint hanya mengizinkan Admin atau Learner yang mengakses modul terbit. Maksimal 10 gambar per unit, JPG/JPEG/PNG, maksimal 5 MB per gambar. Hapus gambar milik unit yang sudah tidak direferensikan hanya setelah penyimpanan materi berhasil; hapus seluruh gambar milik unit ketika unit dihapus.
+- DOCX dan PDF maksimal 10 MB; PDF maksimal 50 halaman. Pustaka open-source memproses dokumen di browser tanpa mengunggah berkas sumber. Pertahankan paragraf, judul, bold, miring, daftar, dan gambar DOCX bila tersedia. PDF digital diekstrak sebagai teks; DOC lama dan PDF scan/tanpa teks belum didukung dan tidak menggunakan OCR.
+- Hasil impor ditampilkan di editor untuk ditinjau dan diedit sebelum penyimpanan. Bila format tidak didukung atau ekstraksi gagal, tampilkan pesan ramah dan biarkan editor manual tersedia; kegagalan tidak boleh menimpa isi materi yang tersimpan.
+
+## 7. ERD Final
 
 ```mermaid
 erDiagram

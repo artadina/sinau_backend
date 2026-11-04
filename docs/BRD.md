@@ -38,7 +38,7 @@ Pelatihan bagi pelaku UMKM umumnya hanya berlangsung satu atau dua kali, bersifa
 
 Sinau terdiri atas dua bagian:
 
-1. Aplikasi mobile Android untuk Learner, berisi modul pembelajaran berbasis video pendek dan bacaan ringkas, kuis atau studi kasus per unit, pre-test dan post-test, forum diskusi, serta riwayat skor.
+1. Aplikasi mobile Android untuk Learner, berisi modul pembelajaran berbasis video pendek dan materi singkat berformat, kuis atau studi kasus per unit, pre-test dan post-test, forum diskusi, serta riwayat skor.
 2. Panel web, tempat Admin (Pengajar) mengelola konten, memantau rekap hasil belajar, dan membalas forum, sedangkan Superadmin khusus mengelola akun Admin dan Learner.
 
 Pasta Nafisa menjadi contoh kasus mitra, sedangkan Sinau dirancang sebagai platform umum yang dapat dipakai UMKM lain. Dua materi sampel yang disiapkan adalah Supply Chain Management (alur bahan baku hingga pencegahan waste) dan Product Identity (keunggulan dan diferensiasi produk untuk pemasaran).
@@ -88,7 +88,7 @@ Berdasarkan analisis fishbone dan 5 Whys pada proposal, akar masalah utama adala
 
 - Aplikasi mobile Android untuk Learner.
 - Panel web untuk Admin (Pengajar) dan Superadmin dalam satu aplikasi web, dengan pemisahan hak akses melalui middleware.
-- Modul pembelajaran yang terdiri atas beberapa unit; tiap unit berisi video pendek, bacaan ringkas, dan kuis atau studi kasus 3 sampai 5 soal.
+- Modul pembelajaran yang terdiri atas beberapa unit; tiap unit berisi video pendek, materi singkat, dan kuis atau studi kasus 3 sampai 5 soal.
 - Pre-test di awal modul dan post-test di akhir modul, skor otomatis, pembahasan, dan riwayat skor.
 - Forum diskusi per modul yang terbuka setelah pre-test dan dapat diakses kapan saja; dijawab sesama Learner dan dapat dibalas Pengajar; Learner dapat melaporkan konten, laporan masuk ke notifikasi Admin di panel web, dan hanya Admin yang dapat menghapus konten.
 - Grafik perbandingan pre vs post, ringkasan progres, dan lencana personal tanpa peringkat.
@@ -162,7 +162,7 @@ Kebutuhan bisnis berikut diturunkan dari daftar kebutuhan fungsional (FR) dan li
 1. Daftar, lalu menyetujui penggunaan data (consent), lalu melihat onboarding singkat.
 2. Dari beranda, memilih modul dan mengerjakan pre-test sebagai pengukur awal.
 3. Setelah pre-test, forum diskusi modul terbuka dan dapat diakses kapan saja. Bila bingung saat membaca unit, Learner bertanya di forum dan dijawab sesama Learner; Pengajar juga dapat membalas. Konten yang tidak pantas dapat dilaporkan.
-4. Mempelajari unit secara berurutan: video pendek dan bacaan ringkas, lalu kuis atau studi kasus unit (3 sampai 5 soal).
+4. Mempelajari unit secara berurutan: video pendek dan materi singkat, lalu kuis atau studi kasus unit (3 sampai 5 soal).
 5. Bila hasil kuis unit belum memuaskan, pengguna dapat kembali (rollback) ke materi unit tersebut, mempelajarinya lagi, dan mengulang kuis.
 6. Setelah semua unit selesai, post-test terbuka; hasil dan pembahasan ditampilkan.
 7. Melihat riwayat skor, grafik pre vs post, ringkasan progres, dan lencana personal.
@@ -185,7 +185,7 @@ Kebutuhan bisnis berikut diturunkan dari daftar kebutuhan fungsional (FR) dan li
 | BR-L05 | Pengguna dikenalkan pada alur aplikasi melalui onboarding singkat 2 sampai 3 layar. | Should | FR-L07 |
 | BR-L06 | Pengguna dapat melihat daftar modul beserta progres dan detail modul (tujuan belajar, unit, status pre-test dan post-test). | Must | FR-L08, L09, L26 |
 | BR-L07 | Pengguna dapat memutar video unit langsung di dalam aplikasi (tidak berpindah ke aplikasi atau tab lain), menjeda, dan melanjutkan dari posisi terakhir. | Must | FR-L10, S07 (baru) |
-| BR-L08 | Pengguna dapat membaca bacaan ringkas per unit dan membuka ulang unit kapan saja tanpa batas. | Must | FR-L11, L12 |
+| BR-L08 | Pengguna dapat membaca materi singkat per unit, termasuk format teks dasar dan gambar, serta membuka ulang unit kapan saja tanpa batas. | Must | FR-L11, L12 |
 | BR-L09 | Sistem menandai unit selesai, memperbarui progres modul, dan memungkinkan pengguna melanjutkan unit terakhir dari beranda. | Must | FR-L13, L14 |
 | BR-L10 | Pengguna dapat memilih kualitas video untuk menghemat kuota. | Could | FR-L15 |
 | BR-L11 | Pengguna mengerjakan pre-test sebelum modul dan post-test setelah semua unit selesai; satu soal per layar, progres tersimpan, tanpa batas waktu per soal, dan post-test dapat diulang. | Must | FR-L17, L18, L19, L22, L23 |
@@ -201,7 +201,7 @@ Kebutuhan bisnis berikut diturunkan dari daftar kebutuhan fungsional (FR) dan li
 |---|---|---|---|
 | BR-A01 | Admin login ke panel web dengan akun yang dibuat Superadmin (tidak ada pendaftaran) dan wajib mengganti password sementara pada login pertama. | Must | FR-A01, A12 (baru) |
 | BR-A02 | Admin dapat menambah, mengubah, dan menghapus modul, serta mengatur status draft atau terbit agar modul yang belum siap tidak terlihat Learner. | Must | FR-A02, A04 |
-| BR-A03 | Admin dapat mengelola unit materi (judul, tujuan belajar, tautan video, durasi, bacaan ringkas), mengatur urutan, dan melihat pratinjau seperti tampilan Learner. | Must | FR-A03, A04 |
+| BR-A03 | Admin dapat mengelola unit materi (judul, tujuan belajar, tautan video, durasi opsional dalam menit, materi singkat), mengatur urutan, dan melihat pratinjau seperti tampilan Learner. Materi singkat mendukung format teks dasar dan gambar serta impor DOCX atau PDF digital menjadi teks yang dapat diedit sebelum disimpan. DOC lama dan PDF scan belum didukung. | Must | FR-A03, A04, A16 |
 | BR-A04 | Admin dapat mengelola bank soal pre-test dan post-test per modul (soal, pilihan, kunci, pembahasan), serta menentukan jumlah soal yang diambil dan pengacakan urutan. | Must | FR-A05 |
 | BR-A05 | Admin dapat mengelola kuis atau studi kasus tiap unit sebanyak 3 sampai 5 soal, lengkap dengan pilihan, kunci, dan pembahasan. | Must | FR-A11 (baru) |
 | BR-A06 | Admin dapat melihat daftar seluruh Learner dengan pencarian dan filter. | Must | FR-A06 |
@@ -258,7 +258,7 @@ Superadmin menggunakan aplikasi web dan halaman login yang sama dengan Admin, te
 | FR-SA07 | Menu Superadmin tidak dirender untuk Admin dan menu Admin tidak dirender untuk Superadmin; middleware backend menolak setiap permintaan ke rute di luar hak role tersebut. Superadmin tidak memiliki fungsi pengelolaan konten, rekap hasil, dan forum Admin. |
 | FR-S05 | Sistem menegakkan pemeriksaan role melalui middleware pada setiap rute dan API panel web. |
 | FR-S06 | Sistem menandai akun dengan password sementara dan mewajibkan penggantian pada login pertama. |
-| FR-S07 | Video unit diputar langsung di pemutar dalam aplikasi dari tautan video yang diinput Admin, tanpa mengarahkan pengguna ke aplikasi atau tab eksternal. |
+| FR-S07 | Video unit diputar langsung di pemutar dalam aplikasi dari tautan YouTube yang mendukung embed atau URL file video langsung yang diinput Admin, tanpa mengarahkan pengguna ke aplikasi atau tab eksternal. |
 
 ### 6.7 Perubahan terhadap Kebutuhan Fungsional yang Ada
 
@@ -343,7 +343,7 @@ Timeline mengacu pada proposal dan notulen rapat (identifikasi kebutuhan di Okto
 | No | Kriteria Penerimaan |
 |---|---|
 | 1 | Learner dapat mendaftar, menyetujui consent, login, dan menyelesaikan alur modul sampai post-test dan riwayat skor tanpa bantuan pengembang. |
-| 2 | Video unit diputar langsung di dalam aplikasi dan dapat dilanjutkan dari posisi terakhir. |
+| 2 | Video dari URL YouTube yang mengizinkan embed atau URL file langsung diputar di dalam aplikasi dan dapat dilanjutkan dari posisi terakhir. |
 | 3 | Setiap unit pada dua modul sampel memiliki kuis atau studi kasus 3 sampai 5 soal; Learner dapat kembali ke materi dan mengulang kuis. |
 | 4 | Post-test baru terbuka setelah seluruh unit modul selesai; skor dan pembahasan tampil otomatis. |
 | 5 | Skor Learner hanya terlihat oleh pemiliknya dan Admin. |
@@ -362,7 +362,7 @@ Timeline mengacu pada proposal dan notulen rapat (identifikasi kebutuhan di Okto
 | 2 | Syarat unit dianggap selesai | Unit selesai setelah materi dipelajari dan kuis unit dikerjakan, tanpa nilai minimum kelulusan |
 | 3 | Bentuk soal kuis unit dan studi kasus | Pilihan ganda, dengan studi kasus berupa soal berbasis skenario |
 | 4 | Pengelolaan akun Learner oleh Admin | Admin hanya melihat daftar Learner; edit, hapus, dan ubah role hanya oleh Superadmin |
-| 5 | Sumber tautan video | Dipilih pada perancangan agar dapat diputar langsung di aplikasi |
+| 5 | Sumber tautan video | Mendukung YouTube embed dan URL file video langsung; video harus dapat diakses dan mengizinkan embedding |
 | 6 | Teknologi pengembangan dan hosting | Ditentukan pada tahap perancangan arsitektur |
 | 7 | Bentuk notifikasi laporan konten | Muncul di panel web Admin (tanpa push atau email) |
 | 8 | Penanganan laporan | Konten yang dilaporkan tetap tampil sampai Admin menghapusnya; Admin juga dapat menandai laporan selesai tanpa menghapus bila konten dinilai wajar |
@@ -389,7 +389,7 @@ Dengan menandatangani dokumen ini, pihak-pihak berikut menyatakan bahwa kebutuha
 | Admin (Pengajar) | Pengguna panel web yang mengelola konten dan memantau hasil belajar. |
 | Superadmin | Pengguna panel web yang khusus mengelola akun Admin dan Learner; tidak menjalankan fungsi Admin. |
 | Modul | Satu topik pembelajaran yang terdiri atas beberapa unit, pre-test, dan post-test. |
-| Unit | Bagian pendek dari modul berisi video, bacaan ringkas, dan kuis atau studi kasus. |
+| Unit | Bagian pendek dari modul berisi video, materi singkat, dan kuis atau studi kasus. |
 | Kuis unit | Kuis atau studi kasus 3 sampai 5 soal pada tiap unit sebagai latihan; tidak dihitung dalam skor pre dan post-test. |
 | Forum diskusi | Ruang tanya jawab per modul yang terbuka setelah pre-test; dijawab sesama Learner dan dapat dibalas Pengajar; konten dapat dilaporkan Learner dan hanya dihapus oleh Admin. |
 | Pre-test / Post-test | Tes sebelum modul (pengukur awal) dan setelah seluruh unit selesai (pengukur hasil). |

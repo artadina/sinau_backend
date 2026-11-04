@@ -58,7 +58,7 @@ BRD menjelaskan mengapa Sinau dibuat dan kebutuhan bisnisnya (BR-xx). PRD ini me
 
 ## 1. Ringkasan Produk
 
-Sinau adalah platform pembelajaran mandiri (Learning Management System) berbasis mobile untuk pelaku UMKM dan stafnya. Learner belajar lewat video pendek dan bacaan ringkas di aplikasi Android, mengerjakan kuis unit, pre-test, dan post-test, berdiskusi di forum, dan memantau skor serta progresnya. Admin (Pengajar) dan Superadmin memakai panel web: Admin mengelola modul, unit, soal, rekap hasil, dan forum, sedangkan Superadmin khusus mengelola akun Admin dan Learner. Pasta Nafisa menjadi contoh kasus mitra; platform dirancang umum untuk UMKM lain, dengan dua modul sampel: Supply Chain Management dan Product Identity.
+Sinau adalah platform pembelajaran mandiri (Learning Management System) berbasis mobile untuk pelaku UMKM dan stafnya. Learner belajar lewat video pendek dan materi singkat di aplikasi Android, mengerjakan kuis unit, pre-test, dan post-test, berdiskusi di forum, dan memantau skor serta progresnya. Admin (Pengajar) dan Superadmin memakai panel web: Admin mengelola modul, unit, soal, rekap hasil, dan forum, sedangkan Superadmin khusus mengelola akun Admin dan Learner. Pasta Nafisa menjadi contoh kasus mitra; platform dirancang umum untuk UMKM lain, dengan dua modul sampel: Supply Chain Management dan Product Identity.
 
 ### 1.1 Masalah yang Diselesaikan
 
@@ -122,7 +122,7 @@ Metrik dampak setelah sistem dipakai:
 
 - Aplikasi mobile Android untuk Learner dan panel web untuk Admin dan Superadmin (satu aplikasi web, hak akses dipisahkan middleware).
 - Registrasi mandiri Learner, persetujuan data (consent), login, logout, reset password lewat email, profil, dan hapus akun.
-- Modul berisi unit; tiap unit berisi video pendek (tautan, diputar di aplikasi), bacaan ringkas, dan kuis atau studi kasus 3–5 soal.
+- Modul berisi unit; tiap unit berisi video pendek (tautan, diputar di aplikasi), materi singkat, dan kuis atau studi kasus 3–5 soal.
 - Pre-test, post-test, skor otomatis, pembahasan, riwayat skor, grafik pre vs post, progres, dan lencana personal.
 - Forum diskusi per modul, pelaporan konten oleh Learner, dan moderasi oleh Admin (notifikasi di panel web).
 - Pengelolaan konten oleh Admin: modul, unit, bank soal, kuis unit; daftar Learner, rekap skor dan progres, dashboard, ekspor CSV.
@@ -174,7 +174,7 @@ Aplikasi kasir atau pencatatan transaksi, perekrutan staf pencatat, pendampingan
 
 1. Nama aplikasi Sinau; Pasta Nafisa hanya satu dari banyak UMKM mitra (contoh kasus).
 2. Platform mobile hanya Android; teknologi pengembangan belum ditentukan dan diputuskan saat perancangan arsitektur.
-3. Video memakai tautan yang diinput Admin dan diputar langsung di pemutar dalam aplikasi, bukan membuka tautan di aplikasi atau tab lain.
+3. Video memakai tautan yang diinput Admin dan diputar langsung dalam aplikasi. Sumber dapat berupa URL YouTube yang valid (ditampilkan dengan YouTube embed) atau URL file video langsung yang kompatibel; video tidak membuka aplikasi atau tab eksternal.
 4. Kuis atau studi kasus 3–5 soal pilihan ganda di setiap unit sebagai latihan dengan rollback ke materi.
 5. Forum per modul; Learner melapor, hanya Admin yang menghapus; notifikasi laporan hanya di panel web.
 6. Superadmin hanya mengelola akun; modul dan bank soal milik bersama; Superadmin tidak melihat skor.
@@ -204,7 +204,7 @@ Prioritas: **Must** = wajib, **Should** = penting, **Could** = opsional bila kap
 | FR-L08 | Pengguna dapat melihat daftar modul: gambar sampul, judul, deskripsi satu kalimat, jumlah unit, estimasi total durasi, dan bar progres; hanya modul berstatus terbit yang tampil | Must | AB-08; BR-L06 |
 | FR-L09 | Pengguna dapat melihat detail modul: tujuan belajar, daftar unit berurutan dengan status (belum, sedang, selesai), serta status pre-test dan post-test | Must | AB-03; BR-L06 |
 | FR-L10 | Pengguna dapat memutar video unit, menjeda, menggeser durasi, dan melanjutkan dari posisi terakhir; judul dan durasi unit tampil sebelum menonton | Must | BR-L07 |
-| FR-L11 | Pengguna dapat membaca bacaan ringkas per unit, di bawah video atau pada tab terpisah | Must | BR-L08 |
+| FR-L11 | Pengguna dapat membaca materi singkat per unit, di bawah video atau pada tab terpisah; format teks dasar dan gambar yang diizinkan ditampilkan dengan aman | Must | BR-L08 |
 | FR-L12 | Pengguna dapat membuka ulang unit materi kapan saja tanpa batas | Must | BR-L08 |
 | FR-L13 | Sistem menandai unit selesai (otomatis saat video tuntas atau lewat tombol Tandai selesai), memperbarui persentase progres modul, dan menyediakan tombol Unit berikutnya | Must | BR-L09 |
 | FR-L14 | Pengguna dapat langsung melanjutkan unit terakhir dari beranda lewat kartu Lanjutkan belajar (unit terakhir, judul, sisa durasi) | Must | BR-L09 |
@@ -254,7 +254,7 @@ Prioritas: **Must** = wajib, **Should** = penting, **Could** = opsional bila kap
 |---|---|---|---|
 | FR-A01 | Admin dapat login ke panel web dengan akun dari Superadmin (tidak bisa didaftarkan dari aplikasi), lupa password lewat email, dan logout | Must | AB-01, AB-02; BR-A01 |
 | FR-A02 | Admin dapat menambah, mengubah, dan menghapus modul (judul, deskripsi, gambar sampul, tujuan belajar), dengan konfirmasi saat menghapus | Must | AB-12; BR-A02 |
-| FR-A03 | Admin dapat menambah, mengubah, dan menghapus unit materi (judul, tujuan belajar satu kalimat, tautan video, durasi, bacaan ringkas) dan melihat pratinjau seperti tampilan Learner | Must | AB-12; BR-A03 |
+| FR-A03 | Admin dapat menambah, mengubah, dan menghapus unit materi (judul, tujuan belajar satu kalimat, tautan video, durasi, materi singkat) dan melihat pratinjau seperti tampilan Learner | Must | AB-12; BR-A03 |
 | FR-A04 | Admin dapat mengatur urutan unit (drag atau tombol naik dan turun) dan status modul draft atau terbit | Must | AB-08; BR-A02, A03 |
 | FR-A05 | Admin dapat mengelola bank soal pre-test dan post-test per modul (teks soal, 3–4 pilihan, kunci, pembahasan, jenis pre atau post), menentukan jumlah soal yang diambil per tes, dan mengaktifkan acak urutan soal | Must | AB-12; BR-A04 |
 | FR-A06 | Admin dapat melihat daftar Learner (nama, email, nama usaha, tanggal daftar) dengan pencarian dan filter; Admin hanya melihat | Must | AB-13; BR-A06 |
@@ -263,6 +263,7 @@ Prioritas: **Must** = wajib, **Should** = penting, **Could** = opsional bila kap
 | FR-A10 | Admin melihat dashboard ringkas: jumlah pengguna, jumlah modul, jumlah tes selesai, rata-rata skor pre vs post per modul, dan pintasan ke Kelola Modul dan Kelola Soal | Should | BR-A08 |
 | FR-A11 | Admin dapat menambah, mengubah, dan menghapus soal kuis atau studi kasus per unit (teks soal atau kasus, pilihan, kunci, pembahasan); sistem menolak penerbitan unit bila jumlah soal kurang dari 3 atau lebih dari 5 | Must | AB-04; BR-A05 |
 | FR-A12 | Admin yang login dengan password sementara diwajibkan membuat password baru sebelum dapat memakai panel | Must | AB-14; BR-A01 |
+| FR-A16 | Admin dapat menyusun materi singkat dengan editor teks kaya untuk paragraf, judul, bold, miring, daftar, dan gambar; mengimpor DOCX atau PDF berbasis teks menjadi konten yang dapat diedit; serta meninjau dan mengubah hasil sebelum disimpan. DOC lama dan PDF hasil scan belum didukung. | Must | AB-12; BR-A03 |
 | FR-A07 | ~~(nonaktifkan atau hapus akun pengguna)~~ dipindahkan menjadi wewenang Superadmin pada FR-SA05 | — | — |
 
 ### 5.7 Panel Web Superadmin
@@ -287,7 +288,7 @@ Prioritas: **Must** = wajib, **Should** = penting, **Could** = opsional bila kap
 | FR-S04 | Sistem menjaga skor tiap pengguna hanya dapat dilihat pemiliknya dan Admin | Must | AB-09; BR-Y04 |
 | FR-S05 | Sistem menegakkan pemeriksaan role melalui middleware pada setiap rute dan API panel web | Must | AB-13; BR-Y02 |
 | FR-S06 | Sistem menandai akun dengan password sementara dan mewajibkan penggantian pada login pertama | Must | AB-14; BR-Y05 |
-| FR-S07 | Video unit diputar langsung di pemutar dalam aplikasi dari tautan video yang diinput Admin, tanpa mengarahkan pengguna ke aplikasi atau tab eksternal | Must | BR-L07 |
+| FR-S07 | Video unit diputar langsung di pemutar dalam aplikasi dari tautan YouTube valid atau URL file video langsung yang diinput Admin, tanpa mengarahkan pengguna ke aplikasi atau tab eksternal | Must | BR-L07 |
 
 ## 6. User Story
 
@@ -297,7 +298,7 @@ Prioritas: **Must** = wajib, **Should** = penting, **Could** = opsional bila kap
 | US-02 | Pengguna baru | memahami data apa yang dicatat sebelum belajar | yakin dan datanya terlindungi |
 | US-03 | Learner | melihat progres dan melanjutkan unit terakhir dari beranda | bisa belajar di sela pekerjaan tanpa mencari lagi |
 | US-04 | Learner | menonton video pendek yang bisa dijeda dan dilanjutkan di dalam aplikasi | materi mudah dipelajari dan tidak terlupakan |
-| US-05 | Learner | membaca bacaan ringkas dan membuka ulang unit kapan saja | bisa mengulang saat lupa |
+| US-05 | Learner | membaca materi singkat dan membuka ulang unit kapan saja | bisa mengulang saat lupa |
 | US-06 | Learner | mengerjakan pre-test tanpa tekanan | tahu titik awal pemahaman saya |
 | US-07 | Learner | mengerjakan kuis atau studi kasus 3–5 soal di tiap unit | tahu apakah saya sudah paham |
 | US-08 | Learner | kembali ke materi unit bila hasil kuis kurang baik | bisa memperbaiki pemahaman sebelum lanjut |
@@ -323,7 +324,7 @@ Prioritas: **Must** = wajib, **Should** = penting, **Could** = opsional bila kap
 |---|---|---|
 | `users` | id, name, email (unique), password, role, is_temp_password, consent_given, created_at, deleted_at | Seluruh akun: Learner, Admin, Superadmin |
 | `modules` | id, title, description, status (draft, published), created_by (FK), created_at | Modul pembelajaran |
-| `units` | id, module_id (FK), title, video_url, reading_content, sequence_order, duration | Unit berurutan per modul |
+| `units` | id, module_id (FK), title, video_url, reading_content, sequence_order, duration | `reading_content` menyimpan materi singkat sebagai HTML terbatas dan tersanitasi; unit berurutan per modul |
 | `unit_quizzes` | id, unit_id (FK), question_text, options (JSON), correct_key, explanation | 3–5 soal per unit |
 | `test_questions` | id, module_id (FK), question_text, options (JSON), correct_key, explanation | Bank soal pre dan post |
 | `test_attempts` | id, user_id (FK), module_id (FK), type (pre, post), score, completed_at | Riwayat dan skor tes |
@@ -364,10 +365,15 @@ Prioritas: **Must** = wajib, **Should** = penting, **Could** = opsional bila kap
 | pre dan post jumlah soal | Bilangan bulat minimal 1 dan tidak melebihi jumlah soal pada bank |
 | unit.title | Wajib, maksimal 150 karakter |
 | unit.learning_objective | Wajib, satu kalimat, maksimal 255 karakter |
-| unit.video_url | Wajib, URL valid yang dapat diputar langsung di pemutar aplikasi |
-| unit.duration | Wajib, bilangan bulat lebih dari 0 (detik) |
-| unit.reading_content | Opsional, teks ringkas |
+| unit.video_url | Wajib, URL YouTube yang valid (tautan youtube.com/watch, youtu.be, shorts, atau embed) atau URL file video langsung yang kompatibel dengan pemutar. YouTube diputar melalui embed; video harus mengizinkan embedding. URL YouTube yang tidak didukung atau tidak valid ditolak. |
+| unit.duration | Opsional di form Admin. Jika diisi, Admin memasukkan durasi dalam menit (angka positif, maksimal 2 angka desimal); server menyimpan nilainya dalam detik. Jika kosong, nilai database `duration` adalah `null`. |
+| unit.reading_content (materi singkat) | Opsional; konten editor disimpan sebagai HTML dengan elemen paragraf, judul, bold, miring, daftar, dan gambar yang diizinkan. Sanitasi server menghapus script, atribut event, dan elemen/atribut lain yang tidak diizinkan. |
 | unit.sequence_order | Wajib, bilangan bulat, unik dalam satu modul |
+| unit.material_image | JPG/JPEG atau PNG; maksimal 5 MB per gambar dan 10 gambar per materi. File disimpan secara privat dengan nama acak dan disajikan melalui endpoint terkontrol; Learner hanya dapat mengambil gambar dari modul terbit. |
+| unit.material_import | Opsional, DOCX atau PDF, maksimal 10 MB per berkas dan 50 halaman PDF. Berkas diproses di browser dan tidak diunggah atau disimpan sebagai materi/arsip. Hasil impor harus dapat ditinjau dan diedit sebelum disimpan. |
+| unit.material_import DOCX | Ekstrak teks dan pertahankan paragraf, judul, bold, miring, daftar, serta gambar JPG/JPEG/PNG. Maksimal 10 gambar mengikuti batas materi. Jika terdapat gambar melebihi batas, tampilkan peringatan yang jelas dan jangan menambahkan gambar berlebih. |
+| unit.material_import PDF | Ekstrak teks yang dapat dipilih dari PDF digital. PDF hasil scan atau PDF tanpa teks yang dapat diekstrak belum didukung dan harus ditolak dengan pesan bahasa Indonesia; OCR tidak dilakukan. Gambar PDF tidak diekstrak. |
+| unit.material_import gagal | Tampilkan pesan ramah berbahasa Indonesia dan biarkan Admin mengisi editor secara manual; konten yang sudah ada tidak boleh terhapus atau terganti akibat kegagalan impor. Berkas DOC lama dan PDF hasil scan harus diberi tahu bahwa formatnya belum didukung. |
 
 **Soal Tes dan Kuis Unit (Admin)**
 
@@ -454,7 +460,7 @@ Saat mencocokkan ERD dengan BRD dan FR ditemukan beberapa kesenjangan yang perlu
 | Onboarding | Ya | 2–3 layar, tombol Lewati dan Lanjut |
 | Beranda | Ya | Sapaan, kartu Lanjutkan belajar, daftar modul dengan progres, navigasi bawah (Beranda, Modul, Riwayat, Profil) |
 | Daftar dan detail modul | Ya | Kartu modul, tujuan belajar, unit berstatus, status pre dan post-test, akses forum |
-| Belajar unit | Ya | Pemutar video, judul dan durasi, bacaan ringkas, tombol selesai dan unit berikutnya, kuis unit, tombol kembali ke materi |
+| Belajar unit | Ya | Pemutar video, judul dan durasi, materi singkat dengan format dasar dan gambar, tombol selesai dan unit berikutnya, kuis unit, tombol kembali ke materi |
 | Pre-test dan post-test | Ya | Layar pembuka, satu soal per layar, indikator, tombol navigasi, konfirmasi soal kosong |
 | Hasil tes dan kuis unit | Ya | Skor, apresiasi netral, benar dan salah, pembahasan, Lihat riwayat, Kembali ke modul |
 | Forum modul | Ya | Daftar topik, buat topik, balasan, penanda balasan Pengajar, Laporkan Konten |
@@ -538,6 +544,7 @@ Kasus berikut harus ditangani sistem dan diuji saat uji pengguna. Kasus bertanda
 | NFR-15 | Kompatibilitas | Aplikasi berjalan pada berbagai ponsel Android (versi minimum ditetapkan saat perancangan); panel web berjalan di peramban modern (Chrome, Edge, Firefox) |
 | NFR-16 | Pemeliharaan | Kode terstruktur dan terdokumentasi, disertai panduan penggunaan untuk serah terima karena mitra tidak memiliki staf teknologi informasi |
 | NFR-17 | Biaya | Komponen tanpa biaya lisensi dan hosting ringan berbiaya rendah |
+| NFR-18 | Keamanan | Materi kaya HTML disanitasi di server dengan daftar elemen/atribut yang diizinkan; skrip, event handler, dan URL aktif berbahaya tidak boleh disimpan atau dijalankan |
 
 ## 11. Data Seed Awal
 
@@ -547,7 +554,7 @@ Kasus berikut harus ditangani sistem dan diuji saat uji pengguna. Kasus bertanda
 | Admin | Akun Pengajar contoh dengan password sementara |
 | Learner | Beberapa akun demo dengan consent sudah disetujui |
 | Modul | Supply Chain Management dan Product Identity, status terbit |
-| Unit | Beberapa unit pendek per modul, masing-masing dengan tautan video, bacaan ringkas, tujuan belajar, dan 3–5 soal kuis (jumlah unit ditetapkan saat produksi materi) |
+| Unit | Beberapa unit pendek per modul, masing-masing dengan tautan video, materi singkat, tujuan belajar, dan 3–5 soal kuis (jumlah unit ditetapkan saat produksi materi) |
 | Bank soal | Soal pre-test dan post-test per modul, masing-masing dengan kunci dan pembahasan |
 | Riwayat contoh (opsional) | Contoh pengerjaan pre-test dan post-test serta progres unit untuk demo grafik dan rekap |
 | Forum contoh (opsional) | Beberapa topik dan balasan, serta satu laporan berstatus pending untuk demo moderasi |
@@ -571,7 +578,7 @@ Kasus berikut harus ditangani sistem dan diuji saat uji pengguna. Kasus bertanda
 | AC-13 | Superadmin menghapus akun Admin yang pernah membuat modul | Akun terhapus; modul dan soal buatannya tetap ada | FR-SA03 |
 | AC-14 | Learner membuka daftar modul | Hanya modul berstatus terbit yang tampil | FR-L08, A04 |
 | AC-15 | Putar video, jeda, tutup aplikasi, lalu buka unit lagi | Video dilanjutkan dari posisi terakhir | FR-L10, S03 |
-| AC-16 | Putar video unit | Video diputar di dalam aplikasi tanpa membuka aplikasi atau tab lain | FR-S07 |
+| AC-16 | Putar video unit dari URL YouTube atau file langsung | Video yang dapat diakses dan mengizinkan embed diputar di dalam aplikasi tanpa membuka aplikasi atau tab lain | FR-S07 |
 | AC-17 | Selesaikan sebuah unit | Persentase progres modul bertambah; beranda menampilkan kartu Lanjutkan belajar pada unit terakhir | FR-L13, L14 |
 | AC-18 | Buka kembali unit yang sudah selesai | Unit terbuka tanpa batas jumlah | FR-L11, L12 |
 | AC-19 | Learner membuka unit sebelum mengerjakan pre-test | Diarahkan ke pre-test lebih dulu | FR-L17 |
@@ -600,6 +607,9 @@ Kasus berikut harus ditangani sistem dan diuji saat uji pengguna. Kasus bertanda
 | AC-42 | Kirim form dengan field wajib kosong | Pesan validasi dalam bahasa Indonesia tampil di dekat field terkait | FR-A02, A03, L01 |
 | AC-43 | Learner meminta hapus akun dan data | Muncul konfirmasi; akun dan data dihapus sesuai kebijakan data | FR-L06 |
 | AC-44 | Pengguna baru membuka aplikasi pertama kali | Onboarding 2–3 layar tampil sekali dan dapat dilewati | FR-L07 |
+| AC-45 | Admin menulis materi singkat dengan paragraf, bold, miring, daftar, dan gambar; Learner/pratinjau membuka unit | Format dan gambar tampil sesuai konten yang disimpan, sementara elemen aktif atau atribut berbahaya tidak dijalankan | FR-A16, FR-L11, NFR-18 |
+| AC-46 | Admin mengimpor DOCX atau PDF digital, lalu meninjau dan mengubah hasil | Teks dapat diedit; format dasar dan gambar DOCX didukung sesuai batas; berkas sumber diproses di browser dan tidak disimpan | FR-A16, NFR-17 |
+| AC-47 | Admin memilih DOC lama, PDF scan/tanpa teks, berkas di atas batas ukuran/halaman, atau gambar di atas batas ukuran/jumlah | Format yang belum didukung atau berkas tidak valid ditolak dengan pesan Indonesia; editor tetap dapat digunakan manual dan materi lama tetap utuh | FR-A16, AB-16 |
 
 ## 13. Asumsi dan Ketergantungan
 
@@ -608,7 +618,7 @@ Kasus berikut harus ditangani sistem dan diuji saat uji pengguna. Kasus bertanda
 - Learner memiliki ponsel Android dan koneksi internet yang cukup untuk memutar video.
 - Mitra dan staf bersedia terlibat dalam peninjauan tiap iterasi dan uji pengguna.
 - Video, bacaan, dan soal diproduksi tim; data mitra dipakai atas izin pemilik.
-- Tautan video berupa sumber yang dapat diputar langsung di pemutar dalam aplikasi.
+- Tautan video berupa URL YouTube yang mendukung embed atau URL file video langsung yang dapat diputar di pemutar; video YouTube privat atau yang melarang embedding tidak dijamin dapat diputar.
 - Teknologi pengembangan dan hosting ditentukan pada tahap perancangan arsitektur.
 - Akun Superadmin awal disiapkan tim pengembang.
 
@@ -635,6 +645,7 @@ Urutan berikut menjadi acuan agar pengerjaan oleh tiga orang tidak saling menung
 - Sumber video yang dapat diputar langsung dan stabil (ditetapkan saat perancangan).
 - Layanan hosting berbiaya rendah untuk backend, basis data, dan panel web.
 - Pustaka pemutar video dan grafik untuk aplikasi Android.
+- Pustaka open-source yang berjalan di browser untuk impor DOCX dan ekstraksi teks PDF digital; impor dibatasi 10 MB per berkas dan 50 halaman PDF. DOC lama dan PDF scan/OCR berada di luar lingkup saat ini.
 - Dokumen BRD dan ERD sebagai rujukan: nama tabel dan kolom pada PRD harus sama dengan ERD setelah catatan 7.4 diputuskan.
 
 ### 13.3 Risiko
@@ -642,7 +653,7 @@ Urutan berikut menjadi acuan agar pengerjaan oleh tiga orang tidak saling menung
 | No | Risiko | Mitigasi |
 |---|---|---|
 | 1 | Cakupan bertambah (panel multi-role, kuis unit, forum, moderasi) sementara tim kecil dan waktu terbatas | Kerjakan Must lebih dulu; fitur Should dan Could digeser bila perlu |
-| 2 | Tautan video tidak dapat diputar langsung atau kualitas tidak dapat dipilih | Tetapkan sumber dan format tautan di perancangan; kualitas tunggal sebagai cadangan |
+| 2 | Tautan video tidak dapat diputar langsung atau kualitas tidak dapat dipilih | Validasi URL YouTube/direct video dan gunakan embed untuk YouTube; kualitas tunggal sebagai cadangan. Video privat atau yang melarang embedding perlu diganti dengan sumber lain. |
 | 3 | Literasi digital rendah dan staf takut salah | User-Centered Design, uji tiap iterasi, bahasa dan alur sederhana |
 | 4 | Registrasi terbuka tanpa verifikasi memasukkan akun tidak relevan ke rekap | Superadmin dapat menghapus akun; filter rekap per periode |
 | 5 | Konten forum tidak pantas atau keliru | Pelaporan oleh Learner, moderasi dan balasan Pengajar |
@@ -699,7 +710,7 @@ Kebutuhan bisnis pada BRD ditelusuri ke kebutuhan fungsional, user story, dan kr
 | BR-L16 | FR-L27 | US-11 | AC-28 |
 | BR-A01 | FR-A01, A12 | US-19 | AC-08 |
 | BR-A02 | FR-A02, A04 | US-15, US-16 | AC-14, AC-41 |
-| BR-A03 | FR-A03, A04 | US-15 | AC-42 |
+| BR-A03 | FR-A03, A04, A16 | US-15 | AC-42, AC-45, AC-46, AC-47 |
 | BR-A04 | FR-A05 | US-15 | AC-23 |
 | BR-A05 | FR-A11 | US-15 | AC-24 |
 | BR-A06 | FR-A06 | US-17 | AC-38 |
@@ -727,7 +738,7 @@ Kebutuhan bisnis pada BRD ditelusuri ke kebutuhan fungsional, user story, dan kr
 | 1 | Makna rollback pada kuis unit | Kembali ke materi unit lalu mengulang kuis; tidak mengunci unit berikutnya |
 | 2 | Syarat unit dianggap selesai | Materi dipelajari dan kuis unit dikerjakan, tanpa nilai minimum |
 | 3 | Bentuk soal kuis unit dan studi kasus | Pilihan ganda; studi kasus berupa soal berbasis skenario |
-| 4 | Sumber tautan video dan dukungan pilihan kualitas | Dipilih saat perancangan agar dapat diputar langsung di aplikasi |
+| 4 | Sumber tautan video dan dukungan pilihan kualitas | URL YouTube dengan embed atau URL file video langsung; video harus dapat diakses dan mengizinkan pemutaran/embed |
 | 5 | Teknologi dan hosting | Ditentukan saat perancangan arsitektur |
 | 6 | Bentuk notifikasi laporan forum | Hanya di panel web Admin, tanpa push atau email |
 | 7 | Perlakuan data dan konten forum saat akun dihapus | Perlu keputusan (7.4 nomor 6 dan 8) |

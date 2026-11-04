@@ -1,11 +1,13 @@
 # Arsitektur Panel Web Admin
 
-Dokumen ini menjelaskan panel web Admin dan Superadmin sesuai [PRD](./PRD.md), menggunakan Laravel 12 (mengikuti `composer.json`), MySQL, Blade, Tailwind CSS melalui Vite, session Laravel, dan Sanctum untuk API mobile. Langkah 1 mengimplementasikan autentikasi web, pembatasan role, ganti password sementara, dan placeholder navigasi Admin; route pengelolaan fitur lainnya di bawah tetap menjadi target langkah berikutnya.
+Dokumen ini menjelaskan panel web Admin dan Superadmin sesuai [PRD](./PRD.md), menggunakan Laravel 12 (mengikuti `composer.json`), MySQL, Blade, Tailwind CSS melalui Vite, session Laravel, dan Sanctum untuk API mobile. Langkah 1 mengimplementasikan autentikasi web, pembatasan role, dan ganti password sementara. Langkah 2A mengimplementasikan pengelolaan modul dan unit; fitur Admin lainnya tetap menjadi target langkah berikutnya.
 
 ## 1. Struktur Laravel
 
 ```text
 app/
+  Enums/
+    Role.php
   Http/
     Controllers/
       Web/
@@ -32,6 +34,10 @@ app/
     UserBadge.php
     ForumPost.php
     ForumReport.php
+  Services/
+    ModulePublishValidator.php
+    MaterialImportService.php
+    MaterialContentSanitizer.php
 resources/
   views/
     layouts/
@@ -66,7 +72,7 @@ routes/
 
 ## 3. Rute web yang direncanakan
 
-Route login/reset, ganti password, logout, route placeholder Admin, dan guard placeholder Superadmin sudah tersedia. Route operasi fitur Admin lainnya pada tabel ini adalah rencana path. Semua route panel berada di balik autentikasi session kecuali endpoint login/reset.
+Route login/reset, ganti password, logout, pengelolaan modul/unit Langkah 2A, route placeholder Admin, dan guard placeholder Superadmin sudah tersedia. Route fitur Admin lainnya pada tabel ini adalah rencana path. Semua route panel berada di balik autentikasi session kecuali endpoint login/reset.
 
 ### 3.1 Autentikasi bersama
 
@@ -87,16 +93,21 @@ Prefix `/admin`, middleware `auth` + `role:admin` + pemeriksaan password sementa
 | GET | `/admin/modules` | Daftar modul | FR-A02 |
 | GET | `/admin/modules/create` | Form modul baru | FR-A02 |
 | POST | `/admin/modules` | Simpan modul baru | FR-A02 |
-| GET | `/admin/modules/{module}` | Detail modul | FR-A02 |
 | GET | `/admin/modules/{module}/edit` | Form edit modul | FR-A02 |
-| PUT/PATCH, DELETE | `/admin/modules/{module}` | Ubah/hapus modul; hapus ditolak bila ada riwayat tes (EC-22) | FR-A02 |
-| PUT | `/admin/modules/{module}/status` | Terbitkan atau kembalikan ke draft | FR-A04, FR-A11 |
-| GET, POST | `/admin/modules/{module}/units` | Daftar dan buat unit | FR-A03 |
-| GET | `/admin/units/{unit}` | Detail unit | FR-A03 |
-| PUT/PATCH, DELETE | `/admin/units/{unit}` | Ubah/hapus unit; penghapusan fisik ditolak bila ada riwayat kuis | FR-A03 |
-| PATCH | `/admin/units/{unit}/status` | Aktifkan/nonaktifkan unit; unit nonaktif tidak tersedia untuk belajar baru dan riwayat tetap disimpan | FR-A03, FR-L30 |
-| PUT | `/admin/modules/{module}/units/order` | Atur urutan unit | FR-A04 |
-| GET | `/admin/units/{unit}/preview` | Pratinjau unit | FR-A03 |
+| PUT, DELETE | `/admin/modules/{module}` | Ubah/hapus modul; hapus ditolak bila ada riwayat tes (EC-22) | FR-A02 |
+| PUT | `/admin/modules/{module}/status` | Terbit/draft; Langkah 2A memeriksa minimal satu unit | FR-A04 |
+| GET | `/admin/modules/{module}/units` | Daftar unit | FR-A03 |
+| GET | `/admin/modules/{module}/units/create` | Form unit baru | FR-A03 |
+| POST | `/admin/modules/{module}/units` | Simpan unit | FR-A03 |
+| GET | `/admin/modules/{module}/units/{unit}/edit` | Form edit unit | FR-A03 |
+| PUT, DELETE | `/admin/modules/{module}/units/{unit}` | Ubah/hapus unit; hapus ditolak bila ada riwayat kuis | FR-A03 |
+| PATCH | `/admin/modules/{module}/units/{unit}/move/{direction}` | Atur urutan unit dengan tombol naik/turun | FR-A04 |
+| GET | `/admin/units/{unit}/preview` | Pratinjau unit baca-saja | FR-A03 |
+| — | (pemrosesan saat render) | Validasi URL YouTube dan ubah ID video ke YouTube embed; URL file langsung memakai pemutar video | FR-S07 |
+| — | (pemrosesan browser) | Impor DOCX atau ekstraksi teks PDF digital tanpa mengunggah berkas sumber; DOC lama/PDF scan ditolak | FR-A16 |
+| POST | `/admin/units/{unit}/material/images` | Unggah gambar materi dengan batas tipe, ukuran, dan jumlah | FR-A16 |
+| GET | `/admin/units/{unit}/material/images/{image}` | Sajikan gambar materi untuk Admin/pratinjau | FR-A16 |
+| GET | `/api/units/{unit}/material/images/{image}` | Sajikan gambar materi hanya jika modul berstatus terbit | FR-A16, FR-L11 |
 | GET, POST | `/admin/modules/{module}/questions` | Daftar/tambah bank soal pre/post | FR-A05 |
 | PUT, DELETE | `/admin/questions/{question}` | Ubah/hapus bank soal | FR-A05 |
 | GET, POST | `/admin/units/{unit}/quizzes` | Daftar/tambah kuis unit | FR-A11 |
@@ -109,6 +120,10 @@ Prefix `/admin`, middleware `auth` + `role:admin` + pemeriksaan password sementa
 | DELETE | `/admin/forum/{post}` | Hapus topik beserta balasan dan selesaikan laporan terkait secara transaksional | FR-A14, FR-A15, EC-12 |
 | GET | `/admin/forum-reports` | Daftar laporan dan rincian posting | FR-A15 |
 | PUT | `/admin/forum-reports/{report}/resolve` | Tandai laporan selesai tanpa menghapus konten | FR-A15 |
+
+Materi singkat menggunakan `units.reading_content` sebagai HTML terbatas yang disanitasi server. Editor mengizinkan paragraf, judul, bold, miring, daftar, dan gambar JPG/JPEG/PNG maksimal 5 MB per gambar serta 10 gambar per unit. Gambar disimpan secara privat dengan nama acak dan disajikan melalui route terkontrol; semua Admin dapat melihatnya melalui panel, sedangkan Learner hanya dapat melihat gambar dari modul terbit. Hapus aset unit yang tidak lagi dipakai hanya setelah penyimpanan berhasil. Impor DOCX dan ekstraksi teks PDF digital maksimal 10 MB per berkas serta 50 halaman PDF dilakukan di browser; berkas sumber tidak diunggah. DOC lama dan PDF scan/tanpa teks belum didukung dan ditolak dengan pesan bahasa Indonesia; OCR tidak dilakukan. Hasil impor masuk ke editor untuk ditinjau/diedit, sedangkan kegagalan ekstraksi menampilkan pesan ramah tanpa mengganti konten tersimpan. Semua komponen harus sesuai NFR-17 dan NFR-18 serta tidak memerlukan layanan berbayar.
+
+URL video YouTube divalidasi pada Form Request dan dipetakan ke `youtube-nocookie.com/embed/{id}` menggunakan ID yang lolos allowlist format; jangan menaruh URL input langsung pada `iframe src`. Video langsung tetap memakai elemen `<video>`. Video YouTube harus publik dan mengizinkan embed untuk dapat diputar.
 
 ### 3.3 Route Superadmin
 
