@@ -1,6 +1,6 @@
 # Arsitektur Panel Web Admin
 
-Dokumen ini merencanakan panel web Admin dan Superadmin sesuai [PRD](./PRD.md), menggunakan Laravel 12 (mengikuti `composer.json`), MySQL, Blade, Tailwind CSS melalui Vite, session Laravel, dan Sanctum untuk API mobile. Tidak ada source code aplikasi panel yang dibuat pada tugas ini.
+Dokumen ini menjelaskan panel web Admin dan Superadmin sesuai [PRD](./PRD.md), menggunakan Laravel 12 (mengikuti `composer.json`), MySQL, Blade, Tailwind CSS melalui Vite, session Laravel, dan Sanctum untuk API mobile. Langkah 1 mengimplementasikan autentikasi web, pembatasan role, ganti password sementara, dan placeholder navigasi Admin; route pengelolaan fitur lainnya di bawah tetap menjadi target langkah berikutnya.
 
 ## 1. Struktur Laravel
 
@@ -66,7 +66,7 @@ routes/
 
 ## 3. Rute web yang direncanakan
 
-Path berikut adalah rancangan nama/URI untuk pemetaan FR, bukan route yang sudah dibuat. Semua route aplikasi panel di bawah berada di balik autentikasi session. Endpoint login/reset adalah pengecualian karena memang harus dapat diakses sebelum login.
+Route login/reset, ganti password, logout, route placeholder Admin, dan guard placeholder Superadmin sudah tersedia. Route operasi fitur Admin lainnya pada tabel ini adalah rencana path. Semua route panel berada di balik autentikasi session kecuali endpoint login/reset.
 
 ### 3.1 Autentikasi bersama
 

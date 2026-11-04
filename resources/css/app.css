@@ -1,4 +1,8 @@
 @import 'tailwindcss';
+@import '@fontsource/plus-jakarta-sans/400.css';
+@import '@fontsource/plus-jakarta-sans/500.css';
+@import '@fontsource/plus-jakarta-sans/600.css';
+@import '@fontsource/plus-jakarta-sans/700.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -6,6 +10,34 @@
 @source '../**/*.js';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    --color-maroon-50: #fff1f2;
+    --color-maroon-100: #ffe4e6;
+    --color-maroon-200: #fecdd3;
+    --color-maroon-300: #fda4af;
+    --color-maroon-600: #be123c;
+    --color-maroon-700: #9f1239;
+    --color-maroon-800: #800020;
+    --color-maroon-900: #580016;
+    --color-maroon-950: #34000b;
+}
+
+@layer base {
+    body {
+        @apply bg-slate-100 font-sans text-slate-800 antialiased;
+    }
+}
+
+@layer components {
+    .glass-card {
+        @apply border border-white/70 bg-white/85 shadow-xl shadow-maroon-950/5 backdrop-blur-xl;
+    }
+
+    .glass-sidebar {
+        background: linear-gradient(145deg, rgb(88 0 22 / 97%), rgb(52 0 11 / 99%));
+    }
+
+    .auth-glow {
+        background: radial-gradient(circle, rgb(128 0 32 / 12%), transparent 70%);
+    }
 }

@@ -1,59 +1,35 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Sinau Backend
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Backend Sinau menggunakan Laravel 12, MySQL, Blade, Tailwind CSS melalui Vite, session Laravel untuk panel web, dan Laravel Sanctum untuk API mobile.
 
-## About Laravel
+## Pengembangan lokal
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+1. Pasang dependency PHP dan JavaScript: `composer install` dan `npm install`.
+2. Salin `.env.example` menjadi `.env`, lalu isi konfigurasi database lokal.
+3. Pastikan `MAIL_MAILER=log` agar email reset password ditulis ke log lokal.
+4. Jalankan migration dan data demo: `php artisan migrate --seed`.
+5. Bangun asset: `npm run build`; untuk development gunakan `npm run dev`.
+6. Jalankan aplikasi: `php artisan serve`.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Jangan gunakan `migrate:fresh` pada database yang berisi data.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Akun demo lokal
 
-## Learning Laravel
+Kredensial berikut hanya untuk pengembangan lokal:
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+| Role | Email | Password awal |
+|---|---|---|
+| Superadmin | `superadmin@sinau.test` | `Password!123` |
+| Admin | `admin@sinau.test` | `AdminSementara!123` |
+| Learner | `learner1@sinau.test` | `LearnerDemo!123` |
+| Learner | `learner2@sinau.test` | `LearnerDemo!123` |
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Akun Admin demo ditandai sebagai password sementara dan harus mengganti password saat login pertama. Seeder tidak menimpa akun yang sudah ada.
 
-## Laravel Sponsors
+## Email reset password lokal
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Dengan `MAIL_MAILER=log`, tautan reset tercatat di `storage/logs/laravel.log`; email tidak dikirim ke alamat eksternal.
 
-### Premium Partners
+## Pengujian
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Jalankan `php artisan test`. Test feature memakai SQLite in-memory dan tidak memodifikasi database pengembangan.
