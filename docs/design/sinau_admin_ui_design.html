@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sinau - Web Admin & Superadmin Panel</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Font: Inter & Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        maroon: {
+                            50: '#fff1f2',
+                            100: '#ffe4e6',
+                            200: '#fecdd3',
+                            300: '#fda4af',
+                            400: '#fb7185',
+                            500: '#e11d48',
+                            600: '#be123c',
+                            700: '#9f1239',
+                            800: '#800020', // Primary Maroon
+                            900: '#580016',
+                            950: '#34000b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Glassmorphism Styling */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 32px 0 rgba(128, 0, 32, 0.05);
+        }
+
+        .glass-sidebar {
+            background: linear-gradient(135deg, rgba(88, 0, 22, 0.95) 0%, rgba(52, 0, 11, 0.98) 100%);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Ambient Glow Effect */
+        .bg-glow-maroon {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(128, 0, 32, 0.12) 0%, rgba(255, 255, 255, 0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Scrollbar custom */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(128, 0, 32, 0.2);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(128, 0, 32, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex overflow-x-hidden relative">
+
+    <!-- Ambient Glow BG Elements -->
+    <div class="bg-glow-maroon top-[-100px] right-[-100px]"></div>
+    <div class="bg-glow-maroon bottom-[-100px] left-[200px]"></div>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="w-64 glass-sidebar text-white flex flex-col justify-between fixed inset-y-0 left-0 z-50 transition-all duration-300 md:translate-x-0 -translate-x-full">
+        <div>
+            <!-- App Brand Logo -->
+            <div class="p-6 flex items-center justify-between border-b border-white/10">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-maroon-600 to-rose-400 flex items-center justify-center font-extrabold text-xl shadow-lg shadow-maroon-900/50">
+                        S
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg leading-none tracking-wide text-white">SINAU</h1>
+                        <span class="text-[10px] text-maroon-200 tracking-wider font-semibold uppercase">Admin Platform</span>
+                    </div>
+                </div>
+                <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Role Selector / Badge -->
+            <div class="px-5 py-4">
+                <div class="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <div id="role-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></div>
+                        <span id="role-label" class="text-xs font-semibold text-rose-100">Role: Admin</span>
+                    </div>
+                    <button onclick="switchRole()" title="Simulasi Ganti Role (Admin <-> Superadmin)" class="text-[10px] bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-md text-rose-200 hover:text-white transition font-medium">
+                        Switch
+                    </button>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="px-3 space-y-1">
+                <!-- Admin Sections -->
+                <div class="role-admin-nav">
+                    <p class="px-4 text-[10px] font-bold text-maroon-300 uppercase tracking-wider mb-2">Manajemen Konten</p>
+                    <a href="#" onclick="switchPage('dashboard', this)" class="nav-item active flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium bg-gradient-to-r from-maroon-600 to-maroon-700 text-white shadow-md shadow-maroon-900/40 transition">
+                        <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Dashboard
+                    </a>
+                    <a href="#" onclick="switchPage('modules', this)" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-maroon-100 hover:bg-white/10 transition">
+                        <i data-lucide="book-open" class="w-4 h-4"></i> Kelola Modul & Unit
+                    </a>
+                    <a href="#" onclick="switchPage('questions', this)" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-maroon-100 hover:bg-white/10 transition">
+                        <i data-lucide="help-circle" class="w-4 h-4"></i> Bank Soal & Kuis
+                    </a>
+                    
+                    <p class="px-4 text-[10px] font-bold text-maroon-300 uppercase tracking-wider mt-6 mb-2">Interaksi & Rekap</p>
+                    <a href="#" onclick="switchPage('forum', this)" class="nav-item flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium text-maroon-100 hover:bg-white/10 transition">
+                        <span class="flex items-center gap-3">
+                            <i data-lucide="message-square" class="w-4 h-4"></i> Moderasi Forum
+                        </span>
+                        <span id="forum-badge-count" class="bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">2</span>
+                    </a>
+                    <a href="#" onclick="switchPage('recap', this)" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-maroon-100 hover:bg-white/10 transition">
+                        <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Rekap Skor & Progres
+                    </a>
+                    <a href="#" onclick="switchPage('learners', this)" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-maroon-100 hover:bg-white/10 transition">
+                        <i data-lucide="users" class="w-4 h-4"></i> Data Learner (UMKM)
+                    </a>
+                </div>
+
+                <!-- Superadmin Sections (Hidden by default in Admin view) -->
+                <div class="role-sa-nav hidden">
+                    <p class="px-4 text-[10px] font-bold text-amber-300 uppercase tracking-wider mb-2">Superadmin Area</p>
+                    <a href="#" onclick="switchPage('sa-admins', this)" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-maroon-100 hover:bg-white/10 transition">
+                        <i data-lucide="shield-check" class="w-4 h-4"></i> Kelola Akun Admin
+                    </a>
+                    <a href="#" onclick="switchPage('sa-learners', this)" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-maroon-100 hover:bg-white/10 transition">
+                        <i data-lucide="user-cog" class="w-4 h-4"></i> Kelola Akun Learner
+                    </a>
+                </div>
+            </nav>
+        </div>
+
+        <!-- User Profile Bottom -->
+        <div class="p-4 border-t border-white/10">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div id="user-avatar" class="w-9 h-9 rounded-full bg-rose-200 text-maroon-900 font-bold flex items-center justify-center text-sm border-2 border-white/30">
+                        PN
+                    </div>
+                    <div>
+                        <p id="user-name" class="text-sm font-semibold text-white leading-tight">Ibu Nur (Pengajar)</p>
+                        <p id="user-role-text" class="text-[11px] text-maroon-200">admin@sinau.id</p>
+                    </div>
+                </div>
+                <button onclick="triggerToast('Berhasil logout dari sistem.')" title="Logout" class="p-2 rounded-lg text-maroon-200 hover:text-white hover:bg-white/10 transition">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <div class="flex-1 md:ml-64 flex flex-col min-h-screen relative z-10">
+        
+        <!-- HEADER TOPBAR -->
+        <header class="h-20 glass-panel sticky top-0 z-40 px-6 flex items-center justify-between border-b border-white/40">
+            <div class="flex items-center gap-4">
+                <button onclick="toggleSidebar()" class="md:hidden text-slate-600 hover:text-maroon-800">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <div>
+                    <h2 id="page-title" class="text-xl font-bold text-slate-800">Dashboard Utama</h2>
+                    <p id="page-subtitle" class="text-xs text-slate-500">Selamat datang kembali! Pantau ringkasan aktivitas Sinau di sini.</p>
+                </div>
+            </div>
+
+            <!-- Header Action Items -->
+            <div class="flex items-center gap-3">
+                <!-- Global Search Bar -->
+                <div class="hidden sm:flex items-center bg-slate-200/60 rounded-xl px-3 py-2 text-sm focus-within:ring-2 focus-within:ring-maroon-700/50 transition">
+                    <i data-lucide="search" class="w-4 h-4 text-slate-400 mr-2"></i>
+                    <input id="global-search" type="text" onkeyup="handleGlobalSearch(this.value)" placeholder="Cari modul, soal, learner..." class="bg-transparent border-none outline-none text-slate-700 placeholder-slate-400 w-48 lg:w-64">
+                </div>
+
+                <!-- Notifications -->
+                <div class="relative">
+                    <button onclick="toggleModal('modal-notification')" class="w-10 h-10 rounded-xl glass-panel flex items-center justify-center text-slate-600 hover:text-maroon-800 hover:border-maroon-300 transition relative">
+                        <i data-lucide="bell" class="w-5 h-5"></i>
+                        <span class="absolute top-2 right-2 w-2 h-2 bg-rose-600 rounded-full ring-2 ring-white"></span>
+                    </button>
+                </div>
+
+                <!-- Quick Action Button -->
+                <button id="primary-action-btn" onclick="toggleModal('modal-create-module')" class="bg-gradient-to-r from-maroon-800 to-maroon-600 hover:from-maroon-900 hover:to-maroon-700 text-white font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-md shadow-maroon-900/20 flex items-center gap-2 transition">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    <span id="primary-action-text">Buat Modul Baru</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- DASHBOARD BODY CONTENT -->
+        <main class="p-6 md:p-8 space-y-8 flex-1">
+
+            <!-- TOAST NOTIFICATION CONTAINER -->
+            <div id="toast-msg" class="fixed bottom-5 right-5 z-50 hidden p-4 rounded-xl bg-slate-900 text-white shadow-2xl flex items-center gap-3 border border-slate-700 text-sm animate-bounce">
+                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400"></i>
+                <span id="toast-text">Aksi berhasil dilakukan.</span>
+            </div>
+
+            <!-- Temp Password Alert Banner -->
+            <div id="temp-password-banner" class="hidden p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 backdrop-blur-md flex items-center justify-between text-amber-900">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center">
+                        <i data-lucide="shield-alert" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm">Pengingat Keamanan Password Sementara (FR-A12)</h4>
+                        <p class="text-xs text-amber-800">Anda login menggunakan password sementara dari Superadmin. Mohon segera perbarui password Anda.</p>
+                    </div>
+                </div>
+                <button onclick="triggerToast('Modal ubah password dibuka.')" class="px-4 py-2 bg-amber-600 text-white font-semibold text-xs rounded-xl hover:bg-amber-700 transition">Ganti Password</button>
+            </div>
+
+            <!-- ================= PAGE 1: DASHBOARD UTAMA ================= -->
+            <div id="page-dashboard" class="page-content space-y-8">
+                <!-- STATISTIC CARDS -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="glass-panel p-6 rounded-2xl relative overflow-hidden transition hover:translate-y-[-2px]">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Learner (UMKM)</p>
+                                <h3 class="text-3xl font-extrabold text-slate-800 mt-2" id="stat-learners">128</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl bg-maroon-50 text-maroon-800 flex items-center justify-center border border-maroon-100">
+                                <i data-lucide="users" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center gap-2 text-xs text-emerald-600 font-semibold">
+                            <i data-lucide="trending-up" class="w-3.5 h-3.5"></i> +12% bulan ini
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-2xl relative overflow-hidden transition hover:translate-y-[-2px]">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Modul Terbit</p>
+                                <h3 class="text-3xl font-extrabold text-slate-800 mt-2">2 <span class="text-xs font-normal text-slate-400">/ 3 Draft</span></h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-700 flex items-center justify-center border border-rose-100">
+                                <i data-lucide="book-check" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center gap-2 text-xs text-slate-500">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Supply Chain & Product Identity
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-2xl relative overflow-hidden transition hover:translate-y-[-2px]">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tes Diselesaikan</p>
+                                <h3 class="text-3xl font-extrabold text-slate-800 mt-2">342</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center border border-amber-100">
+                                <i data-lucide="award" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center gap-2 text-xs text-amber-700 font-medium">
+                            Pre-test & Post-test tuntas
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-2xl relative overflow-hidden transition hover:translate-y-[-2px]">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Rata-Rata Post-Test</p>
+                                <h3 class="text-3xl font-extrabold text-maroon-800 mt-2">84.5 <span class="text-xs font-normal text-slate-400">/ 100</span></h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-100">
+                                <i data-lucide="trending-up" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex items-center gap-2 text-xs text-emerald-600 font-semibold">
+                            <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i> NAIK +28.4% dari Pre-test
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MAIN GRID CONTENT -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Left: Module Quick Table & Chart -->
+                    <div class="lg:col-span-2 space-y-8">
+                        <div class="glass-panel rounded-2xl p-6 border border-white/60">
+                            <div class="flex items-center justify-between mb-6">
+                                <div>
+                                    <h3 class="font-bold text-lg text-slate-800">Modul Aktif</h3>
+                                    <p class="text-xs text-slate-500">Ringkasan status modul pembelajaran saat ini.</p>
+                                </div>
+                                <button onclick="switchPage('modules')" class="text-xs font-semibold text-maroon-800 hover:text-maroon-900 border border-maroon-200 px-3 py-1.5 rounded-xl hover:bg-maroon-50 transition">
+                                    Kelola Selengkapnya &rarr;
+                                </button>
+                            </div>
+                            <!-- Table Preview -->
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-sm">
+                                    <thead>
+                                        <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
+                                            <th class="py-3 px-4">Judul Modul</th>
+                                            <th class="py-3 px-4">Unit</th>
+                                            <th class="py-3 px-4">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100 font-medium">
+                                        <tr>
+                                            <td class="py-3.5 px-4 font-bold text-slate-800">Supply Chain Management</td>
+                                            <td class="py-3.5 px-4 text-slate-600">4 Unit Materi</td>
+                                            <td class="py-3.5 px-4"><span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">Published</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3.5 px-4 font-bold text-slate-800">Product Identity & Branding</td>
+                                            <td class="py-3.5 px-4 text-slate-600">3 Unit Materi</td>
+                                            <td class="py-3.5 px-4"><span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">Published</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Mini Pre vs Post Chart -->
+                        <div class="glass-panel rounded-2xl p-6 border border-white/60">
+                            <h3 class="font-bold text-lg text-slate-800 mb-4">Grafik Evaluasi Hasil Belajar (Pre vs Post)</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <div class="flex justify-between text-xs font-bold mb-1"><span>Supply Chain Management</span><span class="text-emerald-600">+32.0 Poin</span></div>
+                                    <div class="w-full bg-slate-200 h-3 rounded-full overflow-hidden flex">
+                                        <div class="bg-rose-400 h-full" style="width: 54%" title="Pre Test: 54.0"></div>
+                                        <div class="bg-maroon-800 h-full" style="width: 32%" title="Post Test: 86.0"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between text-xs font-bold mb-1"><span>Product Identity & Branding</span><span class="text-emerald-600">+24.8 Poin</span></div>
+                                    <div class="w-full bg-slate-200 h-3 rounded-full overflow-hidden flex">
+                                        <div class="bg-rose-400 h-full" style="width: 58%" title="Pre Test: 58.2"></div>
+                                        <div class="bg-maroon-800 h-full" style="width: 25%" title="Post Test: 83.0"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Recent Moderation & Quick SA Access -->
+                    <div class="space-y-8">
+                        <div class="glass-panel rounded-2xl p-6 border border-white/60">
+                            <h3 class="font-bold text-base text-slate-800 mb-2 flex items-center gap-2">
+                                <i data-lucide="shield-alert" class="w-4 h-4 text-rose-600"></i> Laporan Forum Terbaru
+                            </h3>
+                            <p class="text-xs text-slate-500 mb-4">Butuh tindakan moderasi Admin segera.</p>
+                            <div class="p-3 bg-rose-50 border border-rose-200 rounded-xl space-y-2 text-xs">
+                                <span class="font-bold text-slate-800">Post #104: Staf Pasta 2</span>
+                                <p class="text-slate-600 italic">"Spam link promosi produk luar..."</p>
+                                <button onclick="switchPage('forum')" class="w-full py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-semibold text-center transition">Buka Panel Moderasi</button>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel rounded-2xl p-6 border border-white/60 bg-gradient-to-br from-white/90 to-maroon-50/40">
+                            <h3 class="font-bold text-sm text-slate-800 mb-1">Mode Superadmin Available</h3>
+                            <p class="text-xs text-slate-500 mb-3">Ingin menambah akun pengajar atau verifikasi akun learner?</p>
+                            <button onclick="switchRole()" class="w-full py-2 bg-maroon-800 text-white font-semibold text-xs rounded-xl shadow hover:bg-maroon-900 transition">Switch Ke Superadmin Role</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= PAGE 2: KELOLA MODUL & UNIT (FR-A02, A03, A04) ================= -->
+            <div id="page-modules" class="page-content hidden space-y-8">
+                <!-- Header Toolbar -->
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 glass-panel p-4 rounded-2xl">
+                    <div>
+                        <h3 class="font-bold text-lg text-slate-800">Manajemen Modul & Unit Materi</h3>
+                        <p class="text-xs text-slate-500">Susun urutan unit (drag/reorder), tautan video, bacaan ringkas, dan status modul.</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="toggleModal('modal-create-module')" class="px-4 py-2 bg-maroon-800 hover:bg-maroon-900 text-white font-semibold text-xs rounded-xl transition flex items-center gap-2">
+                            <i data-lucide="plus" class="w-4 h-4"></i> Modul Baru
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modules List Interactive Cards -->
+                <div id="modules-list-container" class="space-y-6">
+                    <!-- Module Item 1 -->
+                    <div class="glass-panel rounded-2xl p-6 border border-white/60 space-y-4">
+                        <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 border-b border-slate-200/80 pb-4">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-2xl bg-maroon-800 text-white font-bold flex items-center justify-center text-sm shadow">
+                                    SCM
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <h4 class="font-bold text-slate-800 text-base">Supply Chain Management</h4>
+                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">PUBLISHED</span>
+                                    </div>
+                                    <p class="text-xs text-slate-500">Mengatur persediaan bahan baku pasta, alur supplier, dan cegah waste operasional.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button onclick="toggleModuleStatus(this)" class="px-3 py-1.5 bg-amber-50 border border-amber-300 text-amber-800 text-xs font-semibold rounded-xl hover:bg-amber-100 transition">
+                                    Ubah ke Draft
+                                </button>
+                                <button onclick="toggleModal('modal-add-unit')" class="px-3 py-1.5 bg-maroon-50 border border-maroon-200 text-maroon-800 text-xs font-semibold rounded-xl hover:bg-maroon-100 transition">
+                                    + Tambah Unit
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Unit Reordering List -->
+                        <div class="space-y-2">
+                            <p class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Daftar Unit Materi (Sequence Order):</p>
+                            
+                            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+                                <div class="flex items-center gap-3">
+                                    <span class="font-bold text-maroon-800 w-6">#1</span>
+                                    <i data-lucide="video" class="w-4 h-4 text-rose-600"></i>
+                                    <span class="font-semibold text-slate-700">Pengenalan Rantai Pasok UMKM Kuliner</span>
+                                    <span class="text-slate-400">(03:45)</span>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <button onclick="triggerToast('Posisi unit dinaikkan.')" class="p-1 hover:bg-slate-200 rounded text-slate-500"><i data-lucide="arrow-up" class="w-4 h-4"></i></button>
+                                    <button onclick="triggerToast('Posisi unit diturunkan.')" class="p-1 hover:bg-slate-200 rounded text-slate-500"><i data-lucide="arrow-down" class="w-4 h-4"></i></button>
+                                    <button onclick="triggerToast('Edit detail unit.')" class="p-1 hover:bg-slate-200 rounded text-slate-600 ml-2"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+                                <div class="flex items-center gap-3">
+                                    <span class="font-bold text-maroon-800 w-6">#2</span>
+                                    <i data-lucide="video" class="w-4 h-4 text-rose-600"></i>
+                                    <span class="font-semibold text-slate-700">Manajemen Stok & FIFO Bahan Baku</span>
+                                    <span class="text-slate-400">(05:10)</span>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <button onclick="triggerToast('Posisi unit dinaikkan.')" class="p-1 hover:bg-slate-200 rounded text-slate-500"><i data-lucide="arrow-up" class="w-4 h-4"></i></button>
+                                    <button onclick="triggerToast('Posisi unit diturunkan.')" class="p-1 hover:bg-slate-200 rounded text-slate-500"><i data-lucide="arrow-down" class="w-4 h-4"></i></button>
+                                    <button onclick="triggerToast('Edit detail unit.')" class="p-1 hover:bg-slate-200 rounded text-slate-600 ml-2"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= PAGE 3: BANK SOAL & KUIS UNIT (FR-A05, FR-A11) ================= -->
+            <div id="page-questions" class="page-content hidden space-y-8">
+                <div class="glass-panel p-6 rounded-2xl border border-white/60 space-y-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h3 class="font-bold text-lg text-slate-800">Bank Soal Evaluasi & Kuis Unit</h3>
+                            <p class="text-xs text-slate-500">Kelola soal Pre-test, Post-test, serta Kuis Unit (wajib 3-5 soal per unit).</p>
+                        </div>
+                        <button onclick="toggleModal('modal-add-question')" class="px-4 py-2 bg-maroon-800 hover:bg-maroon-900 text-white font-semibold text-xs rounded-xl shadow transition flex items-center gap-2">
+                            <i data-lucide="plus-circle" class="w-4 h-4"></i> Tambah Soal Baru
+                        </button>
+                    </div>
+
+                    <!-- Category Filter Tabs -->
+                    <div class="flex gap-2 border-b border-slate-200 pb-3">
+                        <button onclick="filterQuestions('all', this)" class="q-tab px-4 py-1.5 rounded-xl text-xs font-bold bg-maroon-800 text-white">Semua Soal</button>
+                        <button onclick="filterQuestions('pre', this)" class="q-tab px-4 py-1.5 rounded-xl text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300">Pre-test</button>
+                        <button onclick="filterQuestions('post', this)" class="q-tab px-4 py-1.5 rounded-xl text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300">Post-test</button>
+                        <button onclick="filterQuestions('quiz', this)" class="q-tab px-4 py-1.5 rounded-xl text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300">Kuis Unit (3-5 Soal)</button>
+                    </div>
+
+                    <!-- Question List Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
+                                    <th class="py-3 px-4">Modul / Unit</th>
+                                    <th class="py-3 px-4">Tipe Soal</th>
+                                    <th class="py-3 px-4">Pertanyaan</th>
+                                    <th class="py-3 px-4">Kunci Jawaban</th>
+                                    <th class="py-3 px-4 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="questions-table-body" class="divide-y divide-slate-100 font-medium">
+                                <tr class="q-row" data-type="pre">
+                                    <td class="py-3.5 px-4 text-xs font-bold text-slate-800">Supply Chain Management</td>
+                                    <td class="py-3.5 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800">Pre-test</span></td>
+                                    <td class="py-3.5 px-4 text-xs text-slate-700 max-w-xs truncate">Apa kepanjangan dari FIFO dalam manajemen stok kuliner?</td>
+                                    <td class="py-3.5 px-4 text-xs font-bold text-emerald-700">A. First In First Out</td>
+                                    <td class="py-3.5 px-4 text-right">
+                                        <button onclick="triggerToast('Edit soal dibuka.')" class="p-1.5 text-slate-500 hover:text-maroon-800"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                                        <button onclick="deleteRow(this)" class="p-1.5 text-slate-500 hover:text-rose-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                    </td>
+                                </tr>
+                                <tr class="q-row" data-type="quiz">
+                                    <td class="py-3.5 px-4 text-xs font-bold text-slate-800">Unit 1: Pengenalan SCM</td>
+                                    <td class="py-3.5 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">Kuis Unit (3/5)</span></td>
+                                    <td class="py-3.5 px-4 text-xs text-slate-700 max-w-xs truncate">Mengapa pencatatan stok harian penting dilakukan pengelola?</td>
+                                    <td class="py-3.5 px-4 text-xs font-bold text-emerald-700">B. Mencegah bahan terbuang kadaluarsa</td>
+                                    <td class="py-3.5 px-4 text-right">
+                                        <button onclick="triggerToast('Edit soal dibuka.')" class="p-1.5 text-slate-500 hover:text-maroon-800"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                                        <button onclick="deleteRow(this)" class="p-1.5 text-slate-500 hover:text-rose-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= PAGE 4: MODERASI FORUM (FR-A13, A14, A15) ================= -->
+            <div id="page-forum" class="page-content hidden space-y-8">
+                <div class="glass-panel p-6 rounded-2xl border border-white/60 space-y-6">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold text-lg text-slate-800">Moderasi Forum Diskusi & Laporan Konten</h3>
+                            <p class="text-xs text-slate-500">Tinjau laporan diskusi tidak pantas dari Learner (Hanya Admin yang berhak menghapus).</p>
+                        </div>
+                    </div>
+
+                    <!-- Report Items -->
+                    <div id="reports-container" class="space-y-4">
+                        <!-- Report 1 -->
+                        <div class="p-4 rounded-xl bg-rose-50/60 border border-rose-200 space-y-3">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <span class="px-2 py-0.5 bg-rose-600 text-white text-[10px] font-bold rounded">PENDING REPORT</span>
+                                    <h4 class="font-bold text-sm text-slate-800 mt-1">Laporan dari: Learner Budi (UMKM Pasta Sby)</h4>
+                                </div>
+                                <span class="text-xs text-slate-400">10 Menit lalu</span>
+                            </div>
+                            <div class="p-3 bg-white rounded-lg border border-rose-100 text-xs text-slate-700">
+                                <p class="font-bold text-slate-800 mb-1">Konten Postingan Yang Dilaporkan:</p>
+                                <p class="italic text-rose-900">"Pinjaman modal cepat tanpa agunan klik link bit.ly/xxx penipuan..."</p>
+                            </div>
+                            <div class="flex justify-end gap-2">
+                                <button onclick="resolveReport(this, 'resolve')" class="px-3 py-1.5 bg-slate-200 text-slate-700 font-semibold text-xs rounded-lg hover:bg-slate-300">Tandai Wajar (Resolved)</button>
+                                <button onclick="resolveReport(this, 'delete')" class="px-3 py-1.5 bg-rose-600 text-white font-semibold text-xs rounded-lg hover:bg-rose-700">Hapus Posting (FR-A14)</button>
+                            </div>
+                        </div>
+
+                        <!-- Report 2 -->
+                        <div class="p-4 rounded-xl bg-rose-50/60 border border-rose-200 space-y-3">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <span class="px-2 py-0.5 bg-rose-600 text-white text-[10px] font-bold rounded">PENDING REPORT</span>
+                                    <h4 class="font-bold text-sm text-slate-800 mt-1">Laporan dari: Staf Nafisa 1</h4>
+                                </div>
+                                <span class="text-xs text-slate-400">1 Jam lalu</span>
+                            </div>
+                            <div class="p-3 bg-white rounded-lg border border-rose-100 text-xs text-slate-700">
+                                <p class="font-bold text-slate-800 mb-1">Konten Postingan Yang Dilaporkan:</p>
+                                <p class="italic text-slate-600">"Materi kuis unit ini terlalu susah buat dipahami."</p>
+                            </div>
+                            <div class="flex justify-end gap-2">
+                                <button onclick="resolveReport(this, 'resolve')" class="px-3 py-1.5 bg-slate-200 text-slate-700 font-semibold text-xs rounded-lg hover:bg-slate-300">Tandai Wajar (Resolved)</button>
+                                <button onclick="resolveReport(this, 'delete')" class="px-3 py-1.5 bg-rose-600 text-white font-semibold text-xs rounded-lg hover:bg-rose-700">Hapus Posting (FR-A14)</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= PAGE 5: REKAP SKOR & PROGRES (FR-A08, A09) ================= -->
+            <div id="page-recap" class="page-content hidden space-y-8">
+                <div class="glass-panel p-6 rounded-2xl border border-white/60 space-y-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h3 class="font-bold text-lg text-slate-800">Rekapitulasi Skor Pre-test & Post-test Learner</h3>
+                            <p class="text-xs text-slate-500">Pantau perkembangan nilai individu staf UMKM dan unduh berkas CSV.</p>
+                        </div>
+                        <button onclick="exportCSV()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs rounded-xl shadow transition flex items-center gap-2">
+                            <i data-lucide="download" class="w-4 h-4"></i> Ekspor Data Ke CSV (FR-A09)
+                        </button>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
+                                    <th class="py-3 px-4">Nama Learner</th>
+                                    <th class="py-3 px-4">Nama Usaha UMKM</th>
+                                    <th class="py-3 px-4">Modul</th>
+                                    <th class="py-3 px-4">Pre-Test</th>
+                                    <th class="py-3 px-4">Post-Test</th>
+                                    <th class="py-3 px-4">Selisih</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 font-medium text-xs">
+                                <tr>
+                                    <td class="py-3.5 px-4 font-bold text-slate-800">Siti Rahma</td>
+                                    <td class="py-3.5 px-4 text-slate-600">Pasta Nafisa</td>
+                                    <td class="py-3.5 px-4 text-slate-700">Supply Chain Management</td>
+                                    <td class="py-3.5 px-4 font-bold text-rose-600">50.0</td>
+                                    <td class="py-3.5 px-4 font-bold text-maroon-800">90.0</td>
+                                    <td class="py-3.5 px-4 font-bold text-emerald-600">+40.0</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-3.5 px-4 font-bold text-slate-800">Budi Santoso</td>
+                                    <td class="py-3.5 px-4 text-slate-600">Warung Makan Sejahtera</td>
+                                    <td class="py-3.5 px-4 text-slate-700">Product Identity & Branding</td>
+                                    <td class="py-3.5 px-4 font-bold text-rose-600">60.0</td>
+                                    <td class="py-3.5 px-4 font-bold text-maroon-800">80.0</td>
+                                    <td class="py-3.5 px-4 font-bold text-emerald-600">+20.0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= PAGE 6: DATA LEARNER (FR-A06) ================= -->
+            <div id="page-learners" class="page-content hidden space-y-8">
+                <div class="glass-panel p-6 rounded-2xl border border-white/60 space-y-6">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold text-lg text-slate-800">Daftar Learner Terdaftar</h3>
+                            <p class="text-xs text-slate-500">Admin hanya memiliki hak akses melihat data (Kelola akun dikhususkan Superadmin).</p>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
+                                    <th class="py-3 px-4">Nama Learner</th>
+                                    <th class="py-3 px-4">Email</th>
+                                    <th class="py-3 px-4">Usaha UMKM</th>
+                                    <th class="py-3 px-4">Tanggal Daftar</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 font-medium text-xs text-slate-700">
+                                <tr>
+                                    <td class="py-3.5 px-4 font-bold text-slate-800">Siti Rahma</td>
+                                    <td class="py-3.5 px-4">siti@pastanafisa.id</td>
+                                    <td class="py-3.5 px-4">Pasta Nafisa</td>
+                                    <td class="py-3.5 px-4 text-slate-400">01 Nov 2026</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-3.5 px-4 font-bold text-slate-800">Budi Santoso</td>
+                                    <td class="py-3.5 px-4">budi@umkm.id</td>
+                                    <td class="py-3.5 px-4">Warung Makan Sejahtera</td>
+                                    <td class="py-3.5 px-4 text-slate-400">02 Nov 2026</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= PAGE 7: KELOLA AKUN ADMIN (SUPERADMIN - FR-SA02, SA03, SA04) ================= -->
+            <div id="page-sa-admins" class="page-content hidden space-y-8">
+                <div class="glass-panel p-6 rounded-2xl border border-white/60 space-y-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h3 class="font-bold text-lg text-slate-800">Kelola Akun Admin (Superadmin Area)</h3>
+                            <p class="text-xs text-slate-500">Tambah akun pengajar baru dengan temp-password (FR-S06) & atur wewenang role.</p>
+                        </div>
+                        <button onclick="toggleModal('modal-add-admin')" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs rounded-xl shadow transition flex items-center gap-2">
+                            <i data-lucide="user-plus" class="w-4 h-4"></i> Tambah Admin Baru
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
+                                    <th class="py-3 px-4">Nama Admin</th>
+                                    <th class="py-3 px-4">Email</th>
+                                    <th class="py-3 px-4">Role</th>
+                                    <th class="py-3 px-4">Status Password</th>
+                                    <th class="py-3 px-4 text-right">Aksi Superadmin</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 font-medium text-xs">
+                                <tr>
+                                    <td class="py-3.5 px-4 font-bold text-slate-800">Ibu Nur (Pengajar)</td>
+                                    <td class="py-3.5 px-4 text-slate-600">admin@sinau.id</td>
+                                    <td class="py-3.5 px-4"><span class="px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-bold">Admin</span></td>
+                                    <td class="py-3.5 px-4 text-emerald-600 font-bold">Permanen (Aktif)</td>
+                                    <td class="py-3.5 px-4 text-right">
+                                        <button onclick="triggerToast('Ubah role admin.')" class="px-2 py-1 bg-slate-200 rounded text-slate-700">Ubah Role</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= PAGE 8: KELOLA AKUN LEARNER (SUPERADMIN - FR-SA05, SA06) ================= -->
+            <div id="page-sa-learners" class="page-content hidden space-y-8">
+                <div class="glass-panel p-6 rounded-2xl border border-white/60 space-y-6">
+                    <div>
+                        <h3 class="font-bold text-lg text-slate-800">Kelola Pengguna Learner (Superadmin Area)</h3>
+                        <p class="text-xs text-slate-500">Edit, ubah role ke Admin, atau hapus permanen akun learner (UU PDP FR-L06).</p>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
+                                    <th class="py-3 px-4">Nama Learner</th>
+                                    <th class="py-3 px-4">Email</th>
+                                    <th class="py-3 px-4">Usaha UMKM</th>
+                                    <th class="py-3 px-4 text-right">Aksi Superadmin</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 font-medium text-xs">
+                                <tr>
+                                    <td class="py-3.5 px-4 font-bold text-slate-800">Siti Rahma</td>
+                                    <td class="py-3.5 px-4 text-slate-600">siti@pastanafisa.id</td>
+                                    <td class="py-3.5 px-4 text-slate-700">Pasta Nafisa</td>
+                                    <td class="py-3.5 px-4 text-right space-x-2">
+                                        <button onclick="triggerToast('Role berhasil diubah menjadi Admin.')" class="px-2 py-1 bg-amber-100 text-amber-800 rounded font-bold">Jadikan Admin</button>
+                                        <button onclick="deleteRow(this)" class="px-2 py-1 bg-rose-600 text-white rounded font-bold">Hapus Akun</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- MODAL: BUAT MODUL BARU (FR-A02) -->
+    <div id="modal-create-module" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-panel bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl border border-white/80 space-y-5">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-lg text-slate-800">Tambah Modul Pembelajaran Baru</h3>
+                <button onclick="toggleModal('modal-create-module')" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form class="space-y-4" onsubmit="event.preventDefault(); addNewModule();">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Judul Modul <span class="text-rose-500">*</span></label>
+                    <input id="new-mod-title" required type="text" placeholder="Contoh: Literasi Keuangan & HPP" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-maroon-800/40">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Deskripsi Ringkas (1 Kalimat)</label>
+                    <textarea id="new-mod-desc" rows="2" placeholder="Penjelasan singkat modul untuk calon learner UMKM..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-maroon-800/40"></textarea>
+                </div>
+                <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
+                    <button type="button" onclick="toggleModal('modal-create-module')" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-600 font-semibold text-xs hover:bg-slate-50">Batal</button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-maroon-800 text-white font-semibold text-xs hover:bg-maroon-900 shadow-md">Simpan Modul (Draft)</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: TAMBAH SOAL (FR-A05) -->
+    <div id="modal-add-question" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-panel bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl border border-white/80 space-y-5">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-lg text-slate-800">Tambah Soal Baru</h3>
+                <button onclick="toggleModal('modal-add-question')" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form class="space-y-4" onsubmit="event.preventDefault(); addNewQuestion();">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Tipe Soal</label>
+                    <select id="new-q-type" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm">
+                        <option value="pre">Pre-test</option>
+                        <option value="post">Post-test</option>
+                        <option value="quiz">Kuis Unit (3-5 Soal)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Teks Pertanyaan</label>
+                    <textarea id="new-q-text" required rows="2" placeholder="Masukkan soal pilihan ganda..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Kunci Jawaban Benar</label>
+                    <input id="new-q-key" required type="text" placeholder="Contoh: A. Pilihan Jawaban" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm">
+                </div>
+                <div class="flex justify-end gap-3 pt-2 border-t border-slate-100">
+                    <button type="button" onclick="toggleModal('modal-add-question')" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-600 font-semibold text-xs hover:bg-slate-50">Batal</button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-maroon-800 text-white font-semibold text-xs hover:bg-maroon-900 shadow-md">Simpan Soal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: NOTIFIKASI SYSTEM -->
+    <div id="modal-notification" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-panel bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl border border-white/80 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                <h3 class="font-bold text-base text-slate-800 flex items-center gap-2"><i data-lucide="bell" class="w-4 h-4 text-rose-600"></i> Notifikasi Sistem</h3>
+                <button onclick="toggleModal('modal-notification')" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <div class="space-y-2 text-xs text-slate-600">
+                <div class="p-2.5 bg-slate-50 rounded-lg"><strong>Moderasi Forum:</strong> 2 Laporan postingan baru butuh tinjauan.</div>
+                <div class="p-2.5 bg-slate-50 rounded-lg"><strong>Statistik Learner:</strong> +12 Learner baru mendaftar hari ini.</div>
+            </div>
+            <button onclick="toggleModal('modal-notification')" class="w-full py-2 bg-slate-200 text-slate-700 rounded-xl font-bold text-xs">Tutup Notifikasi</button>
+        </div>
+    </div>
+
+    <!-- MODAL: TAMBAH AKUN ADMIN (SUPERADMIN - FR-SA02) -->
+    <div id="modal-add-admin" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-panel bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl border border-white/80 space-y-5">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-lg text-slate-800">Tambah Admin (Pengajar) Baru</h3>
+                <button onclick="toggleModal('modal-add-admin')" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form class="space-y-4" onsubmit="event.preventDefault(); toggleModal('modal-add-admin'); triggerToast('Admin baru berhasil dibuat dengan temp-password.');">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Lengkap Pengajar <span class="text-rose-500">*</span></label>
+                    <input type="text" required placeholder="Nama Admin / Pengajar" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-maroon-800/40">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Alamat Email <span class="text-rose-500">*</span></label>
+                    <input type="email" required placeholder="email@sinau.id" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-maroon-800/40">
+                </div>
+                <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800">
+                    Sistem akan secara otomatis mendesain <strong>Password Sementara</strong> (FR-S06) yang wajib diganti oleh Admin saat pertama kali login.
+                </div>
+                <div class="flex justify-end gap-3 pt-2 border-t border-slate-100">
+                    <button type="button" onclick="toggleModal('modal-add-admin')" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-600 font-semibold text-xs hover:bg-slate-50">Batal</button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-maroon-800 text-white font-semibold text-xs hover:bg-maroon-900 shadow-md">Buat Akun Admin</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT FOR DYNAMIC PAGE SWITCHING & SYSTEM INTERACTION -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Page State Titles & Action Configs
+        const pageConfigs = {
+            'dashboard': { title: 'Dashboard Utama', subtitle: 'Selamat datang kembali! Pantau ringkasan aktivitas Sinau di sini.', btnText: 'Buat Modul Baru', btnAction: () => toggleModal('modal-create-module') },
+            'modules': { title: 'Kelola Modul & Unit Materi', subtitle: 'Atur status terbit modul (draft/published) dan urutan unit.', btnText: 'Tambah Modul', btnAction: () => toggleModal('modal-create-module') },
+            'questions': { title: 'Bank Soal (Pre/Post) & Kuis Unit', subtitle: 'Kelola bank soal pre-test, post-test, dan 3-5 soal kuis unit.', btnText: 'Tambah Soal', btnAction: () => toggleModal('modal-add-question') },
+            'forum': { title: 'Moderasi Forum Diskusi', subtitle: 'Tinjau laporan konten diskusi tidak pantas dari learner.', btnText: 'Refresh Laporan', btnAction: () => triggerToast('Laporan diperbarui.') },
+            'recap': { title: 'Rekapitulasi Skor & Progres', subtitle: 'Pantau nilai pre-test dan post-test learner dan ekspor CSV.', btnText: 'Ekspor CSV', btnAction: () => exportCSV() },
+            'learners': { title: 'Daftar Pengguna Learner', subtitle: 'Daftar pelaku UMKM dan staf yang terdaftar di aplikasi mobile.', btnText: 'Filter Data', btnAction: () => triggerToast('Filter data diterapkan.') },
+            'sa-admins': { title: 'Kelola Akun Admin (Superadmin)', subtitle: 'Tambah pengajar baru dengan password sementara & ubah role.', btnText: 'Tambah Admin', btnAction: () => toggleModal('modal-add-admin') },
+            'sa-learners': { title: 'Kelola Akun Learner (Superadmin)', subtitle: 'Edit data, ubah role learner ke admin, atau hapus akun.', btnText: 'Refresh User', btnAction: () => triggerToast('Daftar user diperbarui.') }
+        };
+
+        // Switch Page Engine
+        function switchPage(pageKey, element = null) {
+            // Hide all pages
+            document.querySelectorAll('.page-content').forEach(page => page.classList.add('hidden'));
+            
+            // Show target page
+            const targetPage = document.getElementById(`page-${pageKey}`);
+            if (targetPage) {
+                targetPage.classList.remove('hidden');
+            }
+
+            // Update Active Nav Item Styling
+            if (element) {
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('active', 'bg-gradient-to-r', 'from-maroon-600', 'to-maroon-700', 'text-white', 'shadow-md');
+                    item.classList.add('text-maroon-100');
+                });
+                element.classList.add('active', 'bg-gradient-to-r', 'from-maroon-600', 'to-maroon-700', 'text-white', 'shadow-md');
+                element.classList.remove('text-maroon-100');
+            }
+
+            // Update Header Information
+            const config = pageConfigs[pageKey];
+            if (config) {
+                document.getElementById('page-title').innerText = config.title;
+                document.getElementById('page-subtitle').innerText = config.subtitle;
+                document.getElementById('primary-action-text').innerText = config.btnText;
+                document.getElementById('primary-action-btn').onclick = config.btnAction;
+            }
+
+            // Close sidebar on mobile after navigating
+            if (window.innerWidth < 768) {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.add('-translate-x-full');
+            }
+        }
+
+        // Switch Role Simulation (Admin <-> Superadmin)
+        let currentRole = 'admin';
+        function switchRole() {
+            const roleDot = document.getElementById('role-dot');
+            const roleLabel = document.getElementById('role-label');
+            const userName = document.getElementById('user-name');
+            const userRoleText = document.getElementById('user-role-text');
+            const adminNav = document.querySelector('.role-admin-nav');
+            const saNav = document.querySelector('.role-sa-nav');
+
+            if (currentRole === 'admin') {
+                currentRole = 'superadmin';
+                roleDot.className = "w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse";
+                roleLabel.innerText = "Role: Superadmin";
+                userName.innerText = "Tim Dev (Superadmin)";
+                userRoleText.innerText = "superadmin@sinau.id";
+                
+                adminNav.classList.add('hidden');
+                saNav.classList.remove('hidden');
+                switchPage('sa-admins');
+                triggerToast("Switched ke Superadmin Mode. Hanya dapat mengelola akun pengguna.");
+            } else {
+                currentRole = 'admin';
+                roleDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse";
+                roleLabel.innerText = "Role: Admin";
+                userName.innerText = "Ibu Nur (Pengajar)";
+                userRoleText.innerText = "admin@sinau.id";
+
+                saNav.classList.add('hidden');
+                adminNav.classList.remove('hidden');
+                switchPage('dashboard');
+                triggerToast("Switched ke Admin (Pengajar) Mode.");
+            }
+        }
+
+        // Mobile Sidebar Toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        }
+
+        // Toggle Modal Helper
+        function toggleModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.toggle('hidden');
+            }
+        }
+
+        // Toast Trigger Helper
+        function triggerToast(text) {
+            const toast = document.getElementById('toast-msg');
+            document.getElementById('toast-text').innerText = text;
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Moderation Resolve/Delete Function
+        function resolveReport(btnElement, action) {
+            const card = btnElement.closest('.p-4');
+            if (card) {
+                card.remove();
+                const badge = document.getElementById('forum-badge-count');
+                let count = parseInt(badge.innerText);
+                if (count > 0) badge.innerText = count - 1;
+
+                if (action === 'delete') {
+                    triggerToast("Konten forum berhasil dihapus dari sistem (FR-A14).");
+                } else {
+                    triggerToast("Laporan ditandai selesai/resolved tanpa menghapus konten (FR-A15).");
+                }
+            }
+        }
+
+        // Filter Questions Engine
+        function filterQuestions(type, btnElement) {
+            document.querySelectorAll('.q-tab').forEach(tab => {
+                tab.className = "q-tab px-4 py-1.5 rounded-xl text-xs font-bold bg-slate-200 text-slate-700 hover:bg-slate-300";
+            });
+            btnElement.className = "q-tab px-4 py-1.5 rounded-xl text-xs font-bold bg-maroon-800 text-white";
+
+            const rows = document.querySelectorAll('.q-row');
+            rows.forEach(row => {
+                if (type === 'all' || row.getAttribute('data-type') === type) {
+                    row.classList.remove('hidden');
+                } else {
+                    row.classList.add('hidden');
+                }
+            });
+        }
+
+        // Export CSV Function
+        function exportCSV() {
+            const csvContent = "data:text/csv;charset=utf-8,Nama Learner,UMKM,Modul,Pre-Test,Post-Test,Selisih\nSiti Rahma,Pasta Nafisa,Supply Chain Management,50.0,90.0,+40.0\nBudi Santoso,Warung Makan Sejahtera,Product Identity,60.0,80.0,+20.0";
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "rekap_skor_sinau.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            triggerToast("Ekspor berkas CSV rekapitulasi nilai berhasil diunduh (FR-A09).");
+        }
+
+        // Toggle Module Published/Draft Status
+        function toggleModuleStatus(btn) {
+            if (btn.innerText.includes('Draft')) {
+                btn.innerText = "Terbitkan Modul";
+                btn.className = "px-3 py-1.5 bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-semibold rounded-xl hover:bg-emerald-100 transition";
+                triggerToast("Modul diubah menjadi status DRAFT (Sembunyi dari Learner).");
+            } else {
+                btn.innerText = "Ubah ke Draft";
+                btn.className = "px-3 py-1.5 bg-amber-50 border border-amber-300 text-amber-800 text-xs font-semibold rounded-xl hover:bg-amber-100 transition";
+                triggerToast("Modul berhasil DITERBITKAN ke aplikasi learner.");
+            }
+        }
+
+        // Add New Module Dynamically
+        function addNewModule() {
+            const title = document.getElementById('new-mod-title').value;
+            const desc = document.getElementById('new-mod-desc').value;
+            const container = document.getElementById('modules-list-container');
+            
+            const cardHtml = `
+                <div class="glass-panel rounded-2xl p-6 border border-white/60 space-y-4 animate-in fade-in">
+                    <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 border-b border-slate-200/80 pb-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-slate-700 text-white font-bold flex items-center justify-center text-sm shadow">
+                                ${title.substring(0,3).toUpperCase()}
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h4 class="font-bold text-slate-800 text-base">${title}</h4>
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-200 text-slate-700">DRAFT</span>
+                                </div>
+                                <p class="text-xs text-slate-500">${desc}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="toggleModuleStatus(this)" class="px-3 py-1.5 bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-semibold rounded-xl transition">Terbitkan Modul</button>
+                        </div>
+                    </div>
+                </div>`;
+            
+            container.insertAdjacentHTML('afterbegin', cardHtml);
+            toggleModal('modal-create-module');
+            triggerToast("Modul baru berhasil ditambahkan sebagai Draft.");
+        }
+
+        // Add New Question Dynamically
+        function addNewQuestion() {
+            const type = document.getElementById('new-q-type').value;
+            const text = document.getElementById('new-q-text').value;
+            const key = document.getElementById('new-q-key').value;
+            const body = document.getElementById('questions-table-body');
+
+            const typeBadges = {
+                'pre': '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800">Pre-test</span>',
+                'post': '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-maroon-100 text-maroon-800">Post-test</span>',
+                'quiz': '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">Kuis Unit (3-5 Soal)</span>'
+            };
+
+            const rowHtml = `
+                <tr class="q-row" data-type="${type}">
+                    <td class="py-3.5 px-4 text-xs font-bold text-slate-800">Supply Chain Management</td>
+                    <td class="py-3.5 px-4">${typeBadges[type]}</td>
+                    <td class="py-3.5 px-4 text-xs text-slate-700 max-w-xs truncate">${text}</td>
+                    <td class="py-3.5 px-4 text-xs font-bold text-emerald-700">${key}</td>
+                    <td class="py-3.5 px-4 text-right">
+                        <button onclick="deleteRow(this)" class="p-1.5 text-slate-500 hover:text-rose-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </td>
+                </tr>`;
+            
+            body.insertAdjacentHTML('afterbegin', rowHtml);
+            lucide.createIcons();
+            toggleModal('modal-add-question');
+            triggerToast("Soal baru berhasil ditambahkan ke bank soal.");
+        }
+
+        // Delete Row Helper
+        function deleteRow(btn) {
+            btn.closest('tr').remove();
+            triggerToast("Item berhasil dihapus.");
+        }
+
+        // Global Search
+        function handleGlobalSearch(query) {
+            if (!query) return;
+            triggerToast(`Mencari "${query}"...`);
+        }
+    </script>
+</body>
+</html>
