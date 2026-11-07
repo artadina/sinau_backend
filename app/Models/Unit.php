@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Unit extends Model
 {
@@ -39,5 +40,11 @@ class Unit extends Model
     public function module(): BelongsTo
     {
         return $this->belongsTo(Module::class);
+    }
+
+    // FR-A11, AB-12
+    public function quizzes(): HasMany
+    {
+        return $this->hasMany(UnitQuiz::class);
     }
 }

@@ -1,6 +1,15 @@
 import { Editor } from '@tiptap/core';
 import Image from '@tiptap/extension-image';
 import StarterKit from '@tiptap/starter-kit';
+import {
+    Bold,
+    FileUp,
+    ImagePlus,
+    Italic,
+    List,
+    ListOrdered,
+    createIcons,
+} from 'lucide';
 
 const maximumImageBytes = 5 * 1024 * 1024;
 const maximumDocumentBytes = 10 * 1024 * 1024;
@@ -213,10 +222,16 @@ async function extractDocx(file) {
 
 // FR-A16, AC-45, AC-46: initialize the rich editor and keep imports local until saved.
 export function initializeMaterialEditors() {
+    createIcons({
+        icons: { Bold, FileUp, ImagePlus, Italic, List, ListOrdered },
+    });
+
     document.querySelectorAll('[data-material-editor]').forEach((container) => {
         const editorElement = container.querySelector('[data-material-content]');
         const contentInput = container.querySelector('#reading_content');
         const message = container.querySelector('[data-material-message]');
+        const toolbar = container.querySelector('[data-material-toolbar]');
+        const blockStyle = toolbar.querySelector('[data-material-block-style]');
         const form = container.closest('form');
         const imageUploadUrl = container.dataset.imageUploadUrl;
         const pendingKey = container.dataset.pendingKey;
@@ -287,6 +302,22 @@ export function initializeMaterialEditors() {
             editor.chain().focus().setImage({ src: source, alt }).run();
         }
 
+        function updateToolbar() {
+            toolbar.querySelectorAll('[data-material-command]').forEach((button) => {
+                const command = button.dataset.materialCommand;
+                const active = command === 'bold' ? editor.isActive('bold')
+                    : command === 'italic' ? editor.isActive('italic')
+                        : command === 'bulletList' ? editor.isActive('bulletList')
+                            : editor.isActive('orderedList');
+
+                button.setAttribute('aria-pressed', String(active));
+            });
+
+            blockStyle.value = editor.isActive('heading', { level: 2 }) ? 'heading-2'
+                : editor.isActive('heading', { level: 3 }) ? 'heading-3'
+                    : 'paragraph';
+        }
+
         async function persistInlineImages() {
             if (!imageUploadUrl) {
                 return;
@@ -315,14 +346,24 @@ export function initializeMaterialEditors() {
                 const command = button.dataset.materialCommand;
                 const chain = editor.chain().focus();
 
-                if (command === 'paragraph') chain.setParagraph().run();
-                if (command === 'heading') chain.toggleHeading({ level: Number(button.dataset.level) }).run();
                 if (command === 'bold') chain.toggleBold().run();
                 if (command === 'italic') chain.toggleItalic().run();
                 if (command === 'bulletList') chain.toggleBulletList().run();
                 if (command === 'orderedList') chain.toggleOrderedList().run();
             });
         });
+
+        blockStyle.addEventListener('change', () => {
+            const value = blockStyle.value;
+
+            if (value === 'paragraph') editor.chain().focus().setParagraph().run();
+            if (value === 'heading-2') editor.chain().focus().setHeading({ level: 2 }).run();
+            if (value === 'heading-3') editor.chain().focus().setHeading({ level: 3 }).run();
+        });
+
+        editor.on('selectionUpdate', updateToolbar);
+        editor.on('transaction', updateToolbar);
+        updateToolbar();
 
         container.querySelector('[data-material-add-image]').addEventListener('click', () => imageInput.click());
         imageInput.addEventListener('change', async () => {

@@ -54,15 +54,43 @@
             >
                 <label class="block text-sm font-semibold text-slate-800">Materi singkat <span class="font-normal text-slate-500">(Opsional)</span></label>
                 <div class="overflow-hidden rounded-xl border border-slate-300 bg-white focus-within:border-maroon-600 focus-within:ring-2 focus-within:ring-maroon-100">
-                    <div class="flex flex-wrap gap-2 border-b border-slate-200 bg-slate-50 p-3" role="toolbar" aria-label="Format materi singkat">
-                        <button type="button" data-material-command="paragraph" class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold hover:bg-maroon-50">Paragraf</button>
-                        <button type="button" data-material-command="heading" data-level="2" class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold hover:bg-maroon-50">Judul</button>
-                        <button type="button" data-material-command="bold" class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold hover:bg-maroon-50">B</button>
-                        <button type="button" data-material-command="italic" class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs italic hover:bg-maroon-50">I</button>
-                        <button type="button" data-material-command="bulletList" class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold hover:bg-maroon-50">Daftar poin</button>
-                        <button type="button" data-material-command="orderedList" class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold hover:bg-maroon-50">Daftar angka</button>
-                        <button type="button" data-material-add-image class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold hover:bg-maroon-50">Tambah gambar</button>
-                        <button type="button" data-material-import-trigger class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold hover:bg-maroon-50">Impor DOCX/PDF</button>
+                    {{-- FR-A16, AC-45, AC-46 --}}
+                    <div data-material-toolbar class="flex flex-wrap items-center gap-2 border-b border-slate-200 bg-slate-50 p-3" role="toolbar" aria-label="Format materi singkat">
+                        <div class="material-toolbar-group" role="group" aria-label="Gaya teks">
+                            <select data-material-block-style aria-label="Gaya teks" class="material-toolbar-select">
+                                <option value="paragraph">Paragraf</option>
+                                <option value="heading-2">Judul</option>
+                                <option value="heading-3">Subjudul</option>
+                            </select>
+                        </div>
+                        <div class="material-toolbar-group" role="group" aria-label="Format teks">
+                            <button type="button" data-material-command="bold" aria-label="Tebal" title="Tebal" aria-pressed="false" class="material-toolbar-button">
+                                <i data-lucide="bold" class="h-4 w-4" aria-hidden="true"></i>
+                            </button>
+                            <button type="button" data-material-command="italic" aria-label="Miring" title="Miring" aria-pressed="false" class="material-toolbar-button">
+                                <i data-lucide="italic" class="h-4 w-4" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <div class="material-toolbar-group" role="group" aria-label="Daftar">
+                            <button type="button" data-material-command="bulletList" aria-label="Daftar poin" title="Daftar poin" aria-pressed="false" class="material-toolbar-button">
+                                <i data-lucide="list" class="h-4 w-4" aria-hidden="true"></i>
+                            </button>
+                            <button type="button" data-material-command="orderedList" aria-label="Daftar angka" title="Daftar angka" aria-pressed="false" class="material-toolbar-button">
+                                <i data-lucide="list-ordered" class="h-4 w-4" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <div class="material-toolbar-group" role="group" aria-label="Sisipkan materi">
+                            <button type="button" data-material-add-image aria-label="Tambah gambar" title="Tambah gambar" class="material-toolbar-button gap-2 px-3">
+                                <i data-lucide="image-plus" class="h-4 w-4" aria-hidden="true"></i>
+                                <span class="text-xs font-semibold">Gambar</span>
+                            </button>
+                        </div>
+                        <div class="material-toolbar-group" role="group" aria-label="Impor materi">
+                            <button type="button" data-material-import-trigger aria-label="Impor DOCX atau PDF" title="Impor DOCX atau PDF" class="material-toolbar-button gap-2 px-3">
+                                <i data-lucide="file-up" class="h-4 w-4" aria-hidden="true"></i>
+                                <span class="text-xs font-semibold">Impor DOCX/PDF</span>
+                            </button>
+                        </div>
                     </div>
                     <div data-material-content class="material-editor-content min-h-48 px-4 py-3 text-sm leading-7 outline-none" aria-label="Isi materi singkat" role="textbox" aria-multiline="true"></div>
                 </div>

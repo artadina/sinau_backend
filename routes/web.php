@@ -3,8 +3,10 @@
 use App\Enums\Role;
 use App\Http\Controllers\Web\Admin\AdminPanelController;
 use App\Http\Controllers\Web\Admin\ModuleController;
+use App\Http\Controllers\Web\Admin\TestQuestionController;
 use App\Http\Controllers\Web\Admin\UnitController;
 use App\Http\Controllers\Web\Admin\UnitMaterialImageController;
+use App\Http\Controllers\Web\Admin\UnitQuizController;
 use App\Http\Controllers\Web\Auth\AdminAuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -46,6 +48,35 @@ Route::prefix('admin')
         Route::put('/modules/{module}', [ModuleController::class, 'update'])->name('modules.update');
         Route::delete('/modules/{module}', [ModuleController::class, 'destroy'])->name('modules.destroy');
         Route::put('/modules/{module}/status', [ModuleController::class, 'updateStatus'])->name('modules.status');
+        Route::put('/modules/{module}/question-settings', [TestQuestionController::class, 'updateSettings'])
+            ->name('modules.questions.settings');
+        Route::get('/modules/{module}/questions/{type}', [TestQuestionController::class, 'index'])
+            ->whereIn('type', ['pre', 'post'])
+            ->name('modules.questions.index');
+        Route::get('/modules/{module}/questions/{type}/import', [TestQuestionController::class, 'import'])
+            ->whereIn('type', ['pre', 'post'])
+            ->name('modules.questions.import');
+        Route::get('/modules/{module}/questions/{type}/create', [TestQuestionController::class, 'create'])
+            ->whereIn('type', ['pre', 'post'])
+            ->name('modules.questions.create');
+        Route::post('/modules/{module}/questions/{type}/bulk', [TestQuestionController::class, 'storeBulk'])
+            ->whereIn('type', ['pre', 'post'])
+            ->name('modules.questions.bulk');
+        Route::post('/modules/{module}/questions/{type}', [TestQuestionController::class, 'store'])
+            ->whereIn('type', ['pre', 'post'])
+            ->name('modules.questions.store');
+        Route::get('/modules/{module}/questions/{type}/{question}/edit', [TestQuestionController::class, 'edit'])
+            ->whereIn('type', ['pre', 'post'])
+            ->scopeBindings()
+            ->name('modules.questions.edit');
+        Route::put('/modules/{module}/questions/{type}/{question}', [TestQuestionController::class, 'update'])
+            ->whereIn('type', ['pre', 'post'])
+            ->scopeBindings()
+            ->name('modules.questions.update');
+        Route::delete('/modules/{module}/questions/{type}/{question}', [TestQuestionController::class, 'destroy'])
+            ->whereIn('type', ['pre', 'post'])
+            ->scopeBindings()
+            ->name('modules.questions.destroy');
 
         Route::get('/modules/{module}/units', [UnitController::class, 'index'])->name('modules.units.index');
         Route::get('/modules/{module}/units/create', [UnitController::class, 'create'])->name('modules.units.create');
@@ -59,6 +90,18 @@ Route::prefix('admin')
         Route::delete('/modules/{module}/units/{unit}', [UnitController::class, 'destroy'])
             ->scopeBindings()
             ->name('modules.units.destroy');
+        Route::get('/units/{unit}/quizzes', [UnitQuizController::class, 'index'])->name('units.quizzes.index');
+        Route::get('/units/{unit}/quizzes/create', [UnitQuizController::class, 'create'])->name('units.quizzes.create');
+        Route::post('/units/{unit}/quizzes', [UnitQuizController::class, 'store'])->name('units.quizzes.store');
+        Route::get('/units/{unit}/quizzes/{quiz}/edit', [UnitQuizController::class, 'edit'])
+            ->scopeBindings()
+            ->name('units.quizzes.edit');
+        Route::put('/units/{unit}/quizzes/{quiz}', [UnitQuizController::class, 'update'])
+            ->scopeBindings()
+            ->name('units.quizzes.update');
+        Route::delete('/units/{unit}/quizzes/{quiz}', [UnitQuizController::class, 'destroy'])
+            ->scopeBindings()
+            ->name('units.quizzes.destroy');
         Route::patch('/modules/{module}/units/{unit}/move/{direction}', [UnitController::class, 'move'])
             ->whereIn('direction', ['up', 'down'])
             ->scopeBindings()

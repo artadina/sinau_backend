@@ -74,3 +74,10 @@ sidebarBackdrop?.addEventListener('click', closeSidebar);
 if (document.querySelector('[data-material-editor]')) {
     import('./material-editor').then(({ initializeMaterialEditors }) => initializeMaterialEditors());
 }
+
+if (document.querySelector('[data-question-bank]') || document.querySelector('[data-question-import-page]')) {
+    import('./question-bank').then(({ initializeQuestionBank, initializeQuestionImportPage }) => {
+        initializeQuestionBank();
+        initializeQuestionImportPage();
+    });
+}

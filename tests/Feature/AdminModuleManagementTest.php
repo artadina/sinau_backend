@@ -351,8 +351,8 @@ class AdminModuleManagementTest extends TestCase
         $this->assertDatabaseHas('test_attempts', ['module_id' => $module->id]);
     }
 
-    // FR-A04: publishing requires one unit in Step 2A; full checks are deferred to Step 2B.
-    public function test_module_publish_requires_at_least_one_unit(): void
+    // FR-A04, FR-A05, FR-A11: publishing requires a unit, valid quizzes, and sufficient test banks.
+    public function test_module_publish_requires_a_unit_quizzes_and_test_banks(): void
     {
         $admin = $this->admin();
         $module = $this->module($admin);
@@ -360,10 +360,10 @@ class AdminModuleManagementTest extends TestCase
         $this->actingAs($admin)
             ->put(route('admin.modules.status', $module), ['status' => 'published'])
             ->assertSessionHasErrors([
-                'status' => 'Modul perlu memiliki minimal satu unit sebelum dapat diterbitkan.',
+                'status' => 'Modul perlu memiliki minimal satu unit sebelum dapat diterbitkan. Jumlah soal Pre-test belum diatur; tentukan minimal 1 soal. Jumlah soal Post-test belum diatur; tentukan minimal 1 soal.',
             ]);
 
-        $module->units()->create([
+        $unit = $module->units()->create([
             'title' => 'Unit pertama',
             'learning_objective' => 'Memahami materi dasar.',
             'video_url' => 'https://example.test/video.mp4',
@@ -371,6 +371,32 @@ class AdminModuleManagementTest extends TestCase
             'reading_content' => '',
             'sequence_order' => 1,
         ]);
+
+        $this->put(route('admin.modules.status', $module), ['status' => 'published'])
+            ->assertSessionHasErrors(['status' => "Unit '{$unit->title}' baru punya 0 soal kuis, perlu 3 sampai 5. Jumlah soal Pre-test belum diatur; tentukan minimal 1 soal. Jumlah soal Post-test belum diatur; tentukan minimal 1 soal."]);
+
+        for ($index = 1; $index <= 3; $index++) {
+            $unit->quizzes()->create([
+                'question_text' => "Soal kuis {$index}",
+                'options' => ['A' => 'Satu', 'B' => 'Dua', 'C' => 'Tiga'],
+                'correct_key' => 'A',
+                'explanation' => 'Pembahasan.',
+            ]);
+        }
+        foreach (['pre', 'post'] as $type) {
+            $module->testQuestions()->create([
+                'type' => $type,
+                'question_text' => "Soal {$type}",
+                'options' => ['A' => 'Satu', 'B' => 'Dua', 'C' => 'Tiga'],
+                'correct_key' => 'A',
+                'explanation' => 'Pembahasan.',
+            ]);
+        }
+        $this->put(route('admin.modules.questions.settings', $module), [
+            'pre_question_count' => 1,
+            'post_question_count' => 1,
+            'shuffle_questions' => 0,
+        ])->assertRedirect();
 
         $this->put(route('admin.modules.status', $module), ['status' => 'published'])
             ->assertRedirect(route('admin.modules.index'));

@@ -17,7 +17,19 @@ class Module extends Model
         'learning_objectives',
         'status',
         'created_by',
+        'pre_question_count',
+        'post_question_count',
+        'shuffle_questions',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'pre_question_count' => 'integer',
+            'post_question_count' => 'integer',
+            'shuffle_questions' => 'boolean',
+        ];
+    }
 
     // AC-14: learner-facing module queries can explicitly select published modules only.
     public function scopePublished(Builder $query): Builder
@@ -29,5 +41,16 @@ class Module extends Model
     public function units(): HasMany
     {
         return $this->hasMany(Unit::class)->orderBy('sequence_order');
+    }
+
+    // FR-A05, AB-12
+    public function testQuestions(): HasMany
+    {
+        return $this->hasMany(TestQuestion::class);
+    }
+
+    public function questions(): HasMany
+    {
+        return $this->testQuestions();
     }
 }

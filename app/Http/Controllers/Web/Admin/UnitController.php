@@ -22,7 +22,7 @@ class UnitController extends Controller
     {
         return view('admin.units.index', [
             'module' => $module,
-            'units' => $module->units()->get(),
+            'units' => $module->units()->withCount('quizzes')->get(),
         ]);
     }
 

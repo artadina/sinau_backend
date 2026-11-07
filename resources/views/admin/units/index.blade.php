@@ -42,6 +42,7 @@
                                     <td class="px-5 py-4 text-slate-700">{{ $unit->duration_label ?? 'Tidak dicantumkan' }}</td>
                                     <td class="px-5 py-4">
                                         <div class="flex flex-wrap justify-end gap-2">
+                                            <a href="{{ route('admin.units.quizzes.index', $unit) }}" class="rounded-lg border border-maroon-200 px-3 py-1.5 text-xs font-semibold text-maroon-800 hover:bg-maroon-50">Kuis ({{ $unit->quizzes_count }})</a>
                                             <form method="POST" action="{{ route('admin.modules.units.move', [$module, $unit, 'up']) }}">
                                                 @csrf
                                                 @method('PATCH')

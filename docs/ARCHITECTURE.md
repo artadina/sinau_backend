@@ -95,7 +95,7 @@ Prefix `/admin`, middleware `auth` + `role:admin` + pemeriksaan password sementa
 | POST | `/admin/modules` | Simpan modul baru | FR-A02 |
 | GET | `/admin/modules/{module}/edit` | Form edit modul | FR-A02 |
 | PUT, DELETE | `/admin/modules/{module}` | Ubah/hapus modul; hapus ditolak bila ada riwayat tes (EC-22) | FR-A02 |
-| PUT | `/admin/modules/{module}/status` | Terbit/draft; Langkah 2A memeriksa minimal satu unit | FR-A04 |
+| PUT | `/admin/modules/{module}/status` | Terbit/draft; penerbitan memvalidasi unit, kuis unit, serta bank Pre/Post | FR-A04, A05, A11 |
 | GET | `/admin/modules/{module}/units` | Daftar unit | FR-A03 |
 | GET | `/admin/modules/{module}/units/create` | Form unit baru | FR-A03 |
 | POST | `/admin/modules/{module}/units` | Simpan unit | FR-A03 |
@@ -108,10 +108,13 @@ Prefix `/admin`, middleware `auth` + `role:admin` + pemeriksaan password sementa
 | POST | `/admin/units/{unit}/material/images` | Unggah gambar materi dengan batas tipe, ukuran, dan jumlah | FR-A16 |
 | GET | `/admin/units/{unit}/material/images/{image}` | Sajikan gambar materi untuk Admin/pratinjau | FR-A16 |
 | GET | `/api/units/{unit}/material/images/{image}` | Sajikan gambar materi hanya jika modul berstatus terbit | FR-A16, FR-L11 |
-| GET, POST | `/admin/modules/{module}/questions` | Daftar/tambah bank soal pre/post | FR-A05 |
-| PUT, DELETE | `/admin/questions/{question}` | Ubah/hapus bank soal | FR-A05 |
+| GET, POST | `/admin/modules/{module}/questions/{type}` | Daftar/tambah bank soal pada tab `pre` atau `post` | FR-A05 |
+| POST | `/admin/modules/{module}/questions/{type}/bulk` | Validasi dan simpan beberapa soal dalam satu transaksi; tipe mengikuti tab | FR-A05, AC-48 |
+| GET | `/admin/modules/{module}/questions/{type}/import` | Halaman pratinjau CSV terpisah; data CSV sementara disimpan di browser sebelum batch dikirim | FR-A05, AC-48 |
+| GET, PUT, DELETE | `/admin/modules/{module}/questions/{type}/{question}` | Form ubah serta ubah/hapus soal yang terikat pada modul dan jenis tes | FR-A05 |
+| PUT | `/admin/modules/{module}/question-settings` | Simpan jumlah soal Pre/Post dan opsi acak | FR-A05, AC-23 |
 | GET, POST | `/admin/units/{unit}/quizzes` | Daftar/tambah kuis unit | FR-A11 |
-| PUT, DELETE | `/admin/unit-quizzes/{question}` | Ubah/hapus soal kuis unit | FR-A11 |
+| GET, PUT, DELETE | `/admin/units/{unit}/quizzes/{quiz}` | Form ubah serta ubah/hapus soal kuis yang terikat pada unit | FR-A11 |
 | GET | `/admin/learners` | Daftar, cari, dan filter Learner; hanya baca | FR-A06 |
 | GET | `/admin/results` | Rekap skor dan progres, dengan filter modul/periode | FR-A08 |
 | GET | `/admin/results/export` | Ekspor rekap ke CSV | FR-A09 |
@@ -124,6 +127,8 @@ Prefix `/admin`, middleware `auth` + `role:admin` + pemeriksaan password sementa
 Materi singkat menggunakan `units.reading_content` sebagai HTML terbatas yang disanitasi server. Editor mengizinkan paragraf, judul, bold, miring, daftar, dan gambar JPG/JPEG/PNG maksimal 5 MB per gambar serta 10 gambar per unit. Gambar disimpan secara privat dengan nama acak dan disajikan melalui route terkontrol; semua Admin dapat melihatnya melalui panel, sedangkan Learner hanya dapat melihat gambar dari modul terbit. Hapus aset unit yang tidak lagi dipakai hanya setelah penyimpanan berhasil. Impor DOCX dan ekstraksi teks PDF digital maksimal 10 MB per berkas serta 50 halaman PDF dilakukan di browser; berkas sumber tidak diunggah. DOC lama dan PDF scan/tanpa teks belum didukung dan ditolak dengan pesan bahasa Indonesia; OCR tidak dilakukan. Hasil impor masuk ke editor untuk ditinjau/diedit, sedangkan kegagalan ekstraksi menampilkan pesan ramah tanpa mengganti konten tersimpan. Semua komponen harus sesuai NFR-17 dan NFR-18 serta tidak memerlukan layanan berbayar.
 
 URL video YouTube divalidasi pada Form Request dan dipetakan ke `youtube-nocookie.com/embed/{id}` menggunakan ID yang lolos allowlist format; jangan menaruh URL input langsung pada `iframe src`. Video langsung tetap memakai elemen `<video>`. Video YouTube harus publik dan mengizinkan embed untuk dapat diputar.
+
+Bank soal menyimpan pilihan sebagai objek JSON berlabel `A`–`D`; minimal tiga pilihan harus tersedia dan `correct_key` harus menunjuk salah satunya. Admin dapat mengisi beberapa soal sekaligus atau mengimpor CSV di browser menggunakan kolom `question_text, option_a, option_b, option_c, option_d, correct_key, explanation`; baris impor ditampilkan dan dapat diedit sebelum dikirim. Server memvalidasi dan menyimpan seluruh batch dalam satu transaksi, dengan tipe soal diambil dari tab aktif. Jumlah Pre-test dan Post-test disimpan pada modul, tidak boleh melebihi bank soal masing-masing. Saat modul diterbitkan, setiap unit wajib memiliki 3–5 soal kuis serta bank Pre/Post harus mencukupi konfigurasi. Karena unit tidak memiliki status, jumlah kuis divalidasi pada penerbitan modul; penghapusan dari modul terbit ditolak bila menurunkan jumlah unit di bawah tiga. Seluruh pemeriksaan dijalankan pada server.
 
 ### 3.3 Route Superadmin
 

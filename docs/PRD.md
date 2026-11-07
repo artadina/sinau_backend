@@ -256,7 +256,7 @@ Prioritas: **Must** = wajib, **Should** = penting, **Could** = opsional bila kap
 | FR-A02 | Admin dapat menambah, mengubah, dan menghapus modul (judul, deskripsi, gambar sampul, tujuan belajar), dengan konfirmasi saat menghapus | Must | AB-12; BR-A02 |
 | FR-A03 | Admin dapat menambah, mengubah, dan menghapus unit materi (judul, tujuan belajar satu kalimat, tautan video, durasi, materi singkat) dan melihat pratinjau seperti tampilan Learner | Must | AB-12; BR-A03 |
 | FR-A04 | Admin dapat mengatur urutan unit (drag atau tombol naik dan turun) dan status modul draft atau terbit | Must | AB-08; BR-A02, A03 |
-| FR-A05 | Admin dapat mengelola bank soal pre-test dan post-test per modul (teks soal, 3–4 pilihan, kunci, pembahasan, jenis pre atau post), menentukan jumlah soal yang diambil per tes, dan mengaktifkan acak urutan soal | Must | AB-12; BR-A04 |
+| FR-A05 | Admin dapat mengelola bank soal pre-test dan post-test per modul (teks soal, 3–4 pilihan, kunci, pembahasan, jenis pre atau post), menambah beberapa soal sekaligus atau mengimpor CSV, menentukan jumlah soal yang diambil per tes, dan mengaktifkan acak urutan soal | Must | AB-12; BR-A04 |
 | FR-A06 | Admin dapat melihat daftar Learner (nama, email, nama usaha, tanggal daftar) dengan pencarian dan filter; Admin hanya melihat | Must | AB-13; BR-A06 |
 | FR-A08 | Admin dapat melihat rekap skor dan progres seluruh Learner dalam tabel (pengguna, modul, skor pre, skor post, selisih, unit selesai) dengan filter modul atau periode | Must | AB-09; BR-A07 |
 | FR-A09 | Admin dapat mengekspor rekap skor dan progres ke CSV untuk analisis hasil uji | Must | BR-A07 |
@@ -610,6 +610,7 @@ Kasus berikut harus ditangani sistem dan diuji saat uji pengguna. Kasus bertanda
 | AC-45 | Admin menulis materi singkat dengan paragraf, bold, miring, daftar, dan gambar; Learner/pratinjau membuka unit | Format dan gambar tampil sesuai konten yang disimpan, sementara elemen aktif atau atribut berbahaya tidak dijalankan | FR-A16, FR-L11, NFR-18 |
 | AC-46 | Admin mengimpor DOCX atau PDF digital, lalu meninjau dan mengubah hasil | Teks dapat diedit; format dasar dan gambar DOCX didukung sesuai batas; berkas sumber diproses di browser dan tidak disimpan | FR-A16, NFR-17 |
 | AC-47 | Admin memilih DOC lama, PDF scan/tanpa teks, berkas di atas batas ukuran/halaman, atau gambar di atas batas ukuran/jumlah | Format yang belum didukung atau berkas tidak valid ditolak dengan pesan Indonesia; editor tetap dapat digunakan manual dan materi lama tetap utuh | FR-A16, AB-16 |
+| AC-48 | Admin menambah beberapa soal pada satu form atau mengimpor CSV ke bank Pre/Post | Soal CSV tampil sebagai pratinjau yang dapat diedit; jenis mengikuti tab aktif; seluruh batch divalidasi dan disimpan bersama atau tidak ada yang disimpan bila ada kesalahan | FR-A05, AB-12, AC-42 |
 
 ## 13. Asumsi dan Ketergantungan
 
