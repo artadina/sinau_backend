@@ -11,12 +11,14 @@ app/
     Controllers/Web/
       Auth/AdminAuthController.php
       Admin/
+      Superadmin/
     Middleware/
       EnsureRole.php
       RequireAdminPasswordChange.php
     Requests/
       Auth/
       Admin/
+      Superadmin/
   Models/
     User.php
     Module.php
@@ -35,7 +37,9 @@ resources/
   views/
     auth/
     layouts/admin.blade.php
+    layouts/superadmin.blade.php
     admin/
+    superadmin/
 routes/
   web.php
   api.php
@@ -45,21 +49,21 @@ database/
 tests/Feature/
 ```
 
-Tabel `test_attempt_answers`, `learner_unit_progress`, `unit_quiz_attempts`, dan `user_badges` sudah ada pada skema, tetapi belum memiliki model Eloquent khusus di `app/Models`; kode terkait yang ada memakai Query Builder. Tidak ada controller, Form Request, view, atau service Superadmin untuk pengelolaan akun.
+Tabel `test_attempt_answers`, `learner_unit_progress`, `unit_quiz_attempts`, dan `user_badges` sudah ada pada skema, tetapi belum memiliki model Eloquent khusus di `app/Models`; kode terkait yang ada memakai Query Builder. Pengelolaan akun Superadmin memakai controller, Form Request, route binding role, dan view terpisah.
 
 ## 2. Kondisi Fitur
 
 | Area | Kondisi implementasi saat ini |
 |---|---|
 | Autentikasi web Admin | Login, logout, lupa/reset password melalui email, session, serta ganti password sementara tersedia. Pengiriman email mengikuti konfigurasi Laravel; untuk pengembangan gunakan `MAIL_MAILER=log`. Reset password dibatasi pada akun Admin. |
-| Akses role | Role backend `learner`, `admin`, `superadmin`. Route Admin menolak Superadmin dan Learner; route placeholder `/superadmin` hanya dapat diakses Superadmin. |
+| Akses role | Role backend `learner`, `admin`, `superadmin`. Route Admin menolak Superadmin dan Learner; grup akun `/superadmin` hanya dapat diakses Superadmin. |
 | Dashboard Admin | Ringkasan Learner, modul, tes selesai, skor, dan pintasan tersedia. |
 | Modul | CRUD, sampul, status draft/terbit; validasi penerbitan berjalan di server. Penghapusan ditolak jika modul punya riwayat tes atau kuis unit. |
 | Unit dan kuis | CRUD unit, urutan naik/turun, pratinjau, bank soal kuis unit, dan penjagaan riwayat kuis tersedia. Editor materi, impor DOCX/PDF, serta gambar privat tersedia. |
 | Bank soal tes | Bank soal Pre/Post, pengaturan jumlah soal, input beberapa soal, pratinjau/impor CSV, validasi batch, dan penyimpanan transaksional tersedia. |
 | Forum dan laporan | Admin dapat membaca topik/balasan, membalas, menghapus posting, menyelesaikan laporan, dan menghapus topik beserta balasan sambil menutup laporan terkait dalam satu transaksi. |
 | Learner dan rekap | Daftar Learner hanya-baca, rekap hasil, filter, dan ekspor CSV tersedia. Superadmin tidak memperoleh akses ke data skor. |
-| Superadmin | Belum ada fitur pengelolaan akun Admin/Learner atau pengubahan role. Yang tersedia hanya guard role pada `GET /superadmin`; setelah login, Superadmin diarahkan ke halaman placeholder. |
+| Superadmin | Daftar, pencarian, detail, tambah Admin, ubah dan hapus akun Admin/Learner, ubah role lewat endpoint khusus, serta anonimisasi Learner tersedia. Login mengarah ke `/superadmin/admins`; akses dibatasi middleware dan route binding per role. |
 | Learner/mobile | Aplikasi Android, alur belajar, pengambilan tes/kuis, forum Learner, progres, dan lencana belum diimplementasikan. API saat ini hanya `GET /api/user` (Sanctum) dan endpoint gambar materi yang dibatasi role Learner. |
 | Status aktif unit | Kolom `units.is_active` tersedia dan rekap menghitung unit aktif. Belum ada aksi UI/route Admin untuk menonaktifkan unit; daftar unit Admin tetap menampilkan semuanya. Alur Learner yang seharusnya menyembunyikan unit nonaktif belum tersedia. |
 
@@ -71,7 +75,7 @@ Kebutuhan PRD tetap menjadi target walaupun implementasinya belum ada. Secara kh
 2. `EnsureRole` (alias `role`) memeriksa role dari akun terautentikasi. Akses role yang tidak sesuai menghasilkan HTTP 403; menyembunyikan menu hanya untuk UX.
 3. Grup `/admin` memakai `auth`, `role:admin`, dan `temporary.password`. Learner dan Superadmin ditolak pada seluruh fungsi Admin, termasuk konten, forum, dan rekap.
 4. `RequireAdminPasswordChange` (alias `temporary.password`) mengarahkan Admin dengan `is_temp_password = true` ke form penggantian password. Route form itu sendiri hanya untuk Admin yang sudah login. Perubahan role mandiri bukan fitur yang tersedia.
-5. `GET /superadmin` memakai `auth` dan `role:superadmin`, tetapi tidak mempunyai fitur selain halaman placeholder. Tidak ada route pengelolaan akun atau konten untuk Superadmin.
+5. Grup `/superadmin` memakai `auth` dan `role:superadmin`; akun Admin/Learner dibatasi dengan route binding berdasarkan role. Superadmin tidak mempunyai route konten, forum, atau skor.
 6. API menggunakan `auth:sanctum`. Endpoint gambar materi Learner menambahkan `role:learner`; endpoint Admin untuk gambar memakai grup role Admin. Skor tidak tersedia pada API Learner saat ini.
 
 ## 4. Pemetaan Route Web Saat Ini
@@ -116,7 +120,13 @@ Semua URI berikut memakai prefix `/admin` dan middleware `auth`, `role:admin`, s
 
 | Method | URI | Kondisi |
 |---|---|---|
-| GET | `/superadmin` | Guard role Superadmin dan halaman placeholder; belum ada pengelolaan akun |
+| GET | `/superadmin` | Arahkan ke daftar akun Admin; Superadmin saja |
+| GET, POST | `/superadmin/admins`, `/superadmin/admins/create` | Daftar, pencarian, dan tambah Admin; password sementara hanya ditampilkan satu kali |
+| GET, PUT, DELETE | `/superadmin/admins/{user}` | Detail, ubah, dan soft-delete Admin; binding hanya untuk role Admin |
+| PUT | `/superadmin/admins/{user}/role` | Ubah role Admin menjadi `learner` atau `admin` |
+| GET | `/superadmin/learners` | Daftar, pencarian, dan pagination akun Learner tanpa skor |
+| GET, PUT, DELETE | `/superadmin/learners/{user}` | Detail, ubah, dan soft-delete + anonimisasi Learner; binding hanya untuk role Learner |
+| PUT | `/superadmin/learners/{user}/role` | Ubah role Learner menjadi `learner` atau `admin` |
 | GET | `/api/user` | Mengembalikan pengguna yang terautentikasi dengan Sanctum |
 | GET | `/api/units/{unit}/material/images/{image}` | Learner terautentikasi saja; gambar hanya tersedia jika modul terbit |
 
@@ -140,7 +150,7 @@ API menggunakan token Sanctum, tetapi belum menyediakan fitur belajar. Saat ini 
 |---|---|
 | Sitemap Admin PRD 8.2 | Belum sama persis: dua menu Kelola Unit & Kuis dan Kelola Bank Soal belum menjadi item sidebar sendiri. |
 | Penonaktifan unit | Kolom skema dan penggunaan aktif di rekap tersedia; aksi Admin serta perilaku Learner belum tersedia. |
-| Superadmin | Login/guard placeholder saja; manajemen akun, perubahan role, dan anonimisasi belum tersedia. |
+| Superadmin | Manajemen akun Admin dan Learner tersedia; belum ada fitur di luar cakupan FR-SA01–FR-SA07. |
 | Akun Learner | Daftar Admin hanya-baca tersedia; alur permintaan hapus akun dan anonimisasi belum tersedia. |
 | Produk Learner/mobile | Sebagian besar belum tersedia; lihat cakupan API di atas. |
 

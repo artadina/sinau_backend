@@ -11,7 +11,10 @@ use App\Http\Controllers\Web\Admin\TestQuestionController;
 use App\Http\Controllers\Web\Admin\UnitController;
 use App\Http\Controllers\Web\Admin\UnitMaterialImageController;
 use App\Http\Controllers\Web\Admin\UnitQuizController;
+use App\Http\Controllers\Web\Superadmin\AdminAccountController;
+use App\Http\Controllers\Web\Superadmin\LearnerAccountController;
 use App\Http\Controllers\Web\Auth\AdminAuthController;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login')->name('home');
@@ -33,6 +36,17 @@ Route::middleware(['auth', 'role:'.Role::Admin->value])->group(function () {
 Route::post('/logout', [AdminAuthController::class, 'destroy'])
     ->middleware('auth')
     ->name('logout');
+
+// FR-SA03, FR-SA05: bind only active accounts of the role managed by each route.
+Route::bind('user', function (string $value, \Illuminate\Routing\Route $route): User {
+    $role = match (true) {
+        str_starts_with($route->uri(), 'superadmin/admins/') => Role::Admin,
+        str_starts_with($route->uri(), 'superadmin/learners/') => Role::Learner,
+        default => abort(404),
+    };
+
+    return User::query()->where('role', $role->value)->findOrFail($value);
+});
 
 // FR-S05, AB-13: every Admin page is protected by session auth, role, and temp-password checks.
 Route::prefix('admin')
@@ -133,7 +147,28 @@ Route::prefix('admin')
             ->name('placeholder');
     });
 
-// AC-09 guard only: no Superadmin management feature is part of this phase.
-Route::get('/superadmin', fn () => view('auth.role-placeholder'))
+// FR-SA02–FR-SA07, FR-S05: Superadmin account management only; no content, scores, or forum routes.
+Route::prefix('superadmin')
+    ->name('superadmin.')
     ->middleware(['auth', 'role:'.Role::Superadmin->value])
-    ->name('superadmin.placeholder');
+    ->group(function (): void {
+        Route::redirect('/', '/superadmin/admins')->name('home');
+
+        Route::get('/admins', [AdminAccountController::class, 'index'])->name('admins.index');
+        Route::get('/admins/create', [AdminAccountController::class, 'create'])->name('admins.create');
+        Route::post('/admins', [AdminAccountController::class, 'store'])->name('admins.store');
+        Route::get('/admins/{user}', [AdminAccountController::class, 'show'])->name('admins.show');
+        Route::get('/admins/{user}/edit', [AdminAccountController::class, 'edit'])->name('admins.edit');
+        Route::put('/admins/{user}', [AdminAccountController::class, 'update'])->name('admins.update');
+        Route::put('/admins/{user}/role', [AdminAccountController::class, 'updateRole'])
+            ->name('admins.role');
+        Route::delete('/admins/{user}', [AdminAccountController::class, 'destroy'])->name('admins.destroy');
+
+        Route::get('/learners', [LearnerAccountController::class, 'index'])->name('learners.index');
+        Route::get('/learners/{user}', [LearnerAccountController::class, 'show'])->name('learners.show');
+        Route::get('/learners/{user}/edit', [LearnerAccountController::class, 'edit'])->name('learners.edit');
+        Route::put('/learners/{user}', [LearnerAccountController::class, 'update'])->name('learners.update');
+        Route::put('/learners/{user}/role', [LearnerAccountController::class, 'updateRole'])
+            ->name('learners.role');
+        Route::delete('/learners/{user}', [LearnerAccountController::class, 'destroy'])->name('learners.destroy');
+    });

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Web\Auth;
 
+use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ResetAdminPasswordRequest;
 use App\Http\Requests\Auth\SendAdminPasswordResetLinkRequest;
@@ -38,7 +39,7 @@ class AdminAuthController extends Controller
         $request->session()->regenerate();
         $user = $request->user();
 
-        if (! in_array($user->role, ['admin', 'superadmin'], true)) {
+        if (! in_array($user->role, [Role::Admin->value, Role::Superadmin->value], true)) {
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
@@ -69,7 +70,7 @@ class AdminAuthController extends Controller
     public function sendResetLink(SendAdminPasswordResetLinkRequest $request): RedirectResponse
     {
         $email = $request->validated('email');
-        $isAdmin = User::query()->where('email', $email)->where('role', 'admin')->exists();
+        $isAdmin = User::query()->where('email', $email)->where('role', Role::Admin->value)->exists();
 
         if ($isAdmin) {
             $status = Password::sendResetLink(['email' => $email]);
@@ -99,7 +100,7 @@ class AdminAuthController extends Controller
         $credentials = $request->validated();
         $isAdmin = User::query()
             ->where('email', $credentials['email'])
-            ->where('role', 'admin')
+            ->where('role', Role::Admin->value)
             ->exists();
 
         if (! $isAdmin) {
@@ -142,10 +143,10 @@ class AdminAuthController extends Controller
     private function redirectForRole(string $role): RedirectResponse
     {
         return match ($role) {
-            'admin' => Auth::user()->is_temp_password
+            Role::Admin->value => Auth::user()->is_temp_password
                 ? redirect()->route('password.temporary.edit')
                 : redirect()->route('admin.dashboard'),
-            'superadmin' => redirect()->route('superadmin.placeholder'),
+            Role::Superadmin->value => redirect()->route('superadmin.admins.index'),
             default => abort(403),
         };
     }

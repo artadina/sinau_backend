@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Module extends Model
 {
@@ -52,5 +53,11 @@ class Module extends Model
     public function questions(): HasMany
     {
         return $this->testQuestions();
+    }
+
+    // AB-12, AC-13: retain the creator identity on shared modules after Admin soft deletion.
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by')->withTrashed();
     }
 }

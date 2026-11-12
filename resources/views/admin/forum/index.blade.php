@@ -31,7 +31,7 @@
                         <div class="flex flex-wrap items-start justify-between gap-3">
                             <div class="min-w-0 flex-1">
                                 <h3 class="font-semibold text-slate-900">{{ \Illuminate\Support\Str::limit($topic->content, 120) }}</h3>
-                                <p class="mt-2 text-sm text-slate-600">{{ $topic->author->name }}</p>
+                                <p class="mt-2 text-sm text-slate-600">{{ $topic->author->display_name }}</p>
                                 @if ($topic->unit)
                                     <p class="mt-1 text-xs text-slate-500">Unit terkait: {{ $topic->unit->title }}</p>
                                 @endif

@@ -21,10 +21,12 @@ Kredensial berikut hanya untuk pengembangan lokal:
 |---|---|---|
 | Superadmin | `superadmin@sinau.test` | `Password!123` |
 | Admin | `admin@sinau.test` | `AdminSementara!123` |
+| Admin | `admin2@sinau.test` | `AdminSementara!234` |
 | Learner | `learner1@sinau.test` | `LearnerDemo!123` |
 | Learner | `learner2@sinau.test` | `LearnerDemo!123` |
+| Learner | `learner3@sinau.test` | `LearnerDemo!123` |
 
-Akun Admin demo ditandai sebagai password sementara dan harus mengganti password saat login pertama. Seeder tidak menimpa akun yang sudah ada.
+Akun Admin demo ditandai sebagai password sementara dan harus mengganti password saat login pertama. Seeder tidak menimpa akun yang sudah ada. Superadmin dapat mengelola akun Admin dan Learner melalui panel khusus.
 
 ## Email reset password lokal
 

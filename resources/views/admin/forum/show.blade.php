@@ -10,7 +10,7 @@
             <div class="flex flex-wrap items-start justify-between gap-4">
                 <div>
                     <h2 class="text-lg font-bold text-slate-900">Topik diskusi</h2>
-                    <p class="mt-2 text-sm text-slate-600">{{ $topic->author->name }}</p>
+                    <p class="mt-2 text-sm text-slate-600">{{ $topic->author->display_name }}</p>
                     @if ($topic->unit)
                         <p class="mt-1 text-xs text-slate-500">Unit terkait: {{ $topic->unit->title }}</p>
                     @endif

@@ -30,8 +30,8 @@
                                 'bg-rose-100 text-rose-800' => $report->status === 'pending',
                                 'bg-emerald-100 text-emerald-800' => $report->status === 'resolved',
                             ])>{{ $report->status === 'pending' ? 'Pending' : 'Resolved' }}</span>
-                            <p class="mt-2 text-sm font-semibold text-slate-900">Penulis: {{ $report->post?->author?->name ?? 'Tidak tersedia' }}</p>
-                            <p class="mt-1 text-sm text-slate-600">Pelapor: {{ $report->reporter->name }}</p>
+                            <p class="mt-2 text-sm font-semibold text-slate-900">Penulis: {{ $report->post?->author?->display_name ?? 'Tidak tersedia' }}</p>
+                            <p class="mt-1 text-sm text-slate-600">Pelapor: {{ $report->reporter->display_name }}</p>
                         </div>
                         <time class="text-xs text-slate-400" datetime="{{ $report->created_at->toIso8601String() }}">{{ $report->created_at->format('d/m/Y H:i') }}</time>
                     </div>
@@ -73,7 +73,7 @@
                                 </form>
                             @endif
                         @elseif ($report->handler)
-                            <p class="self-center text-xs text-slate-500">Ditangani oleh {{ $report->handler->name }} pada {{ $report->handled_at?->format('d/m/Y H:i') }}</p>
+                            <p class="self-center text-xs text-slate-500">Ditangani oleh {{ $report->handler->display_name }} pada {{ $report->handled_at?->format('d/m/Y H:i') }}</p>
                         @endif
                     </div>
                 </article>

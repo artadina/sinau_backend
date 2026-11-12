@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
@@ -54,5 +55,17 @@ class User extends Authenticatable
             'is_temp_password' => 'boolean',
             'consent_given' => 'boolean',
         ];
+    }
+
+    // FR-SA03, FR-SA05: keep authored content connected after soft deletion.
+    public function forumPosts(): HasMany
+    {
+        return $this->hasMany(ForumPost::class);
+    }
+
+    // FR-SA05: label soft-deleted authors without exposing their anonymized identity.
+    public function getDisplayNameAttribute(): string
+    {
+        return $this->trashed() ? "{$this->name} (akun dihapus)" : $this->name;
     }
 }

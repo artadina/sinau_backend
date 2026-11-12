@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\Role;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -15,7 +16,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Superadmin Sinau',
                 'password' => 'Password!123',
-                'role' => 'superadmin',
+                'role' => Role::Superadmin->value,
                 'is_temp_password' => false,
                 'consent_given' => false,
             ],
@@ -26,7 +27,18 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Admin Sinau',
                 'password' => 'AdminSementara!123',
-                'role' => 'admin',
+                'role' => Role::Admin->value,
+                'is_temp_password' => true,
+                'consent_given' => false,
+            ],
+        );
+
+        User::firstOrCreate(
+            ['email' => 'admin2@sinau.test'],
+            [
+                'name' => 'Admin Demo 2',
+                'password' => 'AdminSementara!234',
+                'role' => Role::Admin->value,
                 'is_temp_password' => true,
                 'consent_given' => false,
             ],
@@ -35,13 +47,14 @@ class DatabaseSeeder extends Seeder
         foreach ([
             ['email' => 'learner1@sinau.test', 'name' => 'Learner Demo 1'],
             ['email' => 'learner2@sinau.test', 'name' => 'Learner Demo 2'],
+            ['email' => 'learner3@sinau.test', 'name' => 'Learner Demo 3'],
         ] as $learner) {
             User::firstOrCreate(
                 ['email' => $learner['email']],
                 [
                     'name' => $learner['name'],
                     'password' => 'LearnerDemo!123',
-                    'role' => 'learner',
+                    'role' => Role::Learner->value,
                     'is_temp_password' => false,
                     'consent_given' => true,
                 ],

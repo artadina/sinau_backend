@@ -24,9 +24,10 @@ class ForumPost extends Model
     }
 
     // FR-A13, AC-33
+    // FR-SA05: keep anonymized authors available to existing Admin forum views.
     public function author(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'user_id')->withTrashed();
     }
 
     public function module(): BelongsTo

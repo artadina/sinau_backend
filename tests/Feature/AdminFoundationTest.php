@@ -108,6 +108,12 @@ class AdminFoundationTest extends TestCase
         $this->actingAs($admin)
             ->get('/superadmin')
             ->assertForbidden();
+        $this->get(route('superadmin.admins.index'))->assertForbidden();
+
+        $this->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertSee('Menu Admin')
+            ->assertDontSee('Kelola Akun Admin');
     }
 
     // AC-10
@@ -190,6 +196,15 @@ class AdminFoundationTest extends TestCase
             'role' => 'admin',
             'is_temp_password' => true,
         ]);
-        $this->assertDatabaseCount('users', 4);
+        $this->assertDatabaseHas('users', [
+            'email' => 'admin2@sinau.test',
+            'role' => 'admin',
+            'is_temp_password' => true,
+        ]);
+        $this->assertDatabaseHas('users', [
+            'email' => 'learner3@sinau.test',
+            'role' => 'learner',
+        ]);
+        $this->assertDatabaseCount('users', 6);
     }
 }

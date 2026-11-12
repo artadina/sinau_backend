@@ -1,7 +1,7 @@
 {{-- FR-A13, FR-A14, AC-33, AC-36: Blade escapes all user-authored forum content. --}}
 <article class="glass-card rounded-2xl p-5" style="margin-left: {{ min($depth, 4) * 1.25 }}rem">
     <div class="flex flex-wrap items-center gap-2">
-        <span class="font-semibold text-slate-900">{{ $reply->author->name }}</span>
+        <span class="font-semibold text-slate-900">{{ $reply->author->display_name }}</span>
         @if ($reply->author->role === \App\Enums\Role::Admin->value)
             <span class="rounded-full bg-maroon-100 px-2.5 py-1 text-xs font-bold text-maroon-900">Pengajar</span>
         @endif

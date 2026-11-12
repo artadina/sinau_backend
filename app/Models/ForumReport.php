@@ -32,13 +32,15 @@ class ForumReport extends Model
         return $this->belongsTo(ForumPost::class, 'post_id');
     }
 
+    // FR-SA05: reports remain readable when their Learner reporter is anonymized.
     public function reporter(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'reported_by');
+        return $this->belongsTo(User::class, 'reported_by')->withTrashed();
     }
 
+    // FR-SA03: retain the handler label when an Admin account is soft-deleted.
     public function handler(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'handled_by');
+        return $this->belongsTo(User::class, 'handled_by')->withTrashed();
     }
 }
