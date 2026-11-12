@@ -2,7 +2,10 @@
 
 use App\Enums\Role;
 use App\Http\Controllers\Web\Admin\AdminPanelController;
+use App\Http\Controllers\Web\Admin\DashboardController;
+use App\Http\Controllers\Web\Admin\LearnerController;
 use App\Http\Controllers\Web\Admin\ModuleController;
+use App\Http\Controllers\Web\Admin\ResultController;
 use App\Http\Controllers\Web\Admin\TestQuestionController;
 use App\Http\Controllers\Web\Admin\UnitController;
 use App\Http\Controllers\Web\Admin\UnitMaterialImageController;
@@ -36,9 +39,11 @@ Route::prefix('admin')
     ->middleware(['auth', 'role:'.Role::Admin->value, 'temporary.password'])
     ->group(function () {
         Route::redirect('/', '/admin/dashboard')->name('home');
-        Route::get('/dashboard', AdminPanelController::class)
-            ->defaults('page', 'dashboard')
-            ->name('dashboard');
+        Route::get('/dashboard', DashboardController::class)->name('dashboard');
+        // FR-A06, FR-A08, FR-A09
+        Route::get('/learners', [LearnerController::class, 'index'])->name('learners.index');
+        Route::get('/results', [ResultController::class, 'index'])->name('results.index');
+        Route::get('/results/export', [ResultController::class, 'export'])->name('results.export');
         Route::redirect('/units', '/admin/modules')->name('units.home');
 
         Route::get('/modules', [ModuleController::class, 'index'])->name('modules.index');
@@ -115,7 +120,7 @@ Route::prefix('admin')
             ->name('units.material-images.show');
 
         Route::get('/{page}', AdminPanelController::class)
-            ->whereIn('page', ['questions', 'forum', 'learners', 'results'])
+            ->whereIn('page', ['questions', 'forum'])
             ->name('placeholder');
     });
 

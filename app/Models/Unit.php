@@ -18,7 +18,14 @@ class Unit extends Model
         'duration',
         'reading_content',
         'sequence_order',
+        // FR-A08
+        'is_active',
     ];
+
+    protected function casts(): array
+    {
+        return ['is_active' => 'boolean'];
+    }
 
     public function getDurationMinutesAttribute(): ?string
     {

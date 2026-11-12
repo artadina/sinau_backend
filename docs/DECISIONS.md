@@ -202,3 +202,13 @@ erDiagram
         UNIQUE post_id_reported_by
     }
 ```
+
+## 8. Rekap
+
+- Skor pre dan post adalah skor dari pengerjaan tes selesai (`completed_at` terisi) yang paling baru per Learner, modul, dan jenis tes. Urutan ditentukan oleh `completed_at`; bila waktunya sama, ID pengerjaan terbesar dianggap terbaru.
+- Filter periode menerapkan rentang inklusif pada `completed_at` sebelum memilih pengerjaan terbaru. Baris rekap hanya tampil bila pasangan Learner–modul memiliki setidaknya satu pengerjaan tes selesai dalam filter tersebut.
+- Selisih adalah skor post dikurangi skor pre. Skor yang belum tersedia dan selisih yang tidak dapat dihitung ditampilkan sebagai `-`.
+- Unit selesai adalah jumlah progres `is_completed = true` pada unit `is_active = true`, dibagi jumlah seluruh unit aktif modul. Modul tanpa unit aktif memiliki pembilang dan penyebut nol.
+- Rata-rata dashboard memakai skor pre dan post terbaru yang sama dengan rekap, tanpa filter periode, serta hanya memasukkan Learner yang memiliki kedua skor pada modul tersebut. Learner yang dihapus/anonim tidak dimasukkan.
+- CSV mengekspor seluruh baris yang cocok dengan filter, melintasi seluruh halaman. Kolom dan nilai menggunakan susunan dan pemformatan yang sama dengan tabel. Nilai sel yang dimulai `=`, `+`, `-`, atau `@` diawali tanda kutip tunggal dan file memakai UTF-8 BOM.
+- Daftar Learner memakai filter rentang tanggal daftar serta pencarian nama/email; akun soft-delete (`deleted_at` terisi) tidak ditampilkan.
