@@ -29,8 +29,6 @@
                 $adminMenu = [
                     ['Dashboard', 'dashboard', 'layout-dashboard'],
                     ['Kelola Modul', 'modules', 'book-open'],
-                    ['Kelola Unit & Kuis', 'units', 'clipboard-list'],
-                    ['Kelola Bank Soal', 'questions', 'circle-help'],
                     ['Forum & Laporan', 'forum', 'message-square'],
                     ['Daftar Learner', 'learners', 'users'],
                     ['Rekap Hasil', 'results', 'bar-chart-3'],
@@ -44,6 +42,11 @@
                 ]) @if ($title === $label) aria-current="page" @endif>
                     <i data-lucide="{{ $icon }}" class="h-4 w-4 shrink-0"></i>
                     <span>{{ $label }}</span>
+                    @if ($slug === 'forum' && $pendingForumReports > 0)
+                        <span class="ml-auto rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white" aria-label="{{ $pendingForumReports }} laporan menunggu">
+                            {{ $pendingForumReports }}
+                        </span>
+                    @endif
                 </a>
             @endforeach
         </nav>

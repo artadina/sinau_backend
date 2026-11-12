@@ -48,9 +48,10 @@ class DatabaseSeeder extends Seeder
             );
         }
 
-        // FR-A06, FR-A08, FR-A10: local-only sample history for panel review.
+        // FR-A06, FR-A08, FR-A10, FR-A13, FR-A15: local-only panel examples.
         if (app()->environment('local')) {
             $this->call(DemoHistorySeeder::class);
+            $this->call(DemoForumSeeder::class);
         }
     }
 }

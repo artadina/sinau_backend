@@ -183,7 +183,7 @@ class AdminStepThreeTest extends TestCase
         $this->assertSame(16, $page->viewData('rows')->total());
     }
 
-    // FR-A10, AC-40: cards count actual rows, and averages include only learners with both scores.
+    // FR-A10, FR-A03, FR-A05, FR-A11, AC-40: dashboard avoids duplicate content-management sidebar links.
     public function test_dashboard_counts_completed_tests_and_averages_paired_latest_scores(): void
     {
         $admin = $this->admin();
@@ -207,7 +207,9 @@ class AdminStepThreeTest extends TestCase
             ->assertSee('40.00')
             ->assertSee('80.00')
             ->assertSee('Kelola Modul')
-            ->assertSee('Kelola Soal');
+            ->assertSee('Kelola Soal')
+            ->assertDontSee('Kelola Unit & Kuis')
+            ->assertDontSee('Kelola Bank Soal');
     }
 
     // FR-S05, AB-09, AC-10: only Admin can access any Step 3 route.

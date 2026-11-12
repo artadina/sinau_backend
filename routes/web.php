@@ -3,6 +3,7 @@
 use App\Enums\Role;
 use App\Http\Controllers\Web\Admin\AdminPanelController;
 use App\Http\Controllers\Web\Admin\DashboardController;
+use App\Http\Controllers\Web\Admin\ForumController;
 use App\Http\Controllers\Web\Admin\LearnerController;
 use App\Http\Controllers\Web\Admin\ModuleController;
 use App\Http\Controllers\Web\Admin\ResultController;
@@ -44,6 +45,14 @@ Route::prefix('admin')
         Route::get('/learners', [LearnerController::class, 'index'])->name('learners.index');
         Route::get('/results', [ResultController::class, 'index'])->name('results.index');
         Route::get('/results/export', [ResultController::class, 'export'])->name('results.export');
+        // FR-A13, FR-A14, FR-A15: Admin-only forum and moderation routes.
+        Route::get('/forum', [ForumController::class, 'index'])->name('forum.index');
+        Route::get('/forum-reports', [ForumController::class, 'reports'])->name('forum-reports.index');
+        Route::put('/forum-reports/{report}/resolve', [ForumController::class, 'resolve'])
+            ->name('forum-reports.resolve');
+        Route::get('/forum/{post}', [ForumController::class, 'show'])->name('forum.show');
+        Route::post('/forum/{post}/replies', [ForumController::class, 'reply'])->name('forum.replies.store');
+        Route::delete('/forum/{post}', [ForumController::class, 'destroy'])->name('forum.posts.destroy');
         Route::redirect('/units', '/admin/modules')->name('units.home');
 
         Route::get('/modules', [ModuleController::class, 'index'])->name('modules.index');
