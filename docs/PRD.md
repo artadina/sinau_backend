@@ -173,7 +173,7 @@ Aplikasi kasir atau pencatatan transaksi, perekrutan staf pencatat, pendampingan
 **Keputusan tim yang berlaku di seluruh dokumen:**
 
 1. Nama aplikasi Sinau; Pasta Nafisa hanya satu dari banyak UMKM mitra (contoh kasus).
-2. Platform mobile hanya Android; teknologi pengembangan belum ditentukan dan diputuskan saat perancangan arsitektur.
+2. Platform mobile hanya Android. Stack backend/panel web ditetapkan sebagai Laravel 12, MySQL, Blade, Tailwind CSS melalui Vite, session Laravel untuk web, dan Sanctum untuk API; stack aplikasi Android belum dipilih.
 3. Video memakai tautan yang diinput Admin dan diputar langsung dalam aplikasi. Sumber dapat berupa URL YouTube yang valid (ditampilkan dengan YouTube embed) atau URL file video langsung yang kompatibel; video tidak membuka aplikasi atau tab eksternal.
 4. Kuis atau studi kasus 3–5 soal pilihan ganda di setiap unit sebagai latihan dengan rollback ke materi.
 5. Forum per modul; Learner melapor, hanya Admin yang menghapus; notifikasi laporan hanya di panel web.
@@ -432,21 +432,21 @@ Tanda `*` menandai relasi yang disimpulkan dari kolom FK; kardinalitas lainnya t
 
 ### 7.4 Catatan Kesesuaian ERD dengan Kebutuhan
 
-Saat mencocokkan ERD dengan BRD dan FR ditemukan beberapa kesenjangan yang perlu diputuskan sebelum basis data dikunci.
+Catatan berikut berasal dari audit awal terhadap ERD. Keputusan final sudah ditetapkan dan skema diselaraskan melalui migration yang tercatat di repository. Kolom “Rekomendasi” berikut dibaca sebagai keputusan final; status implementasi fitur aplikasi yang terkait dirangkum di [ARCHITECTURE.md](./ARCHITECTURE.md).
 
 | No | Temuan | Dampak | Rekomendasi |
 |---|---|---|---|
-| 1 | `test_questions` tidak memiliki kolom jenis soal | Soal pre dan post tidak dapat dibedakan (FR-A05) | Tambah kolom `type` (pre, post) |
-| 2 | Jawaban per soal tidak tersimpan | Hasil tes (benar dan salah, pembahasan) dan melanjutkan tes (FR-L21, L22) tidak dapat dipenuhi | Tambah tabel `test_attempt_answers` (attempt_id, question_id, selected_key, is_correct); `completed_at` kosong berarti tes masih berjalan |
-| 3 | `users` tidak memiliki nama usaha | FR-L01 dan FR-L05 meminta nama usaha opsional | Tambah kolom `business_name` (nullable) |
-| 4 | `modules` tanpa gambar sampul, tujuan belajar, jumlah soal diambil, dan opsi acak; `units` tanpa tujuan belajar | FR-A02, A03, A05 memintanya | Tambah `cover_image`, `learning_objectives`, `pre_question_count`, `post_question_count`, `shuffle_questions` pada `modules` dan `learning_objective` pada `units` |
-| 5 | Hasil kuis unit tidak disimpan | FR-L30 menyebut hasil tersimpan sebagai progres, ERD hanya menyimpan `is_completed` | Putuskan: (a) hasil tidak disimpan dan FR-L30 disesuaikan, atau (b) tambah tabel `unit_quiz_attempts` |
-| 6 | `users` memakai `deleted_at` (soft delete) | FR-L06 meminta akun dan datanya dihapus; data pribadi tersisa (UU PDP) | Tentukan hapus permanen atau anonimisasi data Learner dan konten forumnya |
-| 7 | `consent_given` hanya boolean | Tidak ada bukti waktu persetujuan | Ganti atau tambah `consent_at` (timestamp) |
-| 8 | `forum_reports` tanpa pencatatan penangani | Tidak ada jejak siapa dan kapan laporan diselesaikan; hapus posting dapat menghapus laporan | Tambah `handled_by` dan `handled_at`; tentukan perlakuan laporan saat posting dihapus; hapus topik ikut menghapus balasannya |
-| 9 | Pemicu pembukaan forum berbeda antar dokumen | ERD menulis "memulai pre-test", flowchart dan BRD menulis setelah selesai | Seragamkan: forum terbuka setelah pre-test selesai |
-| 10 | ENUM role terpotong ("Learner, Admin...") | Role Superadmin harus tercantum | Tetapkan `ENUM(learner, admin, superadmin)` |
-| 11 | Batas 3–5 soal kuis tidak ada di basis data | Aturan dapat dilanggar bila hanya divalidasi di UI | Validasi di sisi server saat unit diterbitkan |
+| 1 | `test_questions` tidak memiliki kolom jenis soal | Soal pre dan post tidak dapat dibedakan (FR-A05) | Tambahkan `type` wajib dengan nilai `pre` atau `post`. |
+| 2 | Jawaban per soal tidak tersimpan | Hasil tes dan melanjutkan tes (FR-L21, L22) tidak dapat dipenuhi | Tambahkan `test_attempt_answers` (attempt_id, question_id, selected_key, is_correct); `completed_at` kosong berarti tes belum selesai. |
+| 3 | `users` tidak memiliki nama usaha | FR-L01 dan FR-L05 meminta nama usaha opsional | Tambahkan `business_name` nullable. |
+| 4 | `modules` tanpa metadata dan `units` tanpa tujuan belajar | FR-A02, A03, A05 memintanya | Tambahkan `cover_image`, `learning_objectives`, `pre_question_count`, `post_question_count`, `shuffle_questions` pada `modules`, serta `learning_objective` pada `units`. |
+| 5 | Hasil kuis unit tidak disimpan | FR-L30 meminta hasil tersimpan sebagai progres | Dipilih opsi **(b)**: tambah `unit_quiz_attempts`; hasilnya tidak masuk skor pre/post. |
+| 6 | `users` memakai `deleted_at` (soft delete) | Data pribadi dan konten forum berpotensi tersisa | Saat akun Learner dihapus, anonimisasi identitas Learner dan konten forumnya; pertahankan catatan belajar yang diperlukan tanpa identitas personal. |
+| 7 | `consent_given` hanya boolean | Tidak ada bukti waktu persetujuan | Tambahkan `consent_at` nullable dan catat waktu persetujuan; pertahankan boolean. |
+| 8 | `forum_reports` tanpa pencatatan penangani | Tidak ada jejak penanganan dan laporan dapat hilang saat posting dihapus | Tambahkan `handled_by`, `handled_at`; simpan laporan dengan `post_id` nullable. Hapus topik beserta balasan dan tutup laporan terkait sebagai `resolved`. |
+| 9 | Pemicu pembukaan forum berbeda antar dokumen | ERD menulis “memulai pre-test”, flowchart dan BRD menulis setelah selesai | Forum terbuka setelah pre-test selesai; memulai tes saja tidak cukup. |
+| 10 | ENUM role terpotong (“Learner, Admin...”) | Role Superadmin harus tercantum | Tetapkan `ENUM(learner, admin, superadmin)`. |
+| 11 | Batas 3–5 soal kuis tidak ada sebagai constraint basis data | Aturan tidak boleh hanya divalidasi di UI | Validasi di server saat modul diterbitkan; tabel `units` memiliki `is_active`, tetapi aksi untuk menonaktifkan unit belum tersedia. |
 
 ## 8. Daftar Halaman (Sitemap)
 
@@ -510,7 +510,7 @@ Kasus berikut harus ditangani sistem dan diuji saat uji pengguna. Kasus bertanda
 | EC-09 | Learner membuka forum sebelum pre-test selesai | Terkunci dengan petunjuk mengerjakan pre-test | FR-L31, AC-32 |
 | EC-10 | Learner mencoba menghapus konten forum | Tidak tersedia; permintaan hapus ditolak | FR-L35, AC-35 |
 | EC-11 | Learner melaporkan posting yang sama dua kali | Laporan kedua ditolak; pelapor diberi tahu laporannya sudah tercatat | Asumsi |
-| EC-12 | Admin menghapus topik yang memiliki balasan dan laporan | Balasan ikut terhapus; perlakuan laporan terkait | Perlu keputusan (7.4 no. 8) |
+| EC-12 | Admin menghapus topik yang memiliki balasan dan laporan | Topik dan seluruh balasannya dihapus; laporan terkait ditutup sebagai `resolved`, penangan/waktu dicatat, dan jejak laporan dipertahankan dengan `post_id = NULL` dalam satu transaksi | FR-A14, FR-A15 |
 | EC-13 | Admin membuka rute Superadmin langsung | Akses ditolak | FR-SA07, AC-09 |
 | EC-14 | Superadmin membuka rute Admin (tambah modul, rekap skor) | Akses ditolak | FR-SA07, AC-10 |
 | EC-15 | Learner membuka URL panel web | Akses ditolak | FR-S02, AC-07 |
@@ -520,7 +520,7 @@ Kasus berikut harus ditangani sistem dan diuji saat uji pengguna. Kasus bertanda
 | EC-19 | Learner mencoba melihat skor Learner lain | Ditolak | FR-S04, AC-31 |
 | EC-20 | Tautan video tidak dapat diputar | Pesan ramah dengan opsi coba lagi; bacaan dan kuis unit tetap dapat dibuka | Asumsi |
 | EC-21 | Admin mengembalikan modul ke draft saat Learner sudah belajar | Modul hilang dari daftar Learner; progres tetap tersimpan | Asumsi, AC-41 |
-| EC-22 | Admin menghapus modul yang sudah memiliki riwayat tes | Tampil peringatan dan konfirmasi; perlakuan riwayat | Perlu keputusan |
+| EC-22 | Admin menghapus modul yang sudah memiliki riwayat tes | Tolak penghapusan dan sarankan mengembalikan modul ke draft agar tidak tampil kepada Learner; kode saat ini juga menolak penghapusan bila ada riwayat kuis unit | FR-A02 |
 | EC-23 | Learner meminta hapus akun | Konfirmasi lalu penghapusan sesuai kebijakan data | FR-L06, AC-43 |
 
 ## 10. Kebutuhan Non-Fungsional
@@ -620,7 +620,7 @@ Kasus berikut harus ditangani sistem dan diuji saat uji pengguna. Kasus bertanda
 - Mitra dan staf bersedia terlibat dalam peninjauan tiap iterasi dan uji pengguna.
 - Video, bacaan, dan soal diproduksi tim; data mitra dipakai atas izin pemilik.
 - Tautan video berupa URL YouTube yang mendukung embed atau URL file video langsung yang dapat diputar di pemutar; video YouTube privat atau yang melarang embedding tidak dijamin dapat diputar.
-- Teknologi pengembangan dan hosting ditentukan pada tahap perancangan arsitektur.
+- Stack backend/panel web ditetapkan: Laravel 12, MySQL, Blade, Tailwind CSS melalui Vite, session Laravel untuk web, dan Sanctum untuk API. Stack Android belum dipilih; layanan hosting/deployment masih perlu ditentukan.
 - Akun Superadmin awal disiapkan tim pengembang.
 
 ### 13.2 Ketergantungan Antar Fitur dan Urutan Pengerjaan
@@ -647,7 +647,7 @@ Urutan berikut menjadi acuan agar pengerjaan oleh tiga orang tidak saling menung
 - Layanan hosting berbiaya rendah untuk backend, basis data, dan panel web.
 - Pustaka pemutar video dan grafik untuk aplikasi Android.
 - Pustaka open-source yang berjalan di browser untuk impor DOCX dan ekstraksi teks PDF digital; impor dibatasi 10 MB per berkas dan 50 halaman PDF. DOC lama dan PDF scan/OCR berada di luar lingkup saat ini.
-- Dokumen BRD dan ERD sebagai rujukan: nama tabel dan kolom pada PRD harus sama dengan ERD setelah catatan 7.4 diputuskan.
+- Dokumen BRD dan ERD sebagai rujukan: nama tabel dan kolom pada PRD harus sama dengan skema final yang dirangkum pada ERD.
 
 ### 13.3 Risiko
 
@@ -740,12 +740,12 @@ Kebutuhan bisnis pada BRD ditelusuri ke kebutuhan fungsional, user story, dan kr
 | 2 | Syarat unit dianggap selesai | Materi dipelajari dan kuis unit dikerjakan, tanpa nilai minimum |
 | 3 | Bentuk soal kuis unit dan studi kasus | Pilihan ganda; studi kasus berupa soal berbasis skenario |
 | 4 | Sumber tautan video dan dukungan pilihan kualitas | URL YouTube dengan embed atau URL file video langsung; video harus dapat diakses dan mengizinkan pemutaran/embed |
-| 5 | Teknologi dan hosting | Ditentukan saat perancangan arsitektur |
+| 5 | Hosting/deployment dan stack Android | Stack backend/panel web sudah ditetapkan di ARCHITECTURE.md; layanan hosting/deployment dan stack Android belum ditetapkan |
 | 6 | Bentuk notifikasi laporan forum | Hanya di panel web Admin, tanpa push atau email |
-| 7 | Perlakuan data dan konten forum saat akun dihapus | Perlu keputusan (7.4 nomor 6 dan 8) |
-| 8 | Penyimpanan hasil kuis unit | Perlu keputusan (7.4 nomor 5) |
-| 9 | Perlakuan riwayat tes saat modul dihapus | Perlu keputusan (EC-22) |
-| 10 | Angka target usulan (waktu muat, waktu mulai belajar, batas karakter forum) | Disepakati bersama dosen pembimbing dan mitra |
+| 7 | Perlakuan data dan konten forum saat akun Learner dihapus | Keputusan: anonimisasi identitas Learner dan konten forum; pertahankan catatan belajar tanpa identitas personal (lihat DECISIONS.md). |
+| 8 | Penyimpanan hasil kuis unit | Diputuskan opsi (b): tabel `unit_quiz_attempts`; tidak menambah skor pre/post (lihat DECISIONS.md). |
+| 9 | Perlakuan riwayat tes saat modul dihapus | Tolak penghapusan modul yang memiliki riwayat tes dan sarankan kembali ke draft; implementasi juga menolak riwayat kuis unit (lihat DECISIONS.md). |
+| 10 | Angka target usulan (waktu muat, waktu mulai belajar, batas karakter forum) | Belum diputuskan; konfirmasi bersama dosen pembimbing dan mitra. |
 
 ## 18. Persetujuan
 

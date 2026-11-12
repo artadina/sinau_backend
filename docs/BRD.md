@@ -43,6 +43,8 @@ Sinau terdiri atas dua bagian:
 
 Pasta Nafisa menjadi contoh kasus mitra, sedangkan Sinau dirancang sebagai platform umum yang dapat dipakai UMKM lain. Dua materi sampel yang disiapkan adalah Supply Chain Management (alur bahan baku hingga pencegahan waste) dan Product Identity (keunggulan dan diferensiasi produk untuk pemasaran).
 
+BRD ini menjelaskan kebutuhan bisnis, bukan status penyelesaian perangkat lunak. Stack backend/panel web telah ditetapkan sebagai Laravel 12, MySQL, Blade, Tailwind CSS melalui Vite, session Laravel untuk web, dan Sanctum untuk API; stack Android serta hosting/deployment belum ditentukan. Fitur yang sudah dan belum tersedia pada kode dirangkum di [ARCHITECTURE.md](./ARCHITECTURE.md).
+
 ## 2. Latar Belakang dan Masalah Bisnis
 
 ### 2.1 Latar Belakang
@@ -106,7 +108,7 @@ Berdasarkan analisis fishbone dan 5 Whys pada proposal, akar masalah utama adala
 - Glosarium istilah.
 - Peringkat antar pengguna dan gamification kompetitif.
 - Modul di luar dua materi sampel (dapat ditambahkan pada periode berikutnya melalui panel Admin).
-- Penentuan teknologi pengembangan: ditetapkan pada tahap perancangan arsitektur.
+- Pemilihan stack aplikasi Android belum diputuskan; stack backend/panel web sudah ditetapkan dan dicatat pada dokumen arsitektur.
 
 ## 5. Stakeholder dan Role Pengguna
 
@@ -293,7 +295,7 @@ Superadmin menggunakan aplikasi web dan halaman login yang sama dengan Admin, te
 - Learner memiliki ponsel Android dan koneksi internet yang cukup untuk memutar video.
 - Mitra dan staf bersedia terlibat dalam peninjauan tiap iterasi dan uji pengguna.
 - Materi video dan bacaan diproduksi oleh tim; data mitra digunakan atas izin pemilik.
-- Teknologi pengembangan dan layanan hosting ditentukan pada tahap perancangan arsitektur.
+- Stack backend/panel web sudah ditetapkan; stack Android dan layanan hosting/deployment masih perlu ditentukan.
 - Pendaftaran Learner terbuka bagi siapa pun yang memiliki aplikasi.
 
 ### 8.2 Batasan
@@ -363,7 +365,7 @@ Timeline mengacu pada proposal dan notulen rapat (identifikasi kebutuhan di Okto
 | 3 | Bentuk soal kuis unit dan studi kasus | Pilihan ganda, dengan studi kasus berupa soal berbasis skenario |
 | 4 | Pengelolaan akun Learner oleh Admin | Admin hanya melihat daftar Learner; edit, hapus, dan ubah role hanya oleh Superadmin |
 | 5 | Sumber tautan video | Mendukung YouTube embed dan URL file video langsung; video harus dapat diakses dan mengizinkan embedding |
-| 6 | Teknologi pengembangan dan hosting | Ditentukan pada tahap perancangan arsitektur |
+| 6 | Stack Android dan layanan hosting/deployment | Stack backend/panel web sudah ditetapkan; stack Android dan hosting/deployment belum diputuskan |
 | 7 | Bentuk notifikasi laporan konten | Muncul di panel web Admin (tanpa push atau email) |
 | 8 | Penanganan laporan | Konten yang dilaporkan tetap tampil sampai Admin menghapusnya; Admin juga dapat menandai laporan selesai tanpa menghapus bila konten dinilai wajar |
 
