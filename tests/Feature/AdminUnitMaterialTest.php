@@ -127,7 +127,11 @@ class AdminUnitMaterialTest extends TestCase
     {
         Storage::fake('local');
         $admin = $this->admin();
-        $unit = $this->unit($admin, ['status' => 'published']);
+        $unit = $this->unit($admin, [
+            'status' => 'published',
+            'active_from' => today()->subDays(1),
+            'active_until' => today()->addDays(30),
+        ]);
         $filename = '123e4567-e89b-12d3-a456-426614174000.png';
         Storage::disk('local')->put("unit-materials/{$unit->id}/{$filename}", base64_decode($this->pngBase64()));
         $unit->update([

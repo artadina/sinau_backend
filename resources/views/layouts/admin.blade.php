@@ -34,6 +34,19 @@
                     ['Rekap Hasil', 'results', 'bar-chart-3'],
                 ];
             @endphp
+            <a href="{{ route('admin.notifications.index') }}" @class([
+                'group mb-2 flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition',
+                'bg-gradient-to-r from-maroon-600 to-maroon-700 text-white shadow-md shadow-black/15' => request()->routeIs('admin.notifications.*'),
+                'text-maroon-100 hover:bg-white/10 hover:text-white' => ! request()->routeIs('admin.notifications.*'),
+            ])>
+                <i data-lucide="bell" class="h-4 w-4 shrink-0"></i>
+                <span>Notifikasi</span>
+                @if (auth()->user()->unreadNotifications()->count() > 0)
+                    <span class="ml-auto rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                        {{ auth()->user()->unreadNotifications()->count() }}
+                    </span>
+                @endif
+            </a>
             @foreach ($adminMenu as [$label, $slug, $icon])
                 <a href="/admin/{{ $slug }}" @class([
                     'group flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition',

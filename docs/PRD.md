@@ -58,7 +58,7 @@ BRD menjelaskan mengapa Sinau dibuat dan kebutuhan bisnisnya (BR-xx). PRD ini me
 
 ## 1. Ringkasan Produk
 
-Sinau adalah platform pembelajaran mandiri (Learning Management System) berbasis mobile untuk pelaku UMKM dan stafnya. Learner belajar lewat video pendek dan materi singkat di aplikasi Android, mengerjakan kuis unit, pre-test, dan post-test, berdiskusi di forum, dan memantau skor serta progresnya. Admin (Pengajar) dan Superadmin memakai panel web: Admin mengelola modul, unit, soal, rekap hasil, dan forum, sedangkan Superadmin khusus mengelola akun Admin dan Learner. Pasta Nafisa menjadi contoh kasus mitra; platform dirancang umum untuk UMKM lain, dengan dua modul sampel: Supply Chain Management dan Product Identity.
+Sinau adalah platform pembelajaran mandiri (Learning Management System) berbasis mobile untuk pelaku UMKM dan stafnya. Learner belajar lewat video pendek dan materi singkat di aplikasi Android, mengerjakan kuis unit, pre-test, dan post-test, berdiskusi di forum, dan memantau skor serta progresnya. Admin (Pengajar) dan Superadmin memakai panel web: Admin mengelola modul miliknya, unit, soal, rekap hasil, dan forum; Superadmin mengelola akun serta melakukan review modul secara baca-saja dan keputusan tata kelola, tanpa akses skor. Pasta Nafisa menjadi contoh kasus mitra; platform dirancang umum untuk UMKM lain, dengan dua modul sampel: Supply Chain Management dan Product Identity.
 
 ### 1.1 Masalah yang Diselesaikan
 
@@ -95,7 +95,7 @@ Skenario masalah di lapangan:
 | Seluruh kebutuhan berprioritas Must pada bagian 5 terpenuhi | 100% |
 | Akses halaman aplikasi atau panel tanpa login (AC-01) | Selalu dialihkan ke halaman login |
 | Learner mengakses rute panel web (AC-07) | Ditolak sistem |
-| Admin mengakses rute Superadmin, atau sebaliknya (AC-09, AC-10) | Ditolak sistem |
+| Setiap role mengakses fungsi di luar wewenangnya (AC-09, AC-10, AC-49) | Ditolak middleware server |
 | Post-test dibuka sebelum semua unit selesai (AC-27) | Terkunci |
 | Unit diterbitkan dengan kuis kurang dari 3 atau lebih dari 5 soal (AC-24) | Ditolak sistem |
 | Learner mengakses skor Learner lain (AC-31) | Ditolak sistem |
@@ -125,21 +125,21 @@ Metrik dampak setelah sistem dipakai:
 - Modul berisi unit; tiap unit berisi video pendek (tautan, diputar di aplikasi), materi singkat, dan kuis atau studi kasus 3–5 soal.
 - Pre-test, post-test, skor otomatis, pembahasan, riwayat skor, grafik pre vs post, progres, dan lencana personal.
 - Forum diskusi per modul, pelaporan konten oleh Learner, dan moderasi oleh Admin (notifikasi di panel web).
-- Pengelolaan konten oleh Admin: modul, unit, bank soal, kuis unit; daftar Learner, rekap skor dan progres, dashboard, ekspor CSV.
-- Pengelolaan akun oleh Superadmin: akun Admin (tambah, edit, lihat, hapus, ubah role) dan akun Learner (edit, lihat, hapus, ubah role).
+- Pengelolaan konten milik Admin: modul, unit, bank soal, kuis unit, pengajuan review dan perpanjangan; daftar Learner, rekap skor dan progres, dashboard, ekspor CSV.
+- Pengelolaan akun dan Content Governance oleh Superadmin: akun Admin/Learner serta review modul baca-saja, keputusan publikasi, revisi, takedown, dan perpanjangan.
 - Migration dan seeder data awal, dua modul sampel, uji pengguna, dokumentasi, dan serah terima.
 
 ### 2.2 Di Luar Lingkup
 
-Aplikasi kasir atau pencatatan transaksi, perekrutan staf pencatat, pendampingan tatap muka, aplikasi iOS, versi web untuk Learner, notifikasi pengingat dan push (notifikasi laporan forum hanya di panel web Admin), akses offline penuh, dasbor analitik lanjutan, glosarium istilah, peringkat antar pengguna dan gamification kompetitif, serta modul di luar dua materi sampel.
+Aplikasi kasir atau pencatatan transaksi, perekrutan staf pencatat, pendampingan tatap muka, aplikasi iOS, versi web untuk Learner, notifikasi push untuk Learner, akses offline penuh, dasbor analitik lanjutan, glosarium istilah, peringkat antar pengguna dan gamification kompetitif. Notifikasi Content Governance dan pengingat masa aktif tampil di panel web.
 
 ## 3. Pengguna dan Peran
 
 | Peran | Platform | Cara Mendapat Akun | Hak Akses Utama |
 |---|---|---|---|
 | Learner | Mobile (Android) | Mendaftar sendiri secara terbuka; role otomatis | Belajar, kuis unit, pre-test, post-test, forum (topik, balasan, laporan), riwayat dan skor milik sendiri, profil sendiri |
-| Admin (Pengajar) | Web | Dibuat Superadmin dengan password sementara | Kelola modul, unit, bank soal, kuis unit; lihat daftar Learner dan rekap; ekspor CSV; balas forum; tangani laporan dan hapus konten forum |
-| Superadmin | Web (login sama, menu terpisah) | Disiapkan tim pengembang | Kelola akun Admin dan Learner saja; tidak menjalankan fungsi Admin dan tidak melihat skor |
+| Admin (Pengajar) | Web | Dibuat Superadmin dengan password sementara | Kelola modul miliknya sesuai status, ajukan review/perpanjangan; lihat daftar Learner dan rekap; ekspor CSV; balas forum; tangani laporan dan hapus konten forum |
+| Superadmin | Web (login sama, menu terpisah) | Disiapkan tim pengembang | Kelola akun Admin dan Learner; melihat daftar/detail modul secara baca-saja, memutuskan review, takedown, dan perpanjangan; tidak mengubah isi modul atau melihat skor |
 
 ### 3.1 Persona
 
@@ -160,12 +160,12 @@ Aplikasi kasir atau pencatatan transaksi, perekrutan staf pencatat, pendampingan
 | AB-05 | Pre-test adalah pengukur awal, bukan penilaian, tanpa batas waktu per soal. Post-test dapat diulang dan setiap pengerjaan tercatat. | BR-L11 |
 | AB-06 | Forum per modul terbuka setelah pre-test modul tersebut selesai dikerjakan. | BR-L14 |
 | AB-07 | Learner dapat membuat topik, membalas, dan melaporkan konten, tetapi tidak dapat menghapus konten apa pun. Admin dapat membalas dan menjadi satu-satunya yang dapat menghapus. Konten yang dilaporkan tetap tampil sampai Admin bertindak. | BR-L14, A09, A10 |
-| AB-08 | Modul berstatus draft tidak terlihat oleh Learner. | BR-A02 |
+| AB-08 | Learner hanya dapat melihat modul berstatus published yang berada dalam periode aktifnya; modul draft, menunggu review, disetujui-terjadwal, direvisi, ditakedown, atau kedaluwarsa tidak terlihat. | BR-A02 |
 | AB-09 | Skor hanya dapat dilihat pemiliknya dan Admin. Superadmin tidak melihat skor maupun rekap. | BR-Y04 |
 | AB-10 | Tidak ada peringkat antar pengguna. Lencana bersifat personal dan diberikan setelah semua unit dan post-test modul selesai. | BR-L16 |
 | AB-11 | Data belajar baru dicatat setelah Learner menyetujui consent. Learner dapat meminta penghapusan akun dan datanya. | BR-L02, L04 |
-| AB-12 | Modul, bank soal, dan kuis unit milik bersama: semua Admin dapat melihat dan mengubahnya. Menghapus akun Admin tidak menghapus konten. | BR-A02 – A05 |
-| AB-13 | Superadmin hanya mengelola akun Admin dan Learner dan tidak menjalankan fungsi Admin; Admin hanya melihat daftar Learner. | BR-S05, A06 |
+| AB-12 | Modul, bank soal, dan kuis unit dikelola oleh Admin pembuat sesuai status workflow; menghapus akun Admin tidak menghapus kontennya. | BR-A02 – A05 |
+| AB-13 | Superadmin mengelola akun dan tata kelola publikasi: dapat melihat modul secara baca-saja serta menyetujui, meminta revisi, menurunkan, dan memutuskan perpanjangan; tidak mengubah isi modul, mengakses forum, test attempts, skor, atau rekap. Admin hanya melihat daftar Learner dan tidak memiliki keputusan tata kelola. | BR-S05, A06 |
 | AB-14 | Admin yang login dengan password sementara wajib membuat password baru sebelum memakai panel. | BR-A01, Y05 |
 | AB-15 | Satu email hanya untuk satu akun. | BR-L01 |
 | AB-16 | Field wajib divalidasi; pesan error berbahasa Indonesia, ramah, dan tampil di dekat field yang bermasalah. | BR-L01 |
@@ -177,7 +177,7 @@ Aplikasi kasir atau pencatatan transaksi, perekrutan staf pencatat, pendampingan
 3. Video memakai tautan yang diinput Admin dan diputar langsung dalam aplikasi. Sumber dapat berupa URL YouTube yang valid (ditampilkan dengan YouTube embed) atau URL file video langsung yang kompatibel; video tidak membuka aplikasi atau tab eksternal.
 4. Kuis atau studi kasus 3–5 soal pilihan ganda di setiap unit sebagai latihan dengan rollback ke materi.
 5. Forum per modul; Learner melapor, hanya Admin yang menghapus; notifikasi laporan hanya di panel web.
-6. Superadmin hanya mengelola akun; modul dan bank soal milik bersama; Superadmin tidak melihat skor.
+6. Hak tata kelola konten dipisahkan: Admin hanya mengelola modul miliknya, sedangkan Superadmin mendapat pratinjau baca-saja dan kewenangan keputusan workflow. Superadmin tidak mengakses skor atau test attempts.
 7. Lencana personal wajib (Must); glosarium dihapus dari lingkup.
 8. Jumlah pengguna sasaran tidak dicantumkan dalam dokumen.
 
@@ -201,7 +201,7 @@ Prioritas: **Must** = wajib, **Should** = penting, **Could** = opsional bila kap
 
 | ID | Kebutuhan | Prioritas | Aturan / Ref. |
 |---|---|---|---|
-| FR-L08 | Pengguna dapat melihat daftar modul: gambar sampul, judul, deskripsi satu kalimat, jumlah unit, estimasi total durasi, dan bar progres; hanya modul berstatus terbit yang tampil | Must | AB-08; BR-L06 |
+| FR-L08 | Pengguna dapat melihat daftar modul: gambar sampul, judul, deskripsi satu kalimat, jumlah unit, estimasi total durasi, dan bar progres; hanya modul berstatus published dalam periode aktif yang tampil | Must | AB-08; BR-L06 |
 | FR-L09 | Pengguna dapat melihat detail modul: tujuan belajar, daftar unit berurutan dengan status (belum, sedang, selesai), serta status pre-test dan post-test | Must | AB-03; BR-L06 |
 | FR-L10 | Pengguna dapat memutar video unit, menjeda, menggeser durasi, dan melanjutkan dari posisi terakhir; judul dan durasi unit tampil sebelum menonton | Must | BR-L07 |
 | FR-L11 | Pengguna dapat membaca materi singkat per unit, di bawah video atau pada tab terpisah; format teks dasar dan gambar yang diizinkan ditampilkan dengan aman | Must | BR-L08 |
@@ -253,17 +253,18 @@ Prioritas: **Must** = wajib, **Should** = penting, **Could** = opsional bila kap
 | ID | Kebutuhan | Prioritas | Aturan / Ref. |
 |---|---|---|---|
 | FR-A01 | Admin dapat login ke panel web dengan akun dari Superadmin (tidak bisa didaftarkan dari aplikasi), lupa password lewat email, dan logout | Must | AB-01, AB-02; BR-A01 |
-| FR-A02 | Admin dapat menambah, mengubah, dan menghapus modul (judul, deskripsi, gambar sampul, tujuan belajar), dengan konfirmasi saat menghapus | Must | AB-12; BR-A02 |
-| FR-A03 | Admin dapat menambah, mengubah, dan menghapus unit materi (judul, tujuan belajar satu kalimat, tautan video, durasi, materi singkat) dan melihat pratinjau seperti tampilan Learner | Must | AB-12; BR-A03 |
-| FR-A04 | Admin dapat mengatur urutan unit (drag atau tombol naik dan turun) dan status modul draft atau terbit | Must | AB-08; BR-A02, A03 |
-| FR-A05 | Admin dapat mengelola bank soal pre-test dan post-test per modul (teks soal, 3–4 pilihan, kunci, pembahasan, jenis pre atau post), menambah beberapa soal sekaligus atau mengimpor CSV, menentukan jumlah soal yang diambil per tes, dan mengaktifkan acak urutan soal | Must | AB-12; BR-A04 |
+| FR-A02 | Admin dapat membuat dan menghapus modul miliknya serta mengubah metadata sesuai status workflow; perubahan isi signifikan pada versi terbit dilakukan pada salinan versi baru | Must | AB-12; BR-A02 |
+| FR-A03 | Admin dapat menambah, mengubah, dan menghapus unit materi pada modul miliknya yang dapat diedit, serta melihat pratinjau seperti tampilan Learner | Must | AB-12; BR-A03 |
+| FR-A04 | Admin dapat mengatur urutan unit pada modul yang dapat diedit dan mengajukan modul untuk review; Admin tidak dapat menerbitkan atau menurunkan modul secara langsung | Must | AB-08, AB-12; BR-A02, A03 |
+| FR-A05 | Admin dapat mengelola bank soal pre-test dan post-test pada modul miliknya yang dapat diedit (teks soal, 3–4 pilihan, kunci, pembahasan, jenis pre atau post), menambah beberapa soal sekaligus atau mengimpor CSV, menentukan jumlah soal yang diambil per tes, dan mengaktifkan acak urutan soal | Must | AB-12; BR-A04 |
 | FR-A06 | Admin dapat melihat daftar Learner (nama, email, nama usaha, tanggal daftar) dengan pencarian dan filter; Admin hanya melihat | Must | AB-13; BR-A06 |
 | FR-A08 | Admin dapat melihat rekap skor dan progres seluruh Learner dalam tabel (pengguna, modul, skor pre, skor post, selisih, unit selesai) dengan filter modul atau periode | Must | AB-09; BR-A07 |
 | FR-A09 | Admin dapat mengekspor rekap skor dan progres ke CSV untuk analisis hasil uji | Must | BR-A07 |
 | FR-A10 | Admin melihat dashboard ringkas: jumlah pengguna, jumlah modul, jumlah tes selesai, rata-rata skor pre vs post per modul, dan pintasan ke Kelola Modul dan Kelola Soal | Should | BR-A08 |
-| FR-A11 | Admin dapat menambah, mengubah, dan menghapus soal kuis atau studi kasus per unit (teks soal atau kasus, pilihan, kunci, pembahasan); sistem menolak penerbitan unit bila jumlah soal kurang dari 3 atau lebih dari 5 | Must | AB-04; BR-A05 |
+| FR-A11 | Admin dapat mengelola soal kuis atau studi kasus per unit pada modul miliknya yang dapat diedit; Quality Gate menolak pengajuan bila unit memiliki kurang dari 3 atau lebih dari 5 soal | Must | AB-04, AB-12; BR-A05 |
 | FR-A12 | Admin yang login dengan password sementara diwajibkan membuat password baru sebelum dapat memakai panel | Must | AB-14; BR-A01 |
 | FR-A16 | Admin dapat menyusun materi singkat dengan editor teks kaya untuk paragraf, judul, bold, miring, daftar, dan gambar; mengimpor DOCX atau PDF berbasis teks menjadi konten yang dapat diedit; serta meninjau dan mengubah hasil sebelum disimpan. DOC lama dan PDF hasil scan belum didukung. | Must | AB-12; BR-A03 |
+| FR-A17 | Admin dapat mengajukan modul miliknya untuk review setelah seluruh Quality Gate otomatis lulus dan menyatakan hak penggunaan konten; konten terkunci selama menunggu keputusan. Setelah catatan revisi, Admin dapat mengubah dan mengajukan ulang modul; Admin dapat mengajukan perpanjangan, tetapi tidak dapat menyetujui, meminta revisi, menolak, atau melakukan takedown. | Must | AB-12, AB-13; BR-A11 |
 | FR-A07 | ~~(nonaktifkan atau hapus akun pengguna)~~ dipindahkan menjadi wewenang Superadmin pada FR-SA05 | — | — |
 
 ### 5.7 Panel Web Superadmin
@@ -276,7 +277,8 @@ Prioritas: **Must** = wajib, **Should** = penting, **Could** = opsional bila kap
 | FR-SA04 | Superadmin dapat mengubah role akun Admin | Must | BR-S03 |
 | FR-SA05 | Superadmin dapat melihat daftar dan detail, mengedit, serta menghapus akun Learner | Must | AB-13; BR-S04 |
 | FR-SA06 | Superadmin dapat mengubah role akun Learner | Must | BR-S04 |
-| FR-SA07 | Menu Superadmin tidak dirender untuk Admin dan menu Admin tidak dirender untuk Superadmin; middleware backend menolak setiap permintaan ke rute di luar hak role. Superadmin tidak memiliki fungsi kelola konten, rekap hasil, dan forum Admin | Must | AB-13; BR-S05 |
+| FR-SA07 | Menu tiap role terpisah dan middleware backend menolak setiap permintaan di luar hak role. Superadmin tidak dapat membuat/mengubah isi modul, mengakses forum, rekap, test attempts atau skor; Admin tidak dapat menyetujui, meminta revisi, memutuskan perpanjangan, atau melakukan takedown. | Must | AB-13; BR-S05 |
+| FR-SA08 | Superadmin dapat melihat daftar dan detail modul secara baca-saja serta menyetujui setelah checklist kebijakan manual, meminta revisi dengan catatan, menurunkan modul terbit, dan menyetujui/menolak permintaan perpanjangan. | Must | AB-13; BR-S06 |
 
 ### 5.8 Sistem
 
@@ -289,6 +291,46 @@ Prioritas: **Must** = wajib, **Should** = penting, **Could** = opsional bila kap
 | FR-S05 | Sistem menegakkan pemeriksaan role melalui middleware pada setiap rute dan API panel web | Must | AB-13; BR-Y02 |
 | FR-S06 | Sistem menandai akun dengan password sementara dan mewajibkan penggantian pada login pertama | Must | AB-14; BR-Y05 |
 | FR-S07 | Video unit diputar langsung di pemutar dalam aplikasi dari tautan YouTube valid atau URL file video langsung yang diinput Admin, tanpa mengarahkan pengguna ke aplikasi atau tab eksternal | Must | BR-L07 |
+
+### 5.9 Standar Publikasi Modul dan Content Governance
+
+Quality Gate berikut dijalankan di server saat Admin mengajukan modul; kegagalan satu pemeriksaan menolak pengajuan.
+
+| Kode | Standar otomatis |
+|---|---|
+| PS-01 | Judul 10–150 karakter dan unik secara global, kecuali pada keluarga versi modul yang sama. |
+| PS-02 | Deskripsi minimal 100 karakter. |
+| PS-03 | Tujuan belajar 2–5 poin, satu poin per baris. |
+| PS-04 | Kategori/topik wajib diisi; target peserta berupa teks bebas. |
+| PS-05 | Tingkat kesulitan harus Dasar atau Menengah. |
+| PS-06 | Gambar sampul wajib ada dan tersedia. |
+| PS-07 | Modul memiliki 3–10 unit. |
+| PS-08 | Setiap unit memiliki judul, urutan tanpa celah, video, dan bacaan. |
+| PS-09 | Durasi video tiap unit 2–6 menit. |
+| PS-10 | URL video valid, berupa format YouTube yang didukung atau URL video langsung; pemeriksaan format tidak melakukan request jaringan ke URL masukan. |
+| PS-11 | Bacaan tiap unit minimal 150 kata. |
+| PS-12 | Total durasi modul maksimal 60 menit. |
+| PS-13 | Tiap unit memiliki 3–5 soal kuis. |
+| PS-14 | Bank soal Pre-test dan Post-test masing-masing minimal 10 soal. |
+| PS-15 | Setiap soal memiliki pembahasan. |
+| PS-16 | Setiap soal memiliki minimal 3 opsi dan kunci jawaban yang ada dalam opsi. |
+| PS-17 | Soal yang dinormalisasi tidak boleh duplikat dalam satu modul. |
+| PS-18 | Tanggal mulai dan akhir periode aktif wajib diisi. |
+| PS-19 | Periode aktif 30 hari hingga 12 bulan. |
+| PS-20 | Tanggal mulai tidak boleh sebelum tanggal persetujuan. |
+
+| Kode | Proses dan keputusan |
+|---|---|
+| PS-21 | Learner hanya melihat/mengakses modul berstatus published di antara tanggal mulai dan akhir aktif, termasuk materi unit. |
+| PS-22 | Perpanjangan diminta Admin dan diputuskan Superadmin. Permintaan pending tidak memperpanjang periode; total periode maksimal 12 bulan dari tanggal mulai. Tidak ada masa tenggang. |
+| PS-23 | Superadmin memeriksa akurasi, relevansi konteks UMKM, dan kemudahan dipahami sebelum menyetujui. |
+| PS-24 | Superadmin memastikan materi tidak mengandung SARA, ujaran kebencian, atau informasi menyesatkan. |
+| PS-25 | Superadmin memastikan materi tidak melanggar hak cipta. |
+| PS-26 | Superadmin memastikan materi tidak memuat data pribadi pihak ketiga tanpa izin. |
+| PS-27 | SLA review menghitung Senin–Jumat tanpa kalender hari libur; penanda diberikan setelah 2 hari kerja dan dianggap terlewati setelah 3 hari kerja. |
+| PS-28 | Permintaan revisi wajib menyertakan catatan; modul kembali dapat diedit oleh Admin pemilik. |
+| PS-29 | Perubahan status dan keputusan dicatat dalam audit dengan aktor/waktu; notifikasi in-panel diberikan kepada pihak terkait. |
+| PS-30 | Admin hanya mengubah modul miliknya. Submitted, approved, published, dan archived terkunci; modul terbit hanya mengizinkan edit minor judul/deskripsi/sampul. Perubahan signifikan menggunakan salinan versi. Judul unik global kecuali keluarga versi yang sama; saat versi baru disetujui, versi terbit sebelumnya diarsipkan. |
 
 ## 6. User Story
 
@@ -309,7 +351,7 @@ Prioritas: **Must** = wajib, **Should** = penting, **Could** = opsional bila kap
 | US-13 | Learner | melaporkan konten forum yang tidak pantas | forum tetap nyaman |
 | US-14 | Learner | mengelola profil, mereset password, dan menghapus akun serta data saya | data saya terkendali |
 | US-15 | Admin | menyusun modul, unit, bank soal, dan kuis unit | materi sesuai kebutuhan UMKM |
-| US-16 | Admin | menerbitkan atau mengembalikan modul ke draft | modul yang belum siap tidak terlihat Learner |
+| US-16 | Admin | mengajukan modul miliknya untuk review dan memperbaikinya setelah catatan revisi | hanya konten yang disetujui dan berada dalam periode aktif tersedia bagi Learner |
 | US-17 | Admin | melihat daftar Learner, rekap skor dan progres, dashboard, dan ekspor CSV | bisa menganalisis efektivitas belajar |
 | US-18 | Admin | membalas forum dan menangani laporan konten | diskusi tetap sehat |
 | US-19 | Superadmin | menambah dan mengelola akun Admin dengan password sementara | hanya Pengajar sah yang memiliki akses |
@@ -358,16 +400,18 @@ Prioritas: **Must** = wajib, **Should** = penting, **Could** = opsional bila kap
 
 | Field | Aturan |
 |---|---|
-| modul.title | Wajib, maksimal 150 karakter |
-| modul.description | Opsional, satu kalimat, maksimal 255 karakter |
-| modul.cover_image | Opsional, gambar jpg atau png, maksimal 2 MB |
-| modul.status | Wajib, draft atau terbit; terbit hanya bila modul memiliki unit dan bank soal pre serta post yang cukup |
+| modul.title | Wajib; 10–150 karakter saat diajukan dan unik global selain dalam keluarga versi yang sama |
+| modul.description | Opsional pada draft; 100–255 karakter saat diajukan |
+| modul.cover_image | Opsional pada draft; wajib tersedia saat diajukan, gambar jpg atau png, maksimal 2 MB |
+| modul.category, target_audience, difficulty | Kategori dan target peserta wajib diisi (teks bebas); tingkat kesulitan wajib Dasar atau Menengah saat diajukan |
+| modul.active_from, active_until | Wajib saat diajukan; periode 30 hari sampai 12 bulan; tanggal mulai tidak sebelum tanggal persetujuan |
+| modul.status | Backend mengelola draft, submitted, revision_required, approved, published, dan archived; Admin mengajukan review dan tidak mengubah status publikasi langsung |
 | pre dan post jumlah soal | Bilangan bulat minimal 1 dan tidak melebihi jumlah soal pada bank |
 | unit.title | Wajib, maksimal 150 karakter |
 | unit.learning_objective | Wajib, satu kalimat, maksimal 255 karakter |
 | unit.video_url | Wajib, URL YouTube yang valid (tautan youtube.com/watch, youtu.be, shorts, atau embed) atau URL file video langsung yang kompatibel dengan pemutar. YouTube diputar melalui embed; video harus mengizinkan embedding. URL YouTube yang tidak didukung atau tidak valid ditolak. |
 | unit.duration | Opsional di form Admin. Jika diisi, Admin memasukkan durasi dalam menit (angka positif, maksimal 2 angka desimal); server menyimpan nilainya dalam detik. Jika kosong, nilai database `duration` adalah `null`. |
-| unit.reading_content (materi singkat) | Opsional; konten editor disimpan sebagai HTML dengan elemen paragraf, judul, bold, miring, daftar, dan gambar yang diizinkan. Sanitasi server menghapus script, atribut event, dan elemen/atribut lain yang tidak diizinkan. |
+| unit.reading_content (materi singkat) | Opsional pada draft; minimal 150 kata per unit saat diajukan. Konten editor disimpan sebagai HTML dengan elemen paragraf, judul, bold, miring, daftar, dan gambar yang diizinkan. Sanitasi server menghapus script, atribut event, dan elemen/atribut lain yang tidak diizinkan. |
 | unit.sequence_order | Wajib, bilangan bulat, unik dalam satu modul |
 | unit.material_image | JPG/JPEG atau PNG; maksimal 5 MB per gambar dan 10 gambar per materi. File disimpan secara privat dengan nama acak dan disajikan melalui endpoint terkontrol; Learner hanya dapat mengambil gambar dari modul terbit. |
 | unit.material_import | Opsional, DOCX atau PDF, maksimal 10 MB per berkas dan 50 halaman PDF. Berkas diproses di browser dan tidak diunggah atau disimpan sebagai materi/arsip. Hasil impor harus dapat ditinjau dan diedit sebelum disimpan. |
@@ -506,21 +550,21 @@ Kasus berikut harus ditangani sistem dan diuji saat uji pengguna. Kasus bertanda
 | EC-05 | Aplikasi tertutup di tengah tes | Progres tersimpan dan tes dilanjutkan | FR-L22, AC-21 |
 | EC-06 | Menekan Selesai saat ada soal kosong | Muncul konfirmasi sebelum dikirim | FR-L19, AC-22 |
 | EC-07 | Hasil kuis unit kurang memuaskan | Ditawarkan kembali ke materi (rollback); unit berikutnya tidak terkunci | FR-L29, AC-26 |
-| EC-08 | Admin menerbitkan unit dengan kuis kurang dari 3 atau lebih dari 5 soal | Ditolak dengan pesan jumlah soal harus 3 sampai 5 | FR-A11, AC-24 |
+| EC-08 | Admin mengajukan modul dengan unit yang memiliki kurang dari 3 atau lebih dari 5 soal kuis | Pengajuan ditolak dengan pesan jumlah soal harus 3 sampai 5 | FR-A11, AC-24 |
 | EC-09 | Learner membuka forum sebelum pre-test selesai | Terkunci dengan petunjuk mengerjakan pre-test | FR-L31, AC-32 |
 | EC-10 | Learner mencoba menghapus konten forum | Tidak tersedia; permintaan hapus ditolak | FR-L35, AC-35 |
 | EC-11 | Learner melaporkan posting yang sama dua kali | Laporan kedua ditolak; pelapor diberi tahu laporannya sudah tercatat | Asumsi |
 | EC-12 | Admin menghapus topik yang memiliki balasan dan laporan | Topik dan seluruh balasannya dihapus; laporan terkait ditutup sebagai `resolved`, penangan/waktu dicatat, dan jejak laporan dipertahankan dengan `post_id = NULL` dalam satu transaksi | FR-A14, FR-A15 |
 | EC-13 | Admin membuka rute Superadmin langsung | Akses ditolak | FR-SA07, AC-09 |
-| EC-14 | Superadmin membuka rute Admin (tambah modul, rekap skor) | Akses ditolak | FR-SA07, AC-10 |
+| EC-14 | Superadmin membuka rute Admin untuk mengubah konten atau melihat rekap/skor | Akses ditolak; route review baca-saja tetap tersedia | FR-SA07, SA08 |
 | EC-15 | Learner membuka URL panel web | Akses ditolak | FR-S02, AC-07 |
 | EC-16 | Admin login dengan password sementara | Dipaksa membuat password baru | FR-A12, AC-08 |
 | EC-17 | Superadmin menghapus akun Admin yang pernah membuat modul | Akun terhapus; modul tetap ada | AB-12, AC-13 |
 | EC-18 | Superadmin mengubah role Learner menjadi Admin | Akses panel web terbuka sesuai role; aplikasi mobile dipakai untuk Learner | Asumsi |
 | EC-19 | Learner mencoba melihat skor Learner lain | Ditolak | FR-S04, AC-31 |
 | EC-20 | Tautan video tidak dapat diputar | Pesan ramah dengan opsi coba lagi; bacaan dan kuis unit tetap dapat dibuka | Asumsi |
-| EC-21 | Admin mengembalikan modul ke draft saat Learner sudah belajar | Modul hilang dari daftar Learner; progres tetap tersimpan | Asumsi, AC-41 |
-| EC-22 | Admin menghapus modul yang sudah memiliki riwayat tes | Tolak penghapusan dan sarankan mengembalikan modul ke draft agar tidak tampil kepada Learner; kode saat ini juga menolak penghapusan bila ada riwayat kuis unit | FR-A02 |
+| EC-21 | Superadmin melakukan takedown pada modul yang sedang terbit | Status langsung diarsipkan sehingga akses Learner tertutup; jejak audit dipertahankan | AB-13, PS-23, AC-53 |
+| EC-22 | Admin menghapus modul yang sudah memiliki riwayat tes | Tolak penghapusan dan arahkan Admin menghubungi Superadmin untuk takedown bila akses perlu ditutup; kode juga menolak penghapusan bila ada riwayat kuis unit | FR-A02, FR-SA08 |
 | EC-23 | Learner meminta hapus akun | Konfirmasi lalu penghapusan sesuai kebijakan data | FR-L06, AC-43 |
 
 ## 10. Kebutuhan Non-Fungsional
@@ -572,11 +616,11 @@ Kasus berikut harus ditangani sistem dan diuji saat uji pengguna. Kasus bertanda
 | AC-07 | Learner mencoba login atau membuka rute panel web | Akses ditolak | FR-S02 |
 | AC-08 | Admin login dengan password sementara | Wajib membuat password baru sebelum panel dapat dipakai | FR-A01, A12, S06 |
 | AC-09 | Admin membuka rute Superadmin lewat URL langsung | Akses ditolak; menu Superadmin tidak tampil | FR-SA07, S05 |
-| AC-10 | Superadmin membuka rute Admin (tambah modul, bank soal, rekap skor) | Akses ditolak; menu Admin tidak tampil | FR-SA07, S05 |
+| AC-10 | Superadmin membuka rute Admin untuk membuat/mengubah konten, forum, atau melihat rekap/skor | Akses ditolak; pratinjau dan tindakan governance pada route Superadmin tetap tersedia | FR-SA07, SA08, S05 |
 | AC-11 | Superadmin menambah akun Admin (nama, email) | Akun terbentuk dengan role Admin dan password sementara | FR-SA02 |
 | AC-12 | Superadmin mengubah role akun Learner atau Admin | Hak akses akun mengikuti role baru | FR-SA04, SA06 |
 | AC-13 | Superadmin menghapus akun Admin yang pernah membuat modul | Akun terhapus; modul dan soal buatannya tetap ada | FR-SA03 |
-| AC-14 | Learner membuka daftar modul | Hanya modul berstatus terbit yang tampil | FR-L08, A04 |
+| AC-14 | Learner membuka daftar modul atau materi unit | Hanya modul published dalam periode aktif yang dapat diakses | FR-L08, AB-08, PS-21 |
 | AC-15 | Putar video, jeda, tutup aplikasi, lalu buka unit lagi | Video dilanjutkan dari posisi terakhir | FR-L10, S03 |
 | AC-16 | Putar video unit dari URL YouTube atau file langsung | Video yang dapat diakses dan mengizinkan embed diputar di dalam aplikasi tanpa membuka aplikasi atau tab lain | FR-S07 |
 | AC-17 | Selesaikan sebuah unit | Persentase progres modul bertambah; beranda menampilkan kartu Lanjutkan belajar pada unit terakhir | FR-L13, L14 |
@@ -586,7 +630,7 @@ Kasus berikut harus ditangani sistem dan diuji saat uji pengguna. Kasus bertanda
 | AC-21 | Tes terhenti lalu dibuka kembali | Pengerjaan dilanjutkan dari kondisi terakhir | FR-L22, S03 |
 | AC-22 | Tekan Selesai saat masih ada soal kosong | Muncul konfirmasi sebelum jawaban dikirim | FR-L19 |
 | AC-23 | Admin mengatur bank soal pre dan post, jumlah soal diambil, dan opsi acak | Tes Learner mengambil jumlah soal sesuai pengaturan; urutan acak bila diaktifkan | FR-A05 |
-| AC-24 | Admin menerbitkan unit dengan 4 soal kuis; lalu dengan 2 atau 6 soal | 4 soal berhasil; 2 atau 6 soal ditolak | FR-A11, L28 |
+| AC-24 | Admin mengajukan modul dengan 4 soal kuis per unit; lalu dengan 2 atau 6 soal | Pengajuan dengan 4 soal lolos pemeriksaan jumlah; 2 atau 6 soal ditolak | FR-A11, L28 |
 | AC-25 | Learner menyelesaikan kuis unit | Hasil dan pembahasan tampil; skor tidak masuk pre atau post; unit berikutnya tetap terbuka | FR-L28 – L30 |
 | AC-26 | Hasil kuis kurang memuaskan, Learner memilih kembali ke materi | Materi unit terbuka dan kuis dapat diulang | FR-L29 |
 | AC-27 | Buka post-test sebelum semua unit selesai; lalu setelah semua unit selesai | Terkunci dengan petunjuk; terbuka setelah semua unit selesai | FR-L18 |
@@ -603,7 +647,7 @@ Kasus berikut harus ditangani sistem dan diuji saat uji pengguna. Kasus bertanda
 | AC-38 | Admin membuka daftar Learner dan mencari nama atau email | Hasil sesuai; tidak ada aksi edit atau hapus | FR-A06 |
 | AC-39 | Admin membuka rekap, memfilter modul atau periode, lalu ekspor CSV | File CSV berisi data sama dengan tabel yang ditampilkan | FR-A08, A09 |
 | AC-40 | Admin membuka dashboard | Jumlah pengguna, modul, tes selesai, dan rata-rata pre vs post per modul sesuai data | FR-A10 |
-| AC-41 | Admin mengembalikan modul ke draft | Modul hilang dari daftar Learner; progres Learner tetap tersimpan | FR-A04 |
+| AC-41 | Admin mencoba mengubah status publikasi secara langsung | Ditolak; perubahan status hanya melalui review/takedown/arsip sesuai workflow | FR-A04, FR-SA07 |
 | AC-42 | Kirim form dengan field wajib kosong | Pesan validasi dalam bahasa Indonesia tampil di dekat field terkait | FR-A02, A03, L01 |
 | AC-43 | Learner meminta hapus akun dan data | Muncul konfirmasi; akun dan data dihapus sesuai kebijakan data | FR-L06 |
 | AC-44 | Pengguna baru membuka aplikasi pertama kali | Onboarding 2–3 layar tampil sekali dan dapat dilewati | FR-L07 |
@@ -611,6 +655,16 @@ Kasus berikut harus ditangani sistem dan diuji saat uji pengguna. Kasus bertanda
 | AC-46 | Admin mengimpor DOCX atau PDF digital, lalu meninjau dan mengubah hasil | Teks dapat diedit; format dasar dan gambar DOCX didukung sesuai batas; berkas sumber diproses di browser dan tidak disimpan | FR-A16, NFR-17 |
 | AC-47 | Admin memilih DOC lama, PDF scan/tanpa teks, berkas di atas batas ukuran/halaman, atau gambar di atas batas ukuran/jumlah | Format yang belum didukung atau berkas tidak valid ditolak dengan pesan Indonesia; editor tetap dapat digunakan manual dan materi lama tetap utuh | FR-A16, AB-16 |
 | AC-48 | Admin menambah beberapa soal pada satu form atau mengimpor CSV ke bank Pre/Post | Soal CSV tampil sebagai pratinjau yang dapat diedit; jenis mengikuti tab aktif; seluruh batch divalidasi dan disimpan bersama atau tidak ada yang disimpan bila ada kesalahan | FR-A05, AB-12, AC-42 |
+| AC-49 | Admin membuka atau mengubah modul Admin lain, atau Superadmin mencoba mengubah isi modul | Request Admin lintas pemilik tidak dapat membuka detail; Superadmin hanya dapat membuka pratinjau baca-saja; semua perubahan isi ditolak oleh middleware | FR-A02, FR-SA07, FR-SA08, PS-30 |
+| AC-50 | Admin mengajukan modul dengan Quality Gate gagal, atau tanpa deklarasi hak konten | Pengajuan ditolak dengan pesan Indonesia; modul tetap pada status sebelumnya dan tidak tercatat sebagai submitted | FR-A17, PS-01–PS-20 |
+| AC-51 | Admin mengajukan modul yang lolos gate dan Superadmin menyetujui dengan seluruh checklist manual | Status menjadi published bila periode mulai hari ini, atau approved untuk publikasi terjadwal; keputusan dan aktor tercatat serta Admin diberi notifikasi | FR-A17, FR-SA08, PS-21, PS-23–PS-26, PS-29 |
+| AC-52 | Superadmin meminta revisi tanpa catatan atau dengan catatan | Tanpa catatan ditolak; dengan catatan status menjadi revision_required, Admin diberi tahu dan dapat mengubah serta mengajukan ulang | FR-A17, FR-SA08, PS-28, PS-29 |
+| AC-53 | Superadmin melakukan takedown modul published | Modul langsung diarsipkan, alasan dicatat, Admin diberi tahu, dan learner-facing access ditutup | FR-SA08, PS-21, PS-23, PS-29 |
+| AC-54 | Admin meminta perpanjangan, lalu Superadmin memutuskan; periode awal berakhir saat permintaan masih pending | Periode tidak berubah sebelum disetujui; keputusan harus dalam batas 12 bulan; tanpa keputusan modul diarsipkan dan permintaan pending ditolak tanpa masa tenggang | FR-A17, FR-SA08, PS-22, PS-29 |
+| AC-55 | Modul approved mencapai tanggal mulai, published mencapai akhir periode, atau mendekati tanggal akhir | Scheduler memublikasikan/mengarsipkan sesuai tanggal aktif dan mengirim pengingat H-14/H-3 satu kali per periode | FR-SA08, PS-21, PS-22, PS-29 |
+| AC-56 | Pengajuan review melewati hari kerja | Penanda SLA muncul mulai 2 hari kerja dan SLA terlewati setelah 3 hari kerja; Sabtu/Minggu dan kalender hari libur tidak mengubah hitungan | FR-SA08, PS-27 |
+| AC-57 | Admin mengubah modul published | Hanya judul, deskripsi, dan sampul dapat diubah langsung; perubahan signifikan membuat salinan terpisah, dan persetujuan versi baru mengarsipkan versi published sebelumnya | FR-A02, PS-30 |
+| AC-58 | Status/keputusan workflow berubah atau notifikasi dibaca | Riwayat mencatat aksi, aktor, waktu, status/metadata terkait; notifikasi hanya dapat dibaca/ditandai oleh penerimanya | FR-A17, FR-SA08, PS-29 |
 
 ## 13. Asumsi dan Ketergantungan
 
@@ -710,7 +764,7 @@ Kebutuhan bisnis pada BRD ditelusuri ke kebutuhan fungsional, user story, dan kr
 | BR-L15 | FR-L24 – L26 | US-10 | AC-30, AC-29 |
 | BR-L16 | FR-L27 | US-11 | AC-28 |
 | BR-A01 | FR-A01, A12 | US-19 | AC-08 |
-| BR-A02 | FR-A02, A04 | US-15, US-16 | AC-14, AC-41 |
+| BR-A02 | FR-A02, A04 | US-15, US-16 | AC-41, AC-49, AC-57 |
 | BR-A03 | FR-A03, A04, A16 | US-15 | AC-42, AC-45, AC-46, AC-47 |
 | BR-A04 | FR-A05 | US-15 | AC-23 |
 | BR-A05 | FR-A11 | US-15 | AC-24 |
@@ -719,11 +773,13 @@ Kebutuhan bisnis pada BRD ditelusuri ke kebutuhan fungsional, user story, dan kr
 | BR-A08 | FR-A10 | US-17 | AC-40 |
 | BR-A09 | FR-A13 | US-18 | AC-33 |
 | BR-A10 | FR-A14, A15 | US-18 | AC-34, AC-36, AC-37 |
+| BR-A11 | FR-A17 | US-16 | AC-50, AC-52, AC-54 |
 | BR-S01 | FR-SA01 | US-19 | AC-10 |
 | BR-S02 | FR-SA02 | US-19 | AC-11 |
 | BR-S03 | FR-SA03, SA04 | US-19 | AC-12, AC-13 |
 | BR-S04 | FR-SA05, SA06 | US-20 | AC-12 |
-| BR-S05 | FR-SA07, S05 | US-21 | AC-09, AC-10 |
+| BR-S05 | FR-SA07, SA08, S05 | US-21 | AC-09, AC-10, AC-49, AC-53 |
+| BR-S06 | FR-SA08 | US-21 | AC-51–AC-58 |
 | BR-Y01 | FR-S01 | US-21 | AC-02 |
 | BR-Y02 | FR-S02, S05 | US-21 | AC-07, AC-09, AC-10 |
 | BR-Y03 | FR-S03 | US-03 | AC-15, AC-21 |

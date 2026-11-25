@@ -128,8 +128,8 @@ Berdasarkan analisis fishbone dan 5 Whys pada proposal, akar masalah utama adala
 | Role | Platform | Cara Mendapatkan Akun | Tanggung Jawab Utama |
 |---|---|---|---|
 | Learner | Mobile (Android) | Mendaftar sendiri secara terbuka; role ditetapkan otomatis oleh sistem | Belajar, mengerjakan kuis unit, pre-test, dan post-test, berdiskusi dan melaporkan konten di forum, serta melihat riwayat dan progres milik sendiri |
-| Admin (Pengajar) | Web | Dibuat oleh Superadmin dengan password sementara yang wajib diganti saat login pertama | Mengelola modul, unit, bank soal, kuis unit; melihat daftar Learner dan rekap hasil; ekspor CSV; membalas forum, menerima notifikasi laporan, dan menghapus konten forum |
-| Superadmin | Web (login yang sama dengan Admin, menu terpisah) | Disiapkan tim pengembang (tidak ada pendaftaran) | Mengelola akun Admin (tambah, edit, lihat, hapus, ubah role) dan akun Learner (edit, lihat, hapus, ubah role); tidak dapat menjalankan fungsi Admin |
+| Admin (Pengajar) | Web | Dibuat oleh Superadmin dengan password sementara yang wajib diganti saat login pertama | Mengelola modul miliknya sesuai status, mengajukan review/perpanjangan; melihat daftar Learner dan rekap hasil; ekspor CSV; membalas forum, menerima notifikasi laporan, dan menghapus konten forum |
+| Superadmin | Web (login yang sama dengan Admin, menu terpisah) | Disiapkan tim pengembang (tidak ada pendaftaran) | Mengelola akun Admin/Learner; melihat daftar/detail modul secara baca-saja, menyetujui, meminta revisi, takedown, dan memutuskan perpanjangan; tidak mengubah isi modul atau melihat skor |
 
 ### 5.3 Matriks Hak Akses
 
@@ -142,7 +142,9 @@ Berdasarkan analisis fishbone dan 5 Whys pada proposal, akar masalah utama adala
 | Membuat topik dan membalas di forum diskusi (Learner setelah pre-test) | Ya | Ya (membalas) | Tidak |
 | Melaporkan konten forum | Ya | Tidak | Tidak |
 | Menerima notifikasi laporan dan menghapus konten forum | Tidak | Ya | Tidak |
-| Kelola modul, unit, bank soal, dan kuis unit | Tidak | Ya (bersama) | Tidak |
+| Membuat/mengubah isi modul, unit, bank soal, dan kuis unit | Tidak | Ya (hanya modul miliknya, sesuai status) | Tidak |
+| Melihat daftar/detail modul | Hanya modul terbit dalam periode aktif | Daftar modul; detail hanya modul miliknya | Ya (semua modul, baca-saja) |
+| Menyetujui, meminta revisi, takedown, memutuskan perpanjangan | Tidak | Tidak | Ya |
 | Melihat rekap skor dan progres Learner | Tidak | Ya (seluruh Learner) | Tidak |
 | Ekspor rekap (CSV) dan dashboard ringkas | Tidak | Ya | Tidak |
 | Melihat daftar Learner | Tidak | Ya | Ya (dalam kelola akun) |
@@ -151,7 +153,7 @@ Berdasarkan analisis fishbone dan 5 Whys pada proposal, akar masalah utama adala
 | Menu dan rute Admin | Tidak | Ya | Tidak tampil dan ditolak |
 | Menu dan rute Superadmin | Tidak | Tidak tampil dan ditolak | Ya |
 
-> Catatan: modul dan bank soal bersifat milik bersama, sehingga semua Admin dapat melihat dan mengubah seluruh konten. Superadmin tidak memiliki akses ke pengelolaan konten maupun rekap hasil.
+> Catatan: Admin hanya mengubah modul miliknya. Superadmin hanya mendapat pratinjau baca-saja dan keputusan workflow; ia tidak dapat mengubah isi modul atau mengakses forum, rekap, test attempts, dan skor.
 
 ## 6. Kebutuhan Bisnis
 
@@ -173,8 +175,19 @@ Kebutuhan bisnis berikut diturunkan dari daftar kebutuhan fungsional (FR) dan li
 
 1. Superadmin membuat akun Admin (Pengajar); sistem membuat password sementara.
 2. Pengajar login ke panel web dan wajib mengganti password sementara dengan password baru.
-3. Pengajar membuat modul, unit, bank soal pre dan post-test, serta kuis tiap unit, lalu menerbitkan modul yang sudah siap.
+3. Admin membuat draft modul miliknya dan melengkapi metadata, periode aktif, unit, materi, kuis, serta bank soal.
 4. Pengajar memantau rekap skor dan progres seluruh Learner, membalas pertanyaan di forum, menangani laporan konten (menghapus konten yang dilaporkan), serta mengekspor CSV untuk analisis hasil uji.
+
+**Alur Content Governance (panel web):**
+
+1. Quality Gate server memeriksa PS-01–PS-20; pengajuan ditolak bila ada pemeriksaan gagal.
+2. Admin menyetujui deklarasi hak penggunaan konten dan mengajukan review. Modul terkunci dan Superadmin menerima notifikasi.
+3. Superadmin membuka pratinjau baca-saja, memeriksa PS-23–PS-26, lalu menyetujui atau meminta revisi dengan catatan wajib; tindakan dicatat dan Admin diberi notifikasi.
+4. Persetujuan memublikasikan modul bila tanggal mulai telah tiba atau menjadwalkannya bila tanggal mulai di masa depan. Scheduler menerbitkan dan mengarsipkan sesuai periode aktif.
+5. Admin dapat meminta perpanjangan untuk modul published; periode tidak berubah sampai disetujui Superadmin. Tanpa keputusan sebelum tanggal akhir, modul diarsipkan dan tidak ada masa tenggang.
+6. Superadmin dapat melakukan takedown pada modul published; status langsung diarsipkan dan akses Learner tertutup.
+7. Perubahan kecil pada modul published terbatas pada judul/deskripsi/sampul. Perubahan signifikan memakai salinan versi; ketika versi baru disetujui, versi terbit lama diarsipkan.
+8. Audit dan notifikasi tersedia pada transisi terkait; SLA review menghitung Senin–Jumat tanpa kalender hari libur. Learner hanya memperoleh akses konten published dalam periode aktif; alur belajar Learner tetap di luar tahap implementasi ini.
 
 ### 6.2 Kebutuhan Bisnis Learner (Mobile Android)
 
@@ -202,7 +215,7 @@ Kebutuhan bisnis berikut diturunkan dari daftar kebutuhan fungsional (FR) dan li
 | ID | Kebutuhan Bisnis | Prioritas | Ref. FR |
 |---|---|---|---|
 | BR-A01 | Admin login ke panel web dengan akun yang dibuat Superadmin (tidak ada pendaftaran) dan wajib mengganti password sementara pada login pertama. | Must | FR-A01, A12 (baru) |
-| BR-A02 | Admin dapat menambah, mengubah, dan menghapus modul, serta mengatur status draft atau terbit agar modul yang belum siap tidak terlihat Learner. | Must | FR-A02, A04 |
+| BR-A02 | Admin dapat membuat dan menghapus modul miliknya serta mengubah isinya hanya sesuai status workflow; pengajuan review menggantikan publikasi langsung. Modul yang belum published atau di luar periode aktif tidak terlihat Learner. | Must | FR-A02, A04, A17 |
 | BR-A03 | Admin dapat mengelola unit materi (judul, tujuan belajar, tautan video, durasi opsional dalam menit, materi singkat), mengatur urutan, dan melihat pratinjau seperti tampilan Learner. Materi singkat mendukung format teks dasar dan gambar serta impor DOCX atau PDF digital menjadi teks yang dapat diedit sebelum disimpan. DOC lama dan PDF scan belum didukung. | Must | FR-A03, A04, A16 |
 | BR-A04 | Admin dapat mengelola bank soal pre-test dan post-test per modul (soal, pilihan, kunci, pembahasan), serta menentukan jumlah soal yang diambil dan pengacakan urutan. | Must | FR-A05 |
 | BR-A05 | Admin dapat mengelola kuis atau studi kasus tiap unit sebanyak 3 sampai 5 soal, lengkap dengan pilihan, kunci, dan pembahasan. | Must | FR-A11 (baru) |
@@ -211,10 +224,11 @@ Kebutuhan bisnis berikut diturunkan dari daftar kebutuhan fungsional (FR) dan li
 | BR-A08 | Admin melihat dashboard ringkas (jumlah pengguna, modul, tes selesai, rata-rata skor pre vs post) beserta pintasan ke menu utama. | Should | FR-A10 |
 | BR-A09 | Admin dapat melihat topik dan pertanyaan di forum diskusi serta membalasnya. | Must | FR-A13 (baru) |
 | BR-A10 | Admin menerima notifikasi di panel web saat Learner melaporkan konten forum, dapat melihat konten yang dilaporkan, dan menghapusnya. Hanya Admin yang dapat menghapus konten forum. | Must | FR-A14, A15 (baru) |
+| BR-A11 | Admin dapat mengajukan modul miliknya untuk review setelah pemeriksaan otomatis lulus serta meminta perpanjangan periode aktif; ia tidak memutuskan review, takedown, atau perpanjangan. | Must | FR-A17 |
 
 ### 6.4 Kebutuhan Bisnis Superadmin (Web)
 
-Superadmin menggunakan aplikasi web dan halaman login yang sama dengan Admin, tetapi hanya mengelola akun: akun Admin (tambah, edit, lihat, hapus, ubah role) dan akun Learner (edit, lihat, hapus, ubah role). Superadmin tidak dapat menjalankan fungsi Admin seperti menambah modul atau soal. Pemisahan hak akses ditegakkan melalui middleware di sisi backend: menu Superadmin tidak ditampilkan kepada Admin, menu Admin tidak ditampilkan kepada Superadmin, dan setiap permintaan ke rute yang bukan haknya ditolak meskipun alamatnya diakses langsung.
+Superadmin menggunakan aplikasi web dan halaman login yang sama dengan Admin. Selain mengelola akun Admin dan Learner, Superadmin menjalankan Content Governance: melihat daftar/detail modul secara baca-saja, menyetujui, meminta revisi, melakukan takedown, dan memutuskan perpanjangan. Ia tidak dapat membuat atau mengubah isi modul, mengakses forum, rekap, test attempts, atau skor. Pemisahan hak akses ditegakkan melalui middleware backend, bukan hanya melalui menu.
 
 | ID | Kebutuhan Bisnis | Prioritas | Ref. FR |
 |---|---|---|---|
@@ -222,14 +236,15 @@ Superadmin menggunakan aplikasi web dan halaman login yang sama dengan Admin, te
 | BR-S02 | Superadmin dapat menambah akun Admin (nama, email); sistem membuat password sementara yang wajib diganti Admin pada login pertama. | Must | FR-SA02 (baru) |
 | BR-S03 | Superadmin dapat melihat, mengedit, menghapus, dan mengubah role akun Admin. | Must | FR-SA03, SA04 (baru) |
 | BR-S04 | Superadmin dapat melihat, mengedit, menghapus, dan mengubah role akun Learner. | Must | FR-SA05, SA06 (baru) |
-| BR-S05 | Menu dan rute Superadmin hanya tersedia bagi Superadmin, dan Superadmin tidak dapat mengakses fungsi Admin; keduanya ditegakkan melalui middleware. | Must | FR-SA07 (baru), FR-S02 |
+| BR-S05 | Menu tiap role terpisah dan middleware menolak akses di luar haknya: Superadmin hanya membaca isi modul serta menjalankan keputusan governance, sedangkan Admin tidak dapat menyetujui, meminta revisi, takedown, atau memutuskan perpanjangan. Superadmin tidak dapat mengubah konten atau mengakses forum, rekap, test attempts, dan skor. | Must | FR-SA07, FR-SA08, FR-S02 |
+| BR-S06 | Superadmin dapat melihat modul hanya-baca dan memutuskan review, revisi, takedown, dan perpanjangan; semua keputusan memiliki checklist/alasan sesuai jenis tindakan dan jejak audit. | Must | FR-SA08 |
 
 ### 6.5 Kebutuhan Bisnis Sistem
 
 | ID | Kebutuhan Bisnis | Prioritas | Ref. FR |
 |---|---|---|---|
 | BR-Y01 | Role selalu ditetapkan di backend; input role dari klien ditolak. | Must | FR-S01 |
-| BR-Y02 | Hak akses dibatasi menurut role: Learner tidak dapat mengakses panel web, Admin tidak dapat mengakses fungsi Superadmin, dan Superadmin tidak dapat mengakses fungsi Admin. | Must | FR-S02, S05 (baru) |
+| BR-Y02 | Hak akses dibatasi menurut role pada setiap route/API: Learner tidak dapat mengakses panel web; Admin hanya mengubah modul miliknya; Superadmin hanya mendapat akses baca dan aksi tata kelola yang ditentukan, tanpa write isi modul atau akses skor/forum. | Must | FR-S02, S05 |
 | BR-Y03 | Sistem menyimpan posisi video, progres unit, hasil kuis unit, dan skor per pengguna. | Must | FR-S03 |
 | BR-Y04 | Skor tiap pengguna hanya dapat dilihat oleh pemiliknya dan oleh Admin. | Must | FR-S04 |
 | BR-Y05 | Akun yang dibuat dengan password sementara ditandai dan tidak dapat dipakai untuk fungsi lain sebelum password diganti. | Must | FR-S06 (baru) |
@@ -247,6 +262,7 @@ Superadmin menggunakan aplikasi web dan halaman login yang sama dengan Admin, te
 | FR-L34 | Forum menampilkan nama pengguna pada topik dan balasan, serta penanda yang membedakan balasan Pengajar. |
 | FR-L35 | Learner dapat melaporkan topik atau balasan di forum yang dianggap tidak pantas; laporan tercatat dan diteruskan ke Admin. Learner tidak dapat menghapus konten, termasuk miliknya sendiri. |
 | FR-A11 | Admin dapat menambah, mengubah, dan menghapus soal kuis atau studi kasus per unit (teks soal atau kasus, pilihan jawaban, kunci, pembahasan); sistem menolak penerbitan unit bila jumlah soal kurang dari 3 atau lebih dari 5. |
+| FR-A17 | Admin dapat mengajukan modul miliknya untuk review setelah Quality Gate otomatis lulus dan menyatakan hak penggunaan konten, mengubah dan mengajukan ulang modul setelah revisi, serta meminta perpanjangan; Admin tidak memutuskan review, revisi, takedown, atau perpanjangan. |
 | FR-A12 | Admin yang login dengan password sementara diwajibkan membuat password baru sebelum dapat menggunakan panel. |
 | FR-A13 | Admin dapat melihat topik forum dan membalasnya. |
 | FR-A14 | Admin dapat menghapus topik atau balasan di forum; hanya Admin yang memiliki kemampuan ini. |
@@ -257,7 +273,8 @@ Superadmin menggunakan aplikasi web dan halaman login yang sama dengan Admin, te
 | FR-SA04 | Superadmin dapat mengubah role akun Admin. |
 | FR-SA05 | Superadmin dapat melihat daftar dan detail, mengedit, serta menghapus akun Learner. |
 | FR-SA06 | Superadmin dapat mengubah role akun Learner. |
-| FR-SA07 | Menu Superadmin tidak dirender untuk Admin dan menu Admin tidak dirender untuk Superadmin; middleware backend menolak setiap permintaan ke rute di luar hak role tersebut. Superadmin tidak memiliki fungsi pengelolaan konten, rekap hasil, dan forum Admin. |
+| FR-SA07 | Menu tiap role terpisah dan middleware backend menolak setiap permintaan di luar hak role. Superadmin tidak dapat membuat/mengubah isi modul, mengakses forum, rekap, test attempts atau skor; Admin tidak dapat menyetujui, meminta revisi, memutuskan perpanjangan, atau melakukan takedown. |
+| FR-SA08 | Superadmin dapat melihat daftar dan detail modul secara baca-saja serta menyetujui dengan checklist kebijakan manual, meminta revisi dengan catatan, menurunkan modul terbit, dan menyetujui/menolak permintaan perpanjangan. |
 | FR-S05 | Sistem menegakkan pemeriksaan role melalui middleware pada setiap rute dan API panel web. |
 | FR-S06 | Sistem menandai akun dengan password sementara dan mewajibkan penggantian pada login pertama. |
 | FR-S07 | Video unit diputar langsung di pemutar dalam aplikasi dari tautan YouTube yang mendukung embed atau URL file video langsung yang diinput Admin, tanpa mengarahkan pengguna ke aplikasi atau tab eksternal. |
@@ -350,8 +367,8 @@ Timeline mengacu pada proposal dan notulen rapat (identifikasi kebutuhan di Okto
 | 4 | Post-test baru terbuka setelah seluruh unit modul selesai; skor dan pembahasan tampil otomatis. |
 | 5 | Skor Learner hanya terlihat oleh pemiliknya dan Admin. |
 | 6 | Superadmin dapat menambah, melihat, mengedit, menghapus, dan mengubah role akun Admin, serta melihat, mengedit, menghapus, dan mengubah role akun Learner; Admin baru wajib mengganti password sementara pada login pertama. |
-| 7 | Menu Superadmin tidak tampil bagi Admin, Superadmin tidak dapat mengakses fungsi Admin (misalnya menambah modul atau soal), dan akses langsung ke rute di luar hak role ditolak. |
-| 8 | Admin dapat mengelola modul, unit, bank soal, dan kuis unit, menerbitkan modul, melihat rekap, dan mengekspor CSV. |
+| 7 | Menu tiap role terpisah; Admin hanya mengubah modul miliknya; Superadmin hanya membaca isi modul dan dapat melakukan keputusan governance, tanpa mengubah isi atau mengakses forum, rekap, test attempts, dan skor. Route di luar hak role ditolak oleh middleware. |
+| 8 | Admin mengelola modul miliknya sesuai workflow dan mengajukan review/perpanjangan; hanya Superadmin yang memutuskan publikasi, revisi, takedown, dan perpanjangan. |
 | 9 | Skor rata-rata SUS minimal 68 dan rata-rata skor post-test lebih tinggi daripada pre-test pada uji pengguna. |
 | 10 | Forum diskusi modul terbuka setelah Learner menyelesaikan pre-test dan dapat diakses kapan saja; Learner dapat saling menjawab dan Pengajar dapat membalas; Learner dapat melaporkan konten, Admin menerima notifikasi dan dapat menghapus konten, sedangkan Learner tidak dapat menghapus. |
 | 11 | Dokumentasi dan panduan penggunaan diserahkan kepada mitra bersama sosialisasi. |
@@ -363,7 +380,7 @@ Timeline mengacu pada proposal dan notulen rapat (identifikasi kebutuhan di Okto
 | 1 | Makna "rollback" pada kuis unit | Pengguna dapat kembali ke materi unit saat hasil kuis kurang baik, lalu mengulang kuis; kuis tidak mengunci akses ke unit berikutnya secara otomatis |
 | 2 | Syarat unit dianggap selesai | Unit selesai setelah materi dipelajari dan kuis unit dikerjakan, tanpa nilai minimum kelulusan |
 | 3 | Bentuk soal kuis unit dan studi kasus | Pilihan ganda, dengan studi kasus berupa soal berbasis skenario |
-| 4 | Pengelolaan akun Learner oleh Admin | Admin hanya melihat daftar Learner; edit, hapus, dan ubah role hanya oleh Superadmin |
+| 4 | Pengelolaan konten dan peran Superadmin | Sudah diputuskan: Admin hanya mengelola modul miliknya; Superadmin melihat modul secara baca-saja dan memutuskan review, revisi, takedown, serta perpanjangan, tetapi tidak mengubah isi atau melihat skor |
 | 5 | Sumber tautan video | Mendukung YouTube embed dan URL file video langsung; video harus dapat diakses dan mengizinkan embedding |
 | 6 | Stack Android dan layanan hosting/deployment | Stack backend/panel web sudah ditetapkan; stack Android dan hosting/deployment belum diputuskan |
 | 7 | Bentuk notifikasi laporan konten | Muncul di panel web Admin (tanpa push atau email) |
@@ -389,7 +406,7 @@ Dengan menandatangani dokumen ini, pihak-pihak berikut menyatakan bahwa kebutuha
 | LMS | Learning Management System: perangkat lunak untuk mengelola dan menyampaikan pembelajaran. |
 | Learner | Pengguna aplikasi mobile yang belajar (pemilik, pengelola, atau staf UMKM). |
 | Admin (Pengajar) | Pengguna panel web yang mengelola konten dan memantau hasil belajar. |
-| Superadmin | Pengguna panel web yang khusus mengelola akun Admin dan Learner; tidak menjalankan fungsi Admin. |
+| Superadmin | Pengguna panel web yang mengelola akun serta Content Governance; dapat membaca modul dan membuat keputusan workflow, tetapi tidak mengubah isi modul atau mengakses skor. |
 | Modul | Satu topik pembelajaran yang terdiri atas beberapa unit, pre-test, dan post-test. |
 | Unit | Bagian pendek dari modul berisi video, materi singkat, dan kuis atau studi kasus. |
 | Kuis unit | Kuis atau studi kasus 3 sampai 5 soal pada tiap unit sebagai latihan; tidak dihitung dalam skor pre dan post-test. |

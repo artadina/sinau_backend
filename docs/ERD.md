@@ -1,6 +1,6 @@
 # ERD dan Flowchart — SINAU
 
-Dokumen ini menggambarkan skema domain yang dibentuk migration saat ini sekaligus relasi yang direncanakan untuk produk Sinau. Implementasi aplikasi Learner/mobile dan Superadmin belum tersedia; status fitur yang benar-benar berjalan dicatat di [ARCHITECTURE.md](./ARCHITECTURE.md).
+Dokumen ini menggambarkan skema domain yang dibentuk migration saat ini sekaligus relasi yang direncanakan untuk produk Sinau. Content Governance panel Admin/Superadmin tersedia; implementasi proses belajar Learner/mobile belum tersedia. Status fitur yang benar-benar berjalan dicatat di [ARCHITECTURE.md](./ARCHITECTURE.md).
 
 > Diagram memakai sintaks [Mermaid](https://mermaid.js.org/). Kolom, tabel, dan constraint di bawah diselaraskan dengan migration saat ini. Status alur produk pada flowchart tetap merupakan target kebutuhan, bukan bukti bahwa seluruh alur sudah diimplementasikan.
 
@@ -9,6 +9,14 @@ Dokumen ini menggambarkan skema domain yang dibentuk migration saat ini sekaligu
 ```mermaid
 erDiagram
     users ||--o{ modules : "created_by (Admin membuat modul)"
+    users o|--o{ modules : "approved_by"
+    users o|--o{ module_reviews : "actor_id"
+    modules ||--o{ module_reviews : "audit history"
+    modules ||--o{ module_extension_requests : "extension requests"
+    users ||--o{ module_extension_requests : "requested_by"
+    users o|--o{ module_extension_requests : "decided_by"
+    modules ||--o{ module_reminders : "expiry reminders"
+    users ||--o{ notifications : "notifiable"
     modules ||--o{ units : "contains"
     units ||--o{ unit_quizzes : "has quizzes"
     modules ||--o{ test_questions : "bank soal pre/post"
@@ -49,12 +57,62 @@ erDiagram
         TEXT description
         VARCHAR cover_image "NULL"
         TEXT learning_objectives "NULL"
-        ENUM status "draft, published"
+        ENUM status "draft, submitted, revision_required, approved, published, archived"
         SMALLINT pre_question_count "NULL"
         SMALLINT post_question_count "NULL"
         BOOL shuffle_questions "NULL"
         BIGINT created_by FK
+        VARCHAR category "NULL"
+        TEXT target_audience "NULL"
+        VARCHAR difficulty "NULL"
+        DATE active_from "NULL"
+        DATE active_until "NULL"
+        TIMESTAMP submitted_at "NULL"
+        BIGINT approved_by FK "NULL"
+        TIMESTAMP approved_at "NULL"
+        BIGINT revision_of_id FK "NULL"
         TIMESTAMP created_at
+    }
+    module_reviews {
+        BIGINT id PK
+        BIGINT module_id FK
+        BIGINT actor_id FK "NULL for system"
+        VARCHAR action
+        VARCHAR status_from "NULL"
+        VARCHAR status_to "NULL"
+        TEXT notes "NULL"
+        JSON metadata "NULL"
+        TIMESTAMP created_at
+    }
+    module_extension_requests {
+        BIGINT id PK
+        BIGINT module_id FK
+        BIGINT requested_by FK
+        DATE previous_active_until
+        DATE requested_active_until
+        TEXT reason
+        ENUM status "pending, approved, rejected"
+        BIGINT decided_by FK "NULL"
+        TIMESTAMP decided_at "NULL"
+        TEXT decision_notes "NULL"
+    }
+    module_reminders {
+        BIGINT id PK
+        BIGINT module_id FK
+        SMALLINT days_before
+        DATE active_until
+        TIMESTAMP sent_at
+        UNIQUE module_id_days_before_active_until
+    }
+    notifications {
+        UUID id PK
+        VARCHAR type
+        VARCHAR notifiable_type
+        BIGINT notifiable_id
+        TEXT data
+        TIMESTAMP read_at "NULL"
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
     }
     units {
         BIGINT id PK
@@ -152,7 +210,11 @@ Keterangan: PK = Primary Key; FK = Foreign Key; UK = Unique Key. Satu baris `use
 | Tabel | Fungsi dan Hubungan |
 |---|---|
 | `users` | Menyimpan akun Learner, Admin, dan Superadmin. `email` unik; `role` bernilai `learner`, `admin`, atau `superadmin`. `is_temp_password` mendukung kewajiban ganti password Admin (FR-S06). `business_name` dan `consent_at` nullable. `deleted_at` mendukung soft delete; kebijakan anonimisasi saat penghapusan akun sudah diputuskan, tetapi belum diimplementasikan. |
-| `modules` | Menyimpan judul, deskripsi, sampul, tujuan belajar, status draft/published, jumlah soal Pre/Post, opsi acak, dan Admin pembuat. Status published digunakan sebagai prasyarat akses konten Learner pada desain produk. |
+| `modules` | Menyimpan metadata, periode aktif, Admin pembuat, approver, dan relasi versi. Status workflow: `draft`, `submitted`, `revision_required`, `approved`, `published`, `archived`. Admin hanya mengubah modul miliknya sesuai status; Superadmin dapat melihat modul baca-saja dan melakukan keputusan governance, bukan menulis konten atau melihat skor. |
+| `module_reviews` | Audit trail per modul untuk submission, keputusan review, revisi, takedown, perubahan status terjadwal, perpanjangan, dan perubahan minor/versi; aktor dapat `NULL` untuk proses sistem. |
+| `module_extension_requests` | Menyimpan pengajuan perpanjangan Admin dan keputusan Superadmin beserta periode lama/baru, alasan, status, penentu, waktu, dan catatan keputusan. |
+| `module_reminders` | Mencegah pengiriman berulang pengingat masa aktif H-14/H-3 dalam periode yang sama. |
+| `notifications` | Menyimpan notifikasi in-panel per penerima, termasuk status baca; endpoint hanya mengizinkan penerima melihat atau menandainya terbaca. |
 | `units` | Menyimpan unit per modul beserta urutan unik per modul, video, tujuan, materi, durasi, dan `is_active` (default true). `duration` nullable dan disimpan dalam detik; form Admin menerima menit. `reading_content` berisi HTML terbatas yang disanitasi server. Gambar materi disimpan sebagai file privat dan dokumen impor diproses sementara. Kolom `is_active` tersedia, tetapi belum ada UI/route Admin untuk mengubahnya. |
 | `unit_quizzes` | Bank soal kuis atau studi kasus khusus tiap unit. Terikat pada `unit_id`. Setiap unit wajib memiliki 3 sampai 5 soal pilihan ganda beserta kunci dan pembahasan. |
 | `test_questions` | Bank soal Pre/Post per modul. Kolom `type` wajib bernilai `pre` atau `post`; berisi soal, pilihan, kunci, dan pembahasan. |
@@ -167,6 +229,8 @@ Keterangan: PK = Primary Key; FK = Foreign Key; UK = Unique Key. Satu baris `use
 ### 1.2 Kardinalitas dan Aturan Integritas
 
 - `users` ke `modules`: 1 : 0..N (Admin dapat membuat banyak modul).
+- `modules` ke `module_reviews`, `module_extension_requests`, dan `module_reminders`: 1 : 0..N.
+- `modules.revision_of_id` menghubungkan salinan revisi ke versi asal; judul yang sama hanya dibolehkan dalam keluarga versi yang sama.
 - `modules` ke `units`: 1 : 1..N (satu modul terdiri atas satu atau lebih unit berurutan).
 - `units` ke `unit_quizzes`: 1 : 3..5 (setiap unit wajib memiliki 3 hingga 5 soal kuis/studi kasus).
 - `(module_id, sequence_order)` unik pada `units`; `(user_id, unit_id)` unik pada progres; `(user_id, module_id)` unik pada lencana; `(post_id, reported_by)` unik pada laporan.
@@ -174,13 +238,13 @@ Keterangan: PK = Primary Key; FK = Foreign Key; UK = Unique Key. Satu baris `use
 - `modules` ke `forum_posts`: 1 : 0..N (forum dibuka per modul setelah Learner menyelesaikan pre-test).
 - `forum_posts` ke `forum_reports`: 1 : 0..N (setiap postingan forum dapat dilaporkan oleh beberapa Learner).
 - `forum_posts.parent_id` menghapus balasan turunan secara cascade; `forum_reports.post_id` menjadi `NULL` ketika posting dihapus.
-- **Hak akses data:** sesuai kebutuhan, skor `test_attempts` hanya dapat diakses Learner pemilik dan Admin; Superadmin tidak memperoleh akses skor. Aplikasi mobile dan API skor belum tersedia.
+- **Hak akses data:** skor `test_attempts` hanya dapat diakses Learner pemilik dan Admin; Superadmin tidak memperoleh akses ke tabel attempt/skor, rekap, atau forum. Middleware membatasi Admin pada modul miliknya dan memberi Superadmin route baca-saja untuk review serta endpoint keputusan terpisah.
 
 ---
 
 ## 2. Flowchart
 
-> Flowchart 2.1–2.4 di bawah mendokumentasikan alur target produk. Sebagian alur Learner dan pengelolaan akun Superadmin belum memiliki implementasi; lihat [ARCHITECTURE.md](./ARCHITECTURE.md).
+> Flowchart 2.1–2.4 mendokumentasikan alur produk. Content Governance panel web telah diimplementasikan; proses belajar Learner/mobile belum tersedia. Lihat [ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ### 2.1 Login dan Pembatasan Hak Akses (Gambar 2)
 
@@ -197,7 +261,7 @@ flowchart TD
     E --> F
     F -- Learner --> G[Aplikasi Mobile Learner Android]
     F -- Admin --> H[Panel Web Admin: Konten & Rekap]
-    F -- Superadmin --> I[Panel Web SA: Kelola Akun]
+    F -- Superadmin --> I[Panel Web SA: Kelola Akun dan Review Modul Baca-saja]
     G --> J[Middleware Backend Cek Access]
     H --> J
     I --> J
@@ -212,8 +276,8 @@ Urutan proses:
 4. Pengguna yang lolos autentikasi diarahkan ke antarmuka sesuai role:
    - **Learner:** Dashboard Mobile Android.
    - **Admin:** Panel Web Pengelolaan Konten, Soal, Rekap Hasil, dan Forum.
-   - **Superadmin:** Panel Web Pengelolaan Akun Admin dan Learner.
-5. **Middleware Backend (FR-S05 / FR-SA07):** setiap permintaan API atau rute divalidasi. Jika Admin mencoba mengakses rute Superadmin (atau sebaliknya), middleware menolak akses secara mutlak.
+   - **Superadmin:** Panel Web Pengelolaan Akun dan Content Governance.
+5. **Middleware Backend (FR-S05 / FR-SA07):** setiap permintaan API atau rute divalidasi. Admin hanya mengelola modul miliknya dan ditolak pada route keputusan Superadmin. Superadmin ditolak pada route edit konten, forum, rekap, dan skor, tetapi boleh memakai route review baca-saja serta endpoint keputusan governance.
 
 ### 2.2 Alur Belajar Learner — Mobile Android (Gambar 3)
 
@@ -278,23 +342,26 @@ Urutan proses:
 ```mermaid
 flowchart TD
     A[Akses Web Panel Terautentikasi] --> B{Peran User Role?}
-    B -- Admin --> C["Kelola Modul, Unit Materi & Bank Soal (BR-A02 - BR-A05)"]
-    C --> D{Atur Status Modul}
-    D -- Draft --> C
-    D -- "Terbit (Published)" --> E[Modul Terbit & Tampil di Aplikasi Mobile Learner]
-    E --> F["Pantau Rekap Skor Learner & Ekspor CSV (BR-A07)"]
-    B -- Superadmin --> G["Kelola Akun Admin: Tambah, Edit, Hapus, Role (BR-S02/S03)"]
-    G --> H["Kelola Akun Learner: Edit, Hapus, Ubah Role (BR-S04)"]
-    F --> Z([Selesai])
-    H --> Z
+    B -- Admin --> C["Kelola modul miliknya, unit, materi, dan soal"]
+    C --> D["Quality Gate PS-01–PS-20"]
+    D -- Lulus --> E["Ajukan review; konten terkunci"]
+    D -- Gagal --> C
+    E --> F["Superadmin review baca-saja: setujui atau minta revisi"]
+    F -- Revisi --> C
+    F -- Setuju --> G["Terbit sekarang atau dijadwalkan sesuai periode"]
+    G --> H["Perpanjangan melalui keputusan Superadmin; takedown/akhir periode mengarsipkan"]
+    B -- Superadmin --> I["Kelola akun dan review modul tanpa akses isi-tulis/skor"]
+    H --> Z([Selesai])
+    I --> Z
 ```
 
 Urutan proses:
 
 1. **Alur Admin (Pengajar):**
-   - Admin menyusun modul, unit materi (video & bacaan), bank soal pre/post test, serta kuis unit (3–5 soal). Modul yang telah lengkap diubah statusnya dari Draft menjadi Published agar dapat diakses oleh Learner di Android.
+   - Admin menyusun modul miliknya, unit materi (video & bacaan), bank soal pre/post test, serta kuis unit (3–5 soal). Setelah Quality Gate lulus, Admin mengajukan review dan tidak dapat memublikasikan langsung.
    - Admin memantau progres dan rekapitulasi nilai seluruh Learner serta mengekspor data ke format CSV.
 2. **Alur Superadmin:**
    - Superadmin mendaftarkan akun Admin baru. Sistem secara otomatis membuat password sementara yang wajib diganti Admin saat login pertama.
    - Superadmin mengelola akun Learner (edit data, hapus akun, atau ubah role).
-   - **Pemusatan wewenang (BR-S05):** Superadmin ditolak oleh middleware jika mencoba mengakses fungsi Admin seperti menambah modul/soal atau melihat rekap skor.
+   - Superadmin meninjau modul dengan pratinjau baca-saja dan memutuskan persetujuan, revisi, takedown, serta perpanjangan.
+   - **Batas wewenang (BR-S05):** middleware menolak Superadmin pada route ubah konten, forum, rekap, test attempts, dan skor; middleware menolak Admin pada endpoint keputusan governance.

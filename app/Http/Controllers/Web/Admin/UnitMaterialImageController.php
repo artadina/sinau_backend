@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreUnitMaterialImageRequest;
+use App\Models\Module;
 use App\Models\Unit;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
@@ -49,10 +50,18 @@ class UnitMaterialImageController extends Controller
         $reference = '/admin/units/'.$unit->id.'/material/images/'.$image;
 
         abort_unless(
-            $unit->module()->where('status', 'published')->exists()
+            Module::published()->whereKey($unit->module_id)->exists()
             && str_contains((string) $unit->reading_content, $reference),
             404,
         );
+
+        return $this->fileResponse($unit, $image);
+    }
+
+    // PS-23–PS-26: Superadmin preview can read private unit images without write access.
+    public function showForSuperadmin(Module $module, Unit $unit, string $image): BinaryFileResponse
+    {
+        abort_unless($unit->module_id === $module->id, 404);
 
         return $this->fileResponse($unit, $image);
     }

@@ -73,7 +73,7 @@ class AdminModuleManagementTest extends TestCase
             'description' => 'Deskripsi singkat.',
             'learning_objectives' => 'Tujuan belajar modul.',
         ])
-            ->assertRedirect(route('admin.modules.index'))
+            ->assertRedirect(route('admin.modules.show', $module))
             ->assertSessionHas('status', 'Modul berhasil diperbarui.');
 
         $this->assertDatabaseHas('modules', [
@@ -279,53 +279,40 @@ class AdminModuleManagementTest extends TestCase
             ->assertSessionHasErrors(['learning_objective' => 'Tujuan belajar wajib diisi.']);
     }
 
-    // FR-A04, AC-14: learner-facing queries can return only published modules.
-    public function test_published_scope_excludes_draft_modules(): void
+    // PS-21: Learner-facing queries require a published module inside its active dates.
+    public function test_published_scope_requires_status_and_current_active_period(): void
     {
         $admin = $this->admin();
         $draft = $this->module($admin, ['status' => 'draft']);
-        $published = $this->module($admin, ['status' => 'published']);
+        $published = $this->module($admin, [
+            'status' => 'published',
+            'active_from' => today()->subDays(1),
+            'active_until' => today()->addDays(30),
+        ]);
+        $expired = $this->module($admin, [
+            'status' => 'published',
+            'active_from' => today()->subDays(40),
+            'active_until' => today()->subDay(),
+        ]);
 
         $this->assertSame(
             [$published->id],
             Module::published()->pluck('id')->all(),
         );
         $this->assertDatabaseHas('modules', ['id' => $draft->id, 'status' => 'draft']);
+        $this->assertDatabaseHas('modules', ['id' => $expired->id, 'status' => 'published']);
     }
 
-    // FR-A04, AC-41: reverting to draft hides a module without deleting learner progress.
-    public function test_reverting_module_to_draft_preserves_learner_progress(): void
+    // PS-21: Admin cannot directly publish or unpublish a module outside the review flow.
+    public function test_admin_cannot_change_publication_status_directly(): void
     {
         $admin = $this->admin();
-        $learner = User::factory()->create(['role' => Role::Learner->value]);
-        $module = $this->module($admin, ['status' => 'published']);
-        $unit = $module->units()->create([
-            'title' => 'Unit materi',
-            'learning_objective' => 'Memahami materi dasar.',
-            'video_url' => 'https://example.test/video.mp4',
-            'duration' => 45,
-            'reading_content' => '',
-            'sequence_order' => 1,
-        ]);
-        DB::table('learner_unit_progress')->insert([
-            'user_id' => $learner->id,
-            'unit_id' => $unit->id,
-            'last_video_pos' => 20,
-            'is_completed' => false,
-            'updated_at' => now(),
-        ]);
-
+        $module = $this->module($admin);
         $this->actingAs($admin)
-            ->put(route('admin.modules.status', $module), ['status' => 'draft'])
-            ->assertRedirect(route('admin.modules.index'))
-            ->assertSessionHas('status', 'Modul dikembalikan ke draft. Progres Learner tetap tersimpan.');
+            ->put("/admin/modules/{$module->id}/status", ['status' => 'published'])
+            ->assertNotFound();
 
-        $this->assertSame(0, Module::published()->whereKey($module->id)->count());
-        $this->assertDatabaseHas('learner_unit_progress', [
-            'user_id' => $learner->id,
-            'unit_id' => $unit->id,
-            'last_video_pos' => 20,
-        ]);
+        $this->assertDatabaseHas('modules', ['id' => $module->id, 'status' => 'draft']);
     }
 
     // FR-A02, EC-22: test history blocks deletion and recommends draft status.
@@ -345,63 +332,10 @@ class AdminModuleManagementTest extends TestCase
         $this->actingAs($admin)
             ->delete(route('admin.modules.destroy', $module))
             ->assertRedirect(route('admin.modules.index'))
-            ->assertSessionHas('error', 'Modul tidak dapat dihapus karena sudah memiliki riwayat tes. Kembalikan modul ke draft agar tidak tampil kepada Learner.');
+            ->assertSessionHas('error', 'Modul tidak dapat dihapus karena sudah memiliki riwayat tes. Modul dapat dikembalikan ke draft agar tidak tampil kepada Learner.');
 
         $this->assertDatabaseHas('modules', ['id' => $module->id]);
         $this->assertDatabaseHas('test_attempts', ['module_id' => $module->id]);
-    }
-
-    // FR-A04, FR-A05, FR-A11: publishing requires a unit, valid quizzes, and sufficient test banks.
-    public function test_module_publish_requires_a_unit_quizzes_and_test_banks(): void
-    {
-        $admin = $this->admin();
-        $module = $this->module($admin);
-
-        $this->actingAs($admin)
-            ->put(route('admin.modules.status', $module), ['status' => 'published'])
-            ->assertSessionHasErrors([
-                'status' => 'Modul perlu memiliki minimal satu unit sebelum dapat diterbitkan. Jumlah soal Pre-test belum diatur; tentukan minimal 1 soal. Jumlah soal Post-test belum diatur; tentukan minimal 1 soal.',
-            ]);
-
-        $unit = $module->units()->create([
-            'title' => 'Unit pertama',
-            'learning_objective' => 'Memahami materi dasar.',
-            'video_url' => 'https://example.test/video.mp4',
-            'duration' => 45,
-            'reading_content' => '',
-            'sequence_order' => 1,
-        ]);
-
-        $this->put(route('admin.modules.status', $module), ['status' => 'published'])
-            ->assertSessionHasErrors(['status' => "Unit '{$unit->title}' baru punya 0 soal kuis, perlu 3 sampai 5. Jumlah soal Pre-test belum diatur; tentukan minimal 1 soal. Jumlah soal Post-test belum diatur; tentukan minimal 1 soal."]);
-
-        for ($index = 1; $index <= 3; $index++) {
-            $unit->quizzes()->create([
-                'question_text' => "Soal kuis {$index}",
-                'options' => ['A' => 'Satu', 'B' => 'Dua', 'C' => 'Tiga'],
-                'correct_key' => 'A',
-                'explanation' => 'Pembahasan.',
-            ]);
-        }
-        foreach (['pre', 'post'] as $type) {
-            $module->testQuestions()->create([
-                'type' => $type,
-                'question_text' => "Soal {$type}",
-                'options' => ['A' => 'Satu', 'B' => 'Dua', 'C' => 'Tiga'],
-                'correct_key' => 'A',
-                'explanation' => 'Pembahasan.',
-            ]);
-        }
-        $this->put(route('admin.modules.questions.settings', $module), [
-            'pre_question_count' => 1,
-            'post_question_count' => 1,
-            'shuffle_questions' => 0,
-        ])->assertRedirect();
-
-        $this->put(route('admin.modules.status', $module), ['status' => 'published'])
-            ->assertRedirect(route('admin.modules.index'));
-
-        $this->assertDatabaseHas('modules', ['id' => $module->id, 'status' => 'published']);
     }
 
     // FR-S05, AB-13: Learner and Superadmin cannot access Admin module routes.

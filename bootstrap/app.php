@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Middleware\EnsureRole;
+use App\Http\Middleware\EnsureEditableModule;
+use App\Http\Middleware\EnsureModuleOwner;
 use App\Http\Middleware\RequireAdminPasswordChange;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -16,6 +18,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'role' => EnsureRole::class,
+            'module.owner' => EnsureModuleOwner::class,
+            'module.editable' => EnsureEditableModule::class,
             'temporary.password' => RequireAdminPasswordChange::class,
         ]);
     })

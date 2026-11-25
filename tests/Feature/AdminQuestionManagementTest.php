@@ -15,8 +15,8 @@ class AdminQuestionManagementTest extends TestCase
 {
     use RefreshDatabase;
 
-    // FR-A05, AC-23, AB-12: every Admin manages shared test banks and settings.
-    public function test_admin_can_manage_pre_post_banks_and_question_settings(): void
+    // FR-A05, PS-30: only the module owner can manage test banks and settings.
+    public function test_admin_can_manage_only_owned_pre_post_banks_and_settings(): void
     {
         $admin = $this->admin();
         $module = $this->module($admin);
@@ -56,16 +56,16 @@ class AdminQuestionManagementTest extends TestCase
                 'post_question_count' => 1,
                 'shuffle_questions' => 1,
             ])
-            ->assertRedirect(route('admin.modules.questions.index', [$module, 'pre']))
-            ->assertSessionHas('status', 'Pengaturan tes berhasil disimpan.');
+            ->assertNotFound();
 
         $this->assertDatabaseHas('modules', [
             'id' => $module->id,
-            'pre_question_count' => 2,
-            'post_question_count' => 1,
-            'shuffle_questions' => true,
+            'pre_question_count' => null,
+            'post_question_count' => null,
+            'shuffle_questions' => null,
         ]);
 
+        $this->actingAs($admin);
         $this->put(route('admin.modules.questions.update', [$module, 'pre', $preQuestion]), $this->questionData([
             'question_text' => 'Soal Pre-test diperbarui',
             'type' => 'pre',
@@ -81,8 +81,8 @@ class AdminQuestionManagementTest extends TestCase
 
         $remainingPreQuestion = $module->testQuestions()->where('type', 'pre')->firstOrFail();
         $this->delete(route('admin.modules.questions.destroy', [$module, 'pre', $remainingPreQuestion]))
-            ->assertSessionHas('error');
-        $this->assertSame(2, $module->testQuestions()->where('type', 'pre')->count());
+            ->assertSessionHas('status', 'Soal berhasil dihapus.');
+        $this->assertSame(1, $module->testQuestions()->where('type', 'pre')->count());
     }
 
     // FR-A05, FR-A11, AC-42: question errors are validated and reported in Indonesian.
@@ -181,55 +181,44 @@ class AdminQuestionManagementTest extends TestCase
         }
     }
 
-    // FR-A11, AC-24: four quiz questions publish; two and six are rejected.
-    public function test_module_publish_enforces_three_to_five_quizzes_and_test_bank_settings(): void
+    // PS-30: published question banks cannot be edited in place.
+    public function test_published_question_banks_are_locked_for_admin_edits(): void
     {
         $admin = $this->admin();
-        $module = $this->module($admin);
+        $module = $this->module($admin, ['status' => 'published']);
         $unit = $this->unit($module);
-        $this->fillTestBanks($module);
+        $question = $this->createTestQuestion($module, 'pre', 'Soal tersimpan');
+        $this->assertSame('published', $module->fresh()->status);
 
-        for ($index = 1; $index <= 4; $index++) {
-            $this->createQuiz($unit, "Soal kuis {$index}");
-        }
-
-        $this->setQuestionSettings($module);
         $this->actingAs($admin)
-            ->put(route('admin.modules.status', $module), ['status' => 'published'])
-            ->assertRedirect(route('admin.modules.index'));
-        $this->assertDatabaseHas('modules', ['id' => $module->id, 'status' => 'published']);
+            ->put(route('admin.modules.questions.update', [$module, 'pre', $question]), $this->questionData([
+                'question_text' => 'Soal diubah',
+                'type' => 'pre',
+            ]))
+            ->assertForbidden();
 
-        $this->put(route('admin.modules.status', $module), ['status' => 'draft']);
-        $unit->quizzes()->orderBy('id')->limit(2)->get()->each->delete();
-        $this->put(route('admin.modules.status', $module), ['status' => 'published'])
-            ->assertSessionHasErrors(['status' => "Unit '{$unit->title}' baru punya 2 soal kuis, perlu 3 sampai 5."]);
-        $this->assertDatabaseHas('modules', ['id' => $module->id, 'status' => 'draft']);
-
-        for ($index = 5; $index <= 8; $index++) {
-            $this->createQuiz($unit, "Soal kuis {$index}");
-        }
-        $this->put(route('admin.modules.status', $module), ['status' => 'published'])
-            ->assertSessionHasErrors(['status' => "Unit '{$unit->title}' memiliki 6 soal kuis; jumlah yang diizinkan 3 sampai 5."]);
+        $this->actingAs($admin)
+            ->get(route('admin.units.quizzes.create', $unit))
+            ->assertForbidden();
+        $this->delete(route('admin.units.quizzes.destroy', [$unit, $this->createQuiz($unit, 'Kuis tersimpan')]))
+            ->assertForbidden();
     }
 
-    // FR-A11, EC-08: deleting a quiz cannot leave a published unit below three questions.
-    public function test_admin_cannot_delete_a_quiz_from_a_published_unit_below_minimum(): void
+    // PS-30: all quiz changes on published modules require a separate revision.
+    public function test_admin_cannot_delete_quiz_from_published_module(): void
     {
         $admin = $this->admin();
         $module = $this->module($admin);
         $unit = $this->unit($module);
-        $this->fillTestBanks($module);
-        $this->setQuestionSettings($module);
         $firstQuiz = $this->createQuiz($unit, 'Soal kuis 1');
-        $this->createQuiz($unit, 'Soal kuis 2');
-        $this->createQuiz($unit, 'Soal kuis 3');
-        $this->actingAs($admin)->put(route('admin.modules.status', $module), ['status' => 'published']);
+        $module->update(['status' => 'published']);
 
+        $this->actingAs($admin)
+            ->assertAuthenticatedAs($admin);
         $this->delete(route('admin.units.quizzes.destroy', [$unit, $firstQuiz]))
-            ->assertRedirect(route('admin.units.quizzes.index', $unit))
-            ->assertSessionHas('error', "Soal tidak dapat dihapus karena unit '{$unit->title}' harus memiliki minimal 3 soal kuis selama modul terbit.");
+            ->assertForbidden();
 
-        $this->assertSame(3, $unit->quizzes()->count());
+        $this->assertSame(1, $unit->quizzes()->count());
     }
 
     // FR-A11, AC-42: Admin can add, edit, and delete unit quiz questions.
@@ -287,14 +276,14 @@ class AdminQuestionManagementTest extends TestCase
         ]);
     }
 
-    private function module(User $creator): Module
+    private function module(User $creator, array $overrides = []): Module
     {
-        return Module::query()->create([
+        return Module::query()->create(array_merge([
             'title' => 'Modul Soal',
             'description' => '',
             'status' => 'draft',
             'created_by' => $creator->id,
-        ]);
+        ], $overrides));
     }
 
     private function unit(Module $module): Unit
