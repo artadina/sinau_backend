@@ -117,12 +117,15 @@
                             <div class="flex flex-col justify-between gap-3 sm:flex-row">
                                 <div class="min-w-0">
                                     <h3 class="font-semibold text-slate-900">{{ $loop->iteration }}. {{ $question->question_text }}</h3>
+                                    <p class="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                        {{ ['multiple_choice' => 'Pilihan ganda', 'checkbox' => 'Checkbox', 'true_false' => 'Benar / Salah'][$question->question_format ?? 'multiple_choice'] ?? 'Pilihan ganda' }}
+                                    </p>
                                     <ul class="mt-2 grid gap-1 text-sm text-slate-600 sm:grid-cols-2">
                                         @foreach ($question->options as $key => $option)
                                             <li><span class="font-semibold">{{ $key }}.</span> {{ $option }}</li>
                                         @endforeach
                                     </ul>
-                                    <p class="mt-2 inline-flex items-center rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-sm font-bold text-emerald-900">Kunci jawaban: {{ $question->correct_key }}</p>
+                                    <p class="mt-2 inline-flex items-center rounded-full border border-emerald-300 bg-emerald-50 px-3 py-1 text-sm font-bold text-emerald-900">Kunci jawaban: {{ implode(', ', $question->answer_keys) }}</p>
                                 </div>
                                 <div class="flex shrink-0 items-start gap-2 self-start">
                                     <a href="{{ route('admin.modules.questions.edit', [$module, $type, $question]) }}" class="inline-flex h-fit self-start whitespace-nowrap rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold leading-5 text-slate-700 hover:border-slate-400 hover:bg-slate-50">Ubah</a>

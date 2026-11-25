@@ -203,9 +203,9 @@ Kebutuhan bisnis berikut diturunkan dari daftar kebutuhan fungsional (FR) dan li
 | BR-L08 | Pengguna dapat membaca materi singkat per unit, termasuk format teks dasar dan gambar, serta membuka ulang unit kapan saja tanpa batas. | Must | FR-L11, L12 |
 | BR-L09 | Sistem menandai unit selesai, memperbarui progres modul, dan memungkinkan pengguna melanjutkan unit terakhir dari beranda. | Must | FR-L13, L14 |
 | BR-L10 | Pengguna dapat memilih kualitas video untuk menghemat kuota. | Could | FR-L15 |
-| BR-L11 | Pengguna mengerjakan pre-test sebelum modul dan post-test setelah semua unit selesai; satu soal per layar, progres tersimpan, tanpa batas waktu per soal, dan post-test dapat diulang. | Must | FR-L17, L18, L19, L22, L23 |
-| BR-L12 | Sistem menghitung skor otomatis dan menampilkan pembahasan singkat tiap soal. | Must | FR-L20, L21 |
-| BR-L13 | Setiap unit memiliki kuis atau studi kasus 3 sampai 5 soal; setelah dikerjakan, pengguna melihat hasil dan pembahasan, dan dapat kembali ke materi unit lalu mengulang kuis kapan saja. | Must | FR-L28, L29, L30 (baru) |
+| BR-L11 | Pengguna mengerjakan pre-test sebelum modul dan post-test setelah semua unit selesai; satu soal per layar, progres tersimpan, tanpa batas waktu per soal, dan post-test dapat diulang. Soal dapat berformat pilihan ganda, checkbox, atau benar/salah. | Must | FR-L17, L18, L19, L22, L23 |
+| BR-L12 | Sistem menghitung skor otomatis, memberi kredit parsial pada jawaban checkbox sesuai aturan penilaian, dan menampilkan pembahasan singkat tiap soal. | Must | FR-L20, L21 |
+| BR-L13 | Setiap unit memiliki kuis atau studi kasus 3 sampai 5 soal berformat pilihan ganda, checkbox, atau benar/salah; setelah dikerjakan, pengguna melihat hasil dan pembahasan, dan dapat kembali ke materi unit lalu mengulang kuis kapan saja. | Must | FR-L28, L29, L30 (baru) |
 | BR-L14 | Setelah menyelesaikan pre-test, pengguna dapat mengakses forum diskusi modul kapan saja untuk bertanya ketika bingung saat mempelajari unit dan menjawab pertanyaan sesama Learner; Pengajar juga dapat membalas. Learner dapat melaporkan konten forum yang tidak pantas. | Must | FR-L31, L32, L33, L34, L35 (baru) |
 | BR-L15 | Pengguna melihat riwayat skor pre dan post per modul (hanya milik sendiri), grafik perbandingan, dan ringkasan progres semua modul. | Must | FR-L24, L25, L26 |
 | BR-L16 | Pengguna mendapat lencana personal saat menyelesaikan modul, tanpa peringkat antar pengguna. | Must | FR-L27 |
@@ -217,8 +217,8 @@ Kebutuhan bisnis berikut diturunkan dari daftar kebutuhan fungsional (FR) dan li
 | BR-A01 | Admin login ke panel web dengan akun yang dibuat Superadmin (tidak ada pendaftaran) dan wajib mengganti password sementara pada login pertama. | Must | FR-A01, A12 (baru) |
 | BR-A02 | Admin dapat membuat dan menghapus modul miliknya serta mengubah isinya hanya sesuai status workflow; pengajuan review menggantikan publikasi langsung. Modul yang belum published atau di luar periode aktif tidak terlihat Learner. | Must | FR-A02, A04, A17 |
 | BR-A03 | Admin dapat mengelola unit materi (judul, tujuan belajar, tautan video, durasi opsional dalam menit, materi singkat), mengatur urutan, dan melihat pratinjau seperti tampilan Learner. Materi singkat mendukung format teks dasar dan gambar serta impor DOCX atau PDF digital menjadi teks yang dapat diedit sebelum disimpan. DOC lama dan PDF scan belum didukung. | Must | FR-A03, A04, A16 |
-| BR-A04 | Admin dapat mengelola bank soal pre-test dan post-test per modul (soal, pilihan, kunci, pembahasan), serta menentukan jumlah soal yang diambil dan pengacakan urutan. | Must | FR-A05 |
-| BR-A05 | Admin dapat mengelola kuis atau studi kasus tiap unit sebanyak 3 sampai 5 soal, lengkap dengan pilihan, kunci, dan pembahasan. | Must | FR-A11 (baru) |
+| BR-A04 | Admin dapat mengelola bank soal pre-test dan post-test per modul dalam format pilihan ganda, checkbox, atau benar/salah (soal, pilihan, kunci, pembahasan), serta menentukan jumlah soal yang diambil dan pengacakan urutan. | Must | FR-A05 |
+| BR-A05 | Admin dapat mengelola kuis atau studi kasus tiap unit sebanyak 3 sampai 5 soal dalam format pilihan ganda, checkbox, atau benar/salah, lengkap dengan pilihan, kunci, dan pembahasan. | Must | FR-A11 (baru) |
 | BR-A06 | Admin dapat melihat daftar seluruh Learner dengan pencarian dan filter. | Must | FR-A06 |
 | BR-A07 | Admin dapat melihat rekap skor dan progres seluruh Learner (pre, post, selisih, unit selesai), memfilter per modul atau periode, dan mengekspor CSV. | Must | FR-A08, A09 |
 | BR-A08 | Admin melihat dashboard ringkas (jumlah pengguna, modul, tes selesai, rata-rata skor pre vs post) beserta pintasan ke menu utama. | Should | FR-A10 |
@@ -253,7 +253,7 @@ Superadmin menggunakan aplikasi web dan halaman login yang sama dengan Admin. Se
 
 | ID | Kebutuhan Fungsional Baru |
 |---|---|
-| FR-L28 | Setiap unit memiliki kuis atau studi kasus berisi 3 sampai 5 soal pilihan ganda yang dikerjakan setelah materi unit. |
+| FR-L28 | Setiap unit memiliki kuis atau studi kasus berisi 3 sampai 5 soal berformat pilihan ganda, checkbox, atau benar/salah yang dikerjakan setelah materi unit. |
 | FR-L29 | Setelah kuis unit selesai, sistem menampilkan hasil dan pembahasan singkat; pengguna dapat kembali (rollback) ke materi unit dan mengulang kuis kapan saja. |
 | FR-L30 | Hasil kuis unit tersimpan sebagai bagian progres unit dan tidak dihitung dalam skor pre-test maupun post-test. |
 | FR-L31 | Forum diskusi modul terbuka bagi Learner setelah pre-test modul tersebut selesai dikerjakan, dan dapat diakses kapan saja (termasuk saat membaca unit). |
@@ -379,8 +379,13 @@ Timeline mengacu pada proposal dan notulen rapat (identifikasi kebutuhan di Okto
 |---|---|---|
 | 1 | Makna "rollback" pada kuis unit | Pengguna dapat kembali ke materi unit saat hasil kuis kurang baik, lalu mengulang kuis; kuis tidak mengunci akses ke unit berikutnya secara otomatis |
 | 2 | Syarat unit dianggap selesai | Unit selesai setelah materi dipelajari dan kuis unit dikerjakan, tanpa nilai minimum kelulusan |
+<<<<<<< Updated upstream
 | 3 | Bentuk soal kuis unit dan studi kasus | Pilihan ganda, dengan studi kasus berupa soal berbasis skenario |
 | 4 | Pengelolaan konten dan peran Superadmin | Sudah diputuskan: Admin hanya mengelola modul miliknya; Superadmin melihat modul secara baca-saja dan memutuskan review, revisi, takedown, serta perpanjangan, tetapi tidak mengubah isi atau melihat skor |
+=======
+| 3 | Format soal dan penilaian checkbox | Pilihan ganda (satu kunci), checkbox (satu atau lebih kunci), atau benar/salah. Skor checkbox per soal adalah jumlah kunci benar yang dipilih dibagi jumlah seluruh kunci benar; pilihan salah tidak menambah nilai. |
+| 4 | Pengelolaan akun Learner oleh Admin | Admin hanya melihat daftar Learner; edit, hapus, dan ubah role hanya oleh Superadmin |
+>>>>>>> Stashed changes
 | 5 | Sumber tautan video | Mendukung YouTube embed dan URL file video langsung; video harus dapat diakses dan mengizinkan embedding |
 | 6 | Stack Android dan layanan hosting/deployment | Stack backend/panel web sudah ditetapkan; stack Android dan hosting/deployment belum diputuskan |
 | 7 | Bentuk notifikasi laporan konten | Muncul di panel web Admin (tanpa push atau email) |

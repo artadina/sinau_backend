@@ -5,12 +5,17 @@ namespace Database\Seeders;
 use App\Enums\Role;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use RuntimeException;
 
 class DatabaseSeeder extends Seeder
 {
-    // FR-A01, FR-A12, FR-SA01: development accounts for the staged panel foundation.
+    // FR-A01, FR-A12, FR-SA01: non-production accounts for the staged panel foundation.
     public function run(): void
     {
+        if (app()->environment('production')) {
+            throw new RuntimeException('Seeder akun dan data demo tidak boleh dijalankan di production.');
+        }
+
         User::firstOrCreate(
             ['email' => 'superadmin@sinau.test'],
             [
@@ -61,11 +66,17 @@ class DatabaseSeeder extends Seeder
             );
         }
 
+<<<<<<< Updated upstream
         // FR-A06, FR-A08, FR-A10, FR-A13, FR-A15: local-only panel examples.
         if (app()->environment('local')) {
             $this->call(DemoHistorySeeder::class);
             $this->call(DemoForumSeeder::class);
             $this->call(ContentGovernanceSeeder::class);
         }
+=======
+        // FR-A06, FR-A08, FR-A10, FR-A13, FR-A15: non-production panel examples.
+        $this->call(DemoHistorySeeder::class);
+        $this->call(DemoForumSeeder::class);
+>>>>>>> Stashed changes
     }
 }

@@ -11,12 +11,17 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 class DemoHistorySeeder extends Seeder
 {
     // FR-A06, FR-A08, FR-A10, AC-38, AC-39, AC-40
     public function run(): void
     {
+        if (app()->environment('production')) {
+            throw new RuntimeException('Data riwayat demo tidak boleh dibuat di production.');
+        }
+
         $admin = User::query()->where('role', Role::Admin->value)->firstOrFail();
         $learners = collect(range(1, 7))->map(function (int $number): User {
             return User::query()->firstOrCreate(
@@ -76,6 +81,8 @@ class DemoHistorySeeder extends Seeder
                         [
                             'options' => ['A' => 'Pilihan A', 'B' => 'Pilihan B', 'C' => 'Pilihan C'],
                             'correct_key' => 'A',
+                            'question_format' => 'multiple_choice',
+                            'correct_keys' => ['A'],
                             'explanation' => 'Pembahasan contoh.',
                         ],
                     );
@@ -127,6 +134,7 @@ class DemoHistorySeeder extends Seeder
                     ['attempt_id' => $attempt->id, 'question_id' => $question->id],
                     [
                         'selected_key' => $isCorrect ? $question->correct_key : 'B',
+                        'selected_keys' => json_encode([$isCorrect ? $question->correct_key : 'B']),
                         'is_correct' => $isCorrect,
                     ],
                 );

@@ -8,10 +8,12 @@ use App\Models\TestAttempt;
 use App\Models\Unit;
 use App\Models\User;
 use Carbon\Carbon;
+use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\DemoHistorySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+use RuntimeException;
 use Tests\TestCase;
 
 class AdminStepThreeTest extends TestCase
@@ -212,6 +214,40 @@ class AdminStepThreeTest extends TestCase
             ->assertDontSee('Kelola Bank Soal');
     }
 
+    // FR-A10, AC-40: non-production demo seeding makes the dashboard representative.
+    public function test_database_seeder_populates_dashboard_demo_history(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $admin = $this->admin();
+
+        $this->actingAs($admin)
+            ->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertSee('Jumlah Learner')
+            ->assertSee('10')
+            ->assertSee('Jumlah Modul')
+            ->assertSee('2')
+            ->assertSee('Tes Selesai')
+            ->assertSee('11')
+            ->assertSee('Dasar Pengelolaan Usaha')
+            ->assertSee('Strategi Pemasaran');
+    }
+
+    // FR-A10: refuse demo seeding in production before creating any demo records.
+    public function test_database_seeder_rejects_production_environment(): void
+    {
+        app()->detectEnvironment(static fn () => 'production');
+
+        try {
+            (new DatabaseSeeder)->run();
+            $this->fail('Production must reject demo seeding.');
+        } catch (RuntimeException $exception) {
+            $this->assertSame('Seeder akun dan data demo tidak boleh dijalankan di production.', $exception->getMessage());
+        }
+
+        $this->assertDatabaseCount('users', 0);
+    }
+
     // FR-S05, AB-09, AC-10: only Admin can access any Step 3 route.
     public function test_superadmin_and_learner_get_forbidden_on_all_step_three_routes(): void
     {
@@ -276,6 +312,10 @@ class AdminStepThreeTest extends TestCase
             ->count();
         $this->assertSame(4, $answerCountForAttempt);
         $this->assertEquals((float) $attempt->score, ($correctCount / $answerCountForAttempt) * 100);
+        $this->assertSame(
+            DB::table('test_attempt_answers')->where('attempt_id', $attempt->id)->value('selected_key'),
+            json_decode(DB::table('test_attempt_answers')->where('attempt_id', $attempt->id)->value('selected_keys'), true)[0],
+        );
         $this->assertSame(7, User::query()->where('role', Role::Learner->value)->count());
     }
 

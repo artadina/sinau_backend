@@ -30,7 +30,9 @@ class UnitQuizController extends Controller
             'unit' => $unit,
             'module' => $unit->module,
             'quiz' => new UnitQuiz([
+                'question_format' => 'multiple_choice',
                 'options' => ['A' => '', 'B' => '', 'C' => ''],
+                'correct_keys' => ['A'],
             ]),
         ]);
     }
@@ -39,6 +41,7 @@ class UnitQuizController extends Controller
     public function store(StoreUnitQuizRequest $request, Unit $unit): RedirectResponse
     {
         $data = $request->validated();
+        $data['correct_key'] = $data['correct_keys'][0];
         $blocked = DB::transaction(function () use ($unit, $data): bool {
             $lockedUnit = Unit::query()->lockForUpdate()->findOrFail($unit->id);
             $count = $lockedUnit->quizzes()->count();
@@ -74,7 +77,9 @@ class UnitQuizController extends Controller
     // FR-A11, AC-42
     public function update(UpdateUnitQuizRequest $request, Unit $unit, UnitQuiz $quiz): RedirectResponse
     {
-        $quiz->update($request->validated());
+        $data = $request->validated();
+        $data['correct_key'] = $data['correct_keys'][0];
+        $quiz->update($data);
 
         return redirect()->route('admin.units.quizzes.index', $unit)
             ->with('status', 'Soal kuis berhasil diperbarui.');

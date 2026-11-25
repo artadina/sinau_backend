@@ -1,12 +1,30 @@
 const csvHeaders = [
     'question_text',
+    'question_format',
     'option_a',
     'option_b',
     'option_c',
     'option_d',
-    'correct_key',
+    'correct_keys',
     'explanation',
 ];
+
+function normalizeQuestionFormat(value) {
+    const format = value.trim().toLowerCase().replace(/\s+/g, ' ');
+    const formats = {
+        multiple_choice: 'multiple_choice',
+        'multiple choice': 'multiple_choice',
+        'pilihan ganda': 'multiple_choice',
+        checkbox: 'checkbox',
+        true_false: 'true_false',
+        'true/false': 'true_false',
+        'true / false': 'true_false',
+        'benar/salah': 'true_false',
+        'benar / salah': 'true_false',
+    };
+
+    return formats[format] ?? null;
+}
 
 export function parseCsv(source) {
     const text = source.replace(/^\uFEFF/, '');
@@ -53,8 +71,13 @@ export function parseCsv(source) {
     if (records.length < 2) throw new Error('CSV belum memiliki baris soal untuk diimpor.');
 
     const headers = records[0].map((value) => value.trim().toLowerCase());
-    if (csvHeaders.some((header) => !headers.includes(header)) || headers.length !== csvHeaders.length) {
-        throw new Error(`Kolom CSV tidak sesuai. Gunakan header: ${csvHeaders.join(', ')}.`);
+    const requiredHeaders = ['question_text', 'option_a', 'option_b', 'option_c', 'option_d', 'explanation'];
+    const acceptedHeaders = [...requiredHeaders, 'question_format', 'correct_key', 'correct_keys'];
+    const hasAnswerKey = headers.includes('correct_key') || headers.includes('correct_keys');
+    if (requiredHeaders.some((header) => !headers.includes(header))
+        || !hasAnswerKey
+        || headers.some((header) => !acceptedHeaders.includes(header))) {
+        throw new Error(`Kolom CSV tidak sesuai. Gunakan header: ${csvHeaders.join(', ')}. Kunci checkbox dipisahkan dengan tanda |.`);
     }
 
     const headerIndexes = Object.fromEntries(headers.map((header, index) => [header, index]));
@@ -65,6 +88,15 @@ export function parseCsv(source) {
         }
 
         const value = (name) => (values[headerIndexes[name]] ?? '').trim();
+        const formatValue = value('question_format');
+        const format = formatValue ? normalizeQuestionFormat(formatValue) : 'multiple_choice';
+        if (!format) {
+            throw new Error(`Format soal pada baris ${index + 2} tidak dikenal. Gunakan Pilihan ganda, Checkbox, atau Benar/Salah.`);
+        }
+
+        const correctKeys = value('correct_keys')
+            ? value('correct_keys').split('|').map((key) => key.trim().toUpperCase()).filter(Boolean)
+            : [value('correct_key').toUpperCase()].filter(Boolean);
         const options = {
             A: value('option_a'),
             B: value('option_b'),
@@ -74,8 +106,9 @@ export function parseCsv(source) {
 
         return {
             question_text: value('question_text'),
+            question_format: format,
             options,
-            correct_key: value('correct_key').toUpperCase(),
+            correct_keys: correctKeys,
             explanation: value('explanation'),
         };
     });
@@ -98,21 +131,57 @@ function showMessage(element, text, isError = false) {
     element.classList.add(isError ? 'text-rose-800' : 'text-emerald-800');
 }
 
+function syncQuestionFormat(question) {
+    const format = question.querySelector('[data-question-format]')?.value ?? 'multiple_choice';
+    const isTrueFalse = format === 'true_false';
+    const options = question.querySelectorAll('[data-question-option]');
+
+    options.forEach((input) => {
+        const key = input.dataset.questionOption;
+        const wrapper = question.querySelector(`[data-question-option-wrap="${key}"]`);
+        const isFixedChoice = isTrueFalse && ['A', 'B'].includes(key);
+
+        if (input.dataset.customValue === undefined) {
+            input.dataset.customValue = input.value;
+        }
+
+        if (isTrueFalse) {
+            input.value = isFixedChoice ? (key === 'A' ? 'Benar' : 'Salah') : '';
+        } else {
+            input.value = input.dataset.customValue;
+        }
+
+        input.readOnly = isFixedChoice;
+        input.disabled = isTrueFalse && !isFixedChoice;
+        input.required = !isTrueFalse && ['A', 'B', 'C'].includes(key);
+        wrapper?.classList.toggle('hidden', isTrueFalse && !isFixedChoice);
+    });
+
+    const answerInputs = [...question.querySelectorAll('[data-question-correct-choice]')];
+    answerInputs.forEach((input) => {
+        const key = input.dataset.questionCorrectChoice;
+        const option = question.querySelector(`[data-question-option="${key}"]`);
+        const wrapper = question.querySelector(`[data-question-correct-wrap="${key}"]`);
+        const isAvailable = !isTrueFalse || ['A', 'B'].includes(key);
+
+        input.type = format === 'checkbox' ? 'checkbox' : 'radio';
+        input.disabled = !isAvailable || (!isTrueFalse && key === 'D' && !option?.value.trim());
+        wrapper?.classList.toggle('hidden', !isAvailable);
+    });
+
+    const selected = answerInputs.filter((input) => input.checked && !input.disabled);
+    if (format !== 'checkbox' && selected.length > 1) {
+        selected.slice(1).forEach((input) => { input.checked = false; });
+    }
+
+}
+
 function initializeQuestionEditor(root, questions, validationErrors) {
     const form = root.querySelector('[data-question-bulk-form]');
     const list = form.querySelector('[data-question-list]');
     const template = form.querySelector('[data-question-template]');
     const message = root.querySelector('[data-question-import-message]');
     let nextIndex = 0;
-
-    function syncCorrectKeys(card) {
-        const hasOptionD = card.querySelector('[data-question-option="D"]').value.trim() !== '';
-        const optionD = card.querySelector('[data-question-correct] option[value="D"]');
-        optionD.disabled = !hasOptionD;
-        if (!hasOptionD && card.querySelector('[data-question-correct]').value === 'D') {
-            card.querySelector('[data-question-correct]').value = 'A';
-        }
-    }
 
     function appendCard(question = {}, errors = {}, sourceIndex = nextIndex) {
         const index = nextIndex;
@@ -124,24 +193,33 @@ function initializeQuestionEditor(root, questions, validationErrors) {
 
         card.querySelector('[data-question-number]').textContent = String(list.children.length + 1);
         card.querySelector('[data-question-text]').value = question.question_text ?? '';
+        card.querySelector('[data-question-format]').value = question.question_format ?? 'multiple_choice';
         card.querySelectorAll('[data-question-option]').forEach((input) => {
             input.value = options[input.dataset.questionOption] ?? '';
+            input.dataset.customValue = input.value;
         });
-        card.querySelector('[data-question-correct]').value = question.correct_key ?? 'A';
+        const correctKeys = question.correct_keys ?? (question.correct_key ? [question.correct_key] : ['A']);
         card.querySelector('[data-question-explanation]').value = question.explanation ?? '';
         card.querySelectorAll('[data-error-for]').forEach((element) => {
             const sourceKey = element.dataset.errorFor.replace(
                 `questions.${index}.`,
                 `questions.${sourceIndex}.`,
             );
-            const error = errors[element.dataset.errorFor] ?? errors[sourceKey];
+            const error = errors[element.dataset.errorFor]
+                ?? errors[sourceKey]
+                ?? errors[`${sourceKey}.0`];
             if (!error) return;
             element.textContent = error;
             element.classList.remove('hidden');
         });
         card.dataset.questionIndex = String(index);
         list.append(card);
-        syncCorrectKeys(card);
+        syncQuestionFormat(card);
+
+        // FR-A05, AC-48: set checkbox inputs before restoring multiple imported answer keys.
+        card.querySelectorAll('[data-question-correct-choice]').forEach((input) => {
+            input.checked = correctKeys.includes(input.value);
+        });
 
         return card;
     }
@@ -181,8 +259,19 @@ function initializeQuestionEditor(root, questions, validationErrors) {
     });
 
     list.addEventListener('input', (event) => {
-        if (event.target.matches('[data-question-option="D"]')) {
-            syncCorrectKeys(event.target.closest('[data-question-card]'));
+        const card = event.target.closest('[data-question-card]');
+        if (event.target.matches('[data-question-option]') && card) {
+            if (card.querySelector('[data-question-format]').value !== 'true_false') {
+                event.target.dataset.customValue = event.target.value;
+            }
+            syncQuestionFormat(card);
+        }
+    });
+
+    list.addEventListener('change', (event) => {
+        const card = event.target.closest('[data-question-card]');
+        if (event.target.matches('[data-question-format]') && card) {
+            syncQuestionFormat(card);
         }
     });
 
@@ -207,7 +296,8 @@ function validationErrorsByQuestion(errors) {
         if (!match) return;
         const index = Number(match[1]);
         indexedErrors[index] ??= {};
-        indexedErrors[index][`questions.${index}.${match[2]}`] = messages[0];
+        const field = match[2].replace(/\.correct_keys\.\d+$/, '.correct_keys');
+        indexedErrors[index][`questions.${index}.${field}`] = messages[0];
     });
     return indexedErrors;
 }
@@ -333,5 +423,22 @@ export function initializeQuestionImportPage() {
         if (initialQuestions.length && list.children.length) {
             list.querySelector('[data-question-text]')?.focus({ preventScroll: true });
         }
+    });
+}
+
+// FR-A05, FR-A11: keep option and answer controls aligned with each saved format.
+export function initializeQuestionFormatForms() {
+    document.querySelectorAll('[data-question-format-form]').forEach((form) => {
+        syncQuestionFormat(form);
+        form.addEventListener('change', (event) => {
+            if (event.target.matches('[data-question-format]')) syncQuestionFormat(form);
+        });
+        form.addEventListener('input', (event) => {
+            if (!event.target.matches('[data-question-option]')) return;
+            if (form.querySelector('[data-question-format]').value !== 'true_false') {
+                event.target.dataset.customValue = event.target.value;
+            }
+            syncQuestionFormat(form);
+        });
     });
 }

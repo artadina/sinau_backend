@@ -9,12 +9,17 @@ use App\Models\Module;
 use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use RuntimeException;
 
 class DemoForumSeeder extends Seeder
 {
-    // FR-A13, FR-A15, AC-33, AC-34: repeatable local-only forum and moderation examples.
+    // FR-A13, FR-A15, AC-33, AC-34: repeatable non-production forum and moderation examples.
     public function run(): void
     {
+        if (app()->environment('production')) {
+            throw new RuntimeException('Data forum demo tidak boleh dibuat di production.');
+        }
+
         $admin = User::query()->firstOrCreate(
             ['email' => 'admin@sinau.test'],
             [

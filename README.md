@@ -13,9 +13,11 @@ Backend Sinau menggunakan Laravel 12, MySQL, Blade, Tailwind CSS melalui Vite, s
 
 Jangan gunakan `migrate:fresh` pada database yang berisi data.
 
-## Akun demo lokal
+## Data demo non-production
 
-Kredensial berikut hanya untuk pengembangan lokal:
+`php artisan migrate --seed` menyiapkan akun demo, dua modul, learner, dan riwayat pre/post-test contoh agar kartu dan grafik dashboard Admin menampilkan data. Seeder juga menambahkan contoh forum dan laporan moderasi. Seeder aman dijalankan ulang dan menolak berjalan di production.
+
+Kredensial berikut hanya untuk lingkungan non-production:
 
 | Role | Email | Password awal |
 |---|---|---|
@@ -26,7 +28,7 @@ Kredensial berikut hanya untuk pengembangan lokal:
 | Learner | `learner2@sinau.test` | `LearnerDemo!123` |
 | Learner | `learner3@sinau.test` | `LearnerDemo!123` |
 
-Akun Admin demo ditandai sebagai password sementara dan harus mengganti password saat login pertama. Seeder tidak menimpa akun yang sudah ada. Superadmin dapat mengelola akun Admin dan Learner melalui panel khusus.
+Akun Admin demo ditandai sebagai password sementara dan harus mengganti password saat login pertama. Seeder tidak menimpa akun yang sudah ada. Superadmin dapat mengelola akun Admin dan Learner melalui panel khusus. Jangan gunakan kredensial ini di production.
 
 ## Email reset password lokal
 

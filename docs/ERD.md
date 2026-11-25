@@ -129,8 +129,10 @@ erDiagram
         BIGINT id PK
         BIGINT unit_id FK
         TEXT question_text
+        VARCHAR question_format "multiple_choice, checkbox, true_false"
         JSON options
-        CHAR_1 correct_key
+        JSON correct_keys
+        CHAR_1 correct_key "legacy first key"
         TEXT explanation
     }
     test_questions {
@@ -138,8 +140,10 @@ erDiagram
         BIGINT module_id FK
         ENUM type "pre, post"
         TEXT question_text
+        VARCHAR question_format "multiple_choice, checkbox, true_false"
         JSON options
-        CHAR_1 correct_key
+        JSON correct_keys
+        CHAR_1 correct_key "legacy first key"
         TEXT explanation
     }
     test_attempts {
@@ -154,7 +158,8 @@ erDiagram
         BIGINT id PK
         BIGINT attempt_id FK
         BIGINT question_id FK
-        CHAR selected_key
+        CHAR selected_key "legacy first key"
+        JSON selected_keys
         BOOL is_correct
         UNIQUE attempt_id_question_id
     }
@@ -216,10 +221,10 @@ Keterangan: PK = Primary Key; FK = Foreign Key; UK = Unique Key. Satu baris `use
 | `module_reminders` | Mencegah pengiriman berulang pengingat masa aktif H-14/H-3 dalam periode yang sama. |
 | `notifications` | Menyimpan notifikasi in-panel per penerima, termasuk status baca; endpoint hanya mengizinkan penerima melihat atau menandainya terbaca. |
 | `units` | Menyimpan unit per modul beserta urutan unik per modul, video, tujuan, materi, durasi, dan `is_active` (default true). `duration` nullable dan disimpan dalam detik; form Admin menerima menit. `reading_content` berisi HTML terbatas yang disanitasi server. Gambar materi disimpan sebagai file privat dan dokumen impor diproses sementara. Kolom `is_active` tersedia, tetapi belum ada UI/route Admin untuk mengubahnya. |
-| `unit_quizzes` | Bank soal kuis atau studi kasus khusus tiap unit. Terikat pada `unit_id`. Setiap unit wajib memiliki 3 sampai 5 soal pilihan ganda beserta kunci dan pembahasan. |
-| `test_questions` | Bank soal Pre/Post per modul. Kolom `type` wajib bernilai `pre` atau `post`; berisi soal, pilihan, kunci, dan pembahasan. |
+| `unit_quizzes` | Bank soal kuis atau studi kasus khusus tiap unit. Terikat pada `unit_id`. Setiap unit wajib memiliki 3 sampai 5 soal berformat pilihan ganda, checkbox, atau benar/salah beserta kunci dan pembahasan. |
+| `test_questions` | Bank soal Pre/Post per modul. Kolom `type` wajib bernilai `pre` atau `post`; `question_format` membedakan pilihan ganda, checkbox, atau benar/salah. `correct_keys` menyimpan semua kunci benar; `correct_key` dipertahankan sebagai kunci pertama untuk kompatibilitas data lama. |
 | `test_attempts` | Menyimpan skor dan status pengerjaan Pre/Post. `completed_at` nullable menandakan attempt belum selesai. Jawaban per soal disimpan terpisah. Forum ditetapkan terbuka setelah pre-test selesai, tetapi forum Learner belum diimplementasikan. |
-| `test_attempt_answers` | Menyimpan pilihan dan benar/salah tiap soal untuk satu attempt. Kombinasi `attempt_id` dan `question_id` unik; relasi ke attempt dan pertanyaan dihapus berantai. |
+| `test_attempt_answers` | Menyimpan pilihan dan benar/salah tiap soal untuk satu attempt. `selected_keys` menyimpan satu atau beberapa pilihan Learner; `selected_key` dipertahankan sebagai pilihan pertama untuk kompatibilitas. Kombinasi `attempt_id` dan `question_id` unik; relasi ke attempt dan pertanyaan dihapus berantai. |
 | `learner_unit_progress` | Mencatat posisi video dan status selesai per Learner/unit. Kombinasi `user_id` dan `unit_id` unik. |
 | `unit_quiz_attempts` | Menyimpan skor dan waktu penyelesaian kuis unit. Penghapusan user atau unit dibatasi oleh FK (`RESTRICT`) agar riwayat tidak terhapus. Tabel tersedia, tetapi pengerjaan kuis Learner belum ada. |
 | `user_badges` | Menyimpan lencana personal per Learner/modul; pasangan user/modul unik. Tidak ada peringkat antar pengguna. |

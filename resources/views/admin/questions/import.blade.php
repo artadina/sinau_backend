@@ -9,6 +9,9 @@
 
         <div role="note" class="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900">
             Periksa dan edit soal di bawah. Soal yang sudah ada di bank tidak ikut diubah.
+            Isi <code>question_format</code> dengan Pilihan ganda, Checkbox, atau Benar/Salah.
+            Untuk checkbox, pisahkan kunci dengan tanda <code>|</code> (contoh: <code>A|C</code>).
+            Untuk benar/salah, isi kunci <code>A</code> untuk Benar atau <code>B</code> untuk Salah.
         </div>
         @if ($errors->any())
             <div role="alert" class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">Ada soal yang belum valid. Periksa field yang ditandai sebelum menyimpan.</div>
