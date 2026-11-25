@@ -75,9 +75,10 @@ if (document.querySelector('[data-material-editor]')) {
     import('./material-editor').then(({ initializeMaterialEditors }) => initializeMaterialEditors());
 }
 
-if (document.querySelector('[data-question-bank]') || document.querySelector('[data-question-import-page]')) {
-    import('./question-bank').then(({ initializeQuestionBank, initializeQuestionImportPage }) => {
+if (document.querySelector('[data-question-bank]') || document.querySelector('[data-question-import-page]') || document.querySelector('[data-question-format-form]')) {
+    import('./question-bank').then(({ initializeQuestionBank, initializeQuestionImportPage, initializeQuestionFormatForms }) => {
         initializeQuestionBank();
         initializeQuestionImportPage();
+        initializeQuestionFormatForms();
     });
 }

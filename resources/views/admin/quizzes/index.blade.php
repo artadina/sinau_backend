@@ -34,12 +34,15 @@
                         <article class="flex flex-col justify-between gap-3 p-5 sm:flex-row">
                             <div class="min-w-0 space-y-2">
                                 <h3 class="font-semibold text-slate-900">{{ $loop->iteration }}. {{ $quiz->question_text }}</h3>
+                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                                    {{ ['multiple_choice' => 'Pilihan ganda', 'checkbox' => 'Checkbox', 'true_false' => 'Benar / Salah'][$quiz->question_format ?? 'multiple_choice'] ?? 'Pilihan ganda' }}
+                                </p>
                                 <ul class="grid gap-1 text-sm text-slate-600 sm:grid-cols-2">
                                     @foreach ($quiz->options as $key => $option)
                                         <li><span class="font-semibold">{{ $key }}.</span> {{ $option }}</li>
                                     @endforeach
                                 </ul>
-                                <p class="text-xs text-emerald-800">Kunci: {{ $quiz->correct_key }}</p>
+                                <p class="text-xs text-emerald-800">Kunci: {{ implode(', ', $quiz->answer_keys) }}</p>
                                 <p class="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600"><span class="font-semibold">Pembahasan:</span> {{ $quiz->explanation }}</p>
                             </div>
                             <div class="flex shrink-0 gap-2">

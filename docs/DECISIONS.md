@@ -34,6 +34,8 @@ Constraint tercantum pada migration repository. Sebelum menjalankan migration pa
 ## 3. Kesesuaian ERD dan Model yang Sudah Ada
 
 - Tabel domain pada skema meliputi `users`, `modules`, `units`, `unit_quizzes`, `test_questions`, `test_attempts`, `test_attempt_answers`, `unit_quiz_attempts`, `learner_unit_progress`, `user_badges`, `forum_posts`, dan `forum_reports`.
+- `question_format` membedakan `multiple_choice`, `checkbox`, dan `true_false`; `correct_keys` dan `selected_keys` menyimpan satu atau lebih kunci dalam JSON. Kolom karakter `correct_key` dan `selected_key` dipertahankan sebagai kunci pertama untuk kompatibilitas. Soal benar/salah memakai opsi baku `Benar` dan `Salah`.
+- Penilaian checkbox mengikuti AB-17: jumlah kunci benar yang dipilih dibagi jumlah seluruh kunci benar; pilihan salah tidak menambah nilai.
 - Kolom string `users.name` memakai panjang default Laravel (255); ERD menggunakan notasi `VARCHAR` tanpa mengulang panjang default tersebut.
 - Migration users memuat soft delete, `is_temp_password`, `consent_given`, `business_name`, dan `consent_at`. Password di-hash oleh model `User`. Kolom data tambahan sudah ada pada skema, tetapi pendaftaran/profil Learner dan alur persetujuan belum menjadi fitur saat ini.
 - Migration mengatur cascade untuk balasan forum dan `SET NULL` untuk `forum_reports.post_id`; laporan tetap tersimpan ketika posting dihapus. Fitur moderasi Admin menutup laporan terkait sebelum penghapusan.
@@ -224,6 +226,7 @@ erDiagram
 - **Validasi dan pembatasan target (AB-16, FR-S01):** semua operasi akun memakai Form Request; nama wajib maksimal 100 karakter, email wajib dan valid serta unik, dan role hanya `learner` atau `admin`. Route binding `/superadmin/admins/{user}` hanya menerima akun ber-role Admin dan `/superadmin/learners/{user}` hanya menerima Learner; target role lain menghasilkan 404.
 - **Metode dan konfirmasi:** perubahan data memakai PUT, perubahan role memakai PUT pada endpoint khusus, penghapusan memakai DELETE dan CSRF; tidak ada aksi tulis melalui GET. UI meminta konfirmasi sebelum menghapus Learner.
 
+<<<<<<< Updated upstream
 ## 10. Content Governance
 
 Keputusan berikut menyelaraskan aturan publikasi dan alur Content Governance yang telah dikonfirmasi. Rincian kode PS-01–PS-30 dan acceptance criteria ada pada [PRD](./PRD.md); model data serta diagram alur ada pada [ERD](./ERD.md).
@@ -237,3 +240,11 @@ Keputusan berikut menyelaraskan aturan publikasi dan alur Content Governance yan
 - **PS-27:** SLA menghitung hari kerja Senin–Jumat, tanpa kalender hari libur; penanda muncul setelah dua hari kerja. SLA melewati batas setelah tiga hari kerja.
 - **PS-30:** edit minor modul terbit hanya untuk koreksi judul, deskripsi, dan thumbnail/sampul. Perubahan isi unit atau soal, termasuk typo di dalamnya, memakai salinan versi. Judul unik global kecuali anggota keluarga versi yang sama. Setelah versi baru disetujui, versi terbit lama langsung diarsipkan.
 - **Audit dan notifikasi:** keputusan/status direkam beserta aktor, waktu, catatan, dan metadata relevan; notifikasi in-panel hanya dapat dibaca oleh penerima.
+=======
+## 10. Format Soal
+
+- **Format bank soal:** bank pre-test, post-test, dan kuis unit mendukung `multiple_choice`, `checkbox`, dan `true_false`. Pilihan ganda memakai satu kunci; checkbox dapat memakai satu atau lebih kunci; benar/salah memakai pilihan baku `Benar` dan `Salah`.
+- **Penilaian checkbox (AB-17):** skor per soal adalah jumlah kunci benar yang dipilih dibagi jumlah seluruh kunci benar. Pilihan yang bukan kunci benar tidak menambah nilai dan tidak mengurangi kredit.
+- **Penyimpanan kompatibel:** `question_format` mengidentifikasi format; `correct_keys` menyimpan seluruh kunci benar dan `selected_keys` menyimpan seluruh jawaban pada tes. Kolom karakter `correct_key` dan `selected_key` tetap dipertahankan sebagai nilai kunci pertama untuk data/konsumen lama.
+- **Status implementasi:** panel Admin mengelola ketiga format. API dan alur pengerjaan Learner/mobile belum tersedia; perhitungan skor pada aplikasi Learner menjadi pekerjaan lanjutan.
+>>>>>>> Stashed changes

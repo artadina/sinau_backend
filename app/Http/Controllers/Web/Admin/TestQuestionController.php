@@ -47,7 +47,9 @@ class TestQuestionController extends Controller
             'module' => $module,
             'type' => $type,
             'question' => new TestQuestion([
+                'question_format' => 'multiple_choice',
                 'options' => ['A' => '', 'B' => '', 'C' => ''],
+                'correct_keys' => ['A'],
             ]),
         ]);
     }
@@ -58,6 +60,7 @@ class TestQuestionController extends Controller
         $this->ensureValidType($type);
         $data = $request->validated();
         unset($data['type']);
+        $data['correct_key'] = $data['correct_keys'][0];
         $module->testQuestions()->create($data + ['type' => $type]);
 
         return redirect()->route('admin.modules.questions.index', [$module, $type])
@@ -77,6 +80,7 @@ class TestQuestionController extends Controller
 
         DB::transaction(function () use ($module, $type, $questions): void {
             foreach ($questions as $question) {
+                $question['correct_key'] = $question['correct_keys'][0];
                 $module->testQuestions()->create($question + ['type' => $type]);
             }
         });
@@ -104,6 +108,7 @@ class TestQuestionController extends Controller
         $this->assertQuestionType($type, $question);
         $data = $request->validated();
         unset($data['type']);
+        $data['correct_key'] = $data['correct_keys'][0];
         $question->update($data);
 
         return redirect()->route('admin.modules.questions.index', [$module, $type])

@@ -95,6 +95,8 @@ class AdminQuestionManagementTest extends TestCase
             ->get(route('admin.modules.questions.create', [$module, 'pre']))
             ->assertOk()
             ->assertSee('Teks soal')
+            ->assertSee('Format soal')
+            ->assertSee('Checkbox')
             ->assertSee('Pilihan A')
             ->assertSee('Opsional');
 
@@ -104,12 +106,83 @@ class AdminQuestionManagementTest extends TestCase
             'options' => ['A' => 'Satu', 'B' => 'Dua'],
             'correct_key' => 'C',
             'explanation' => '',
-        ])->assertSessionHasErrors(['question_text', 'options', 'options.C', 'correct_key', 'explanation']);
+        ])->assertSessionHasErrors(['question_text', 'options.C', 'correct_keys.0', 'explanation']);
 
         $this->post(route('admin.modules.questions.store', [$module, 'pre']), $this->questionData([
             'type' => 'pre',
-            'correct_key' => 'D',
-        ]))->assertSessionHasErrors(['correct_key']);
+            'correct_keys' => ['D'],
+        ]))->assertSessionHasErrors(['correct_keys.0']);
+    }
+
+    // FR-A05, FR-A11: all question formats are stored with their answer keys.
+    public function test_admin_can_create_all_question_formats_for_tests_and_unit_quizzes(): void
+    {
+        $admin = $this->admin();
+        $module = $this->module($admin);
+        $unit = $this->unit($module);
+
+        $this->actingAs($admin)
+            ->post(route('admin.modules.questions.store', [$module, 'pre']), $this->questionData([
+                'type' => 'pre',
+                'question_format' => 'checkbox',
+                'correct_keys' => ['A', 'C'],
+            ]))
+            ->assertRedirect(route('admin.modules.questions.index', [$module, 'pre']));
+
+        $checkbox = $module->testQuestions()->firstOrFail();
+        $this->assertSame('checkbox', $checkbox->question_format);
+        $this->assertSame(['A', 'C'], $checkbox->answer_keys);
+
+        $this->post(route('admin.modules.questions.store', [$module, 'post']), $this->questionData([
+            'type' => 'post',
+            'question_format' => 'true_false',
+            'options' => ['A' => 'Input palsu', 'B' => 'Input palsu', 'C' => 'Tidak berlaku'],
+            'correct_keys' => ['B'],
+        ]))->assertRedirect(route('admin.modules.questions.index', [$module, 'post']));
+
+        $trueFalse = $module->testQuestions()->where('type', 'post')->firstOrFail();
+        $this->assertSame('true_false', $trueFalse->question_format);
+        $this->assertSame(['A' => 'Benar', 'B' => 'Salah'], $trueFalse->options);
+        $this->assertSame(['B'], $trueFalse->answer_keys);
+
+        $this->post(route('admin.units.quizzes.store', $unit), $this->questionData([
+            'question_format' => 'checkbox',
+            'correct_keys' => ['B', 'C'],
+        ]))->assertRedirect(route('admin.units.quizzes.index', $unit));
+
+        $quiz = $unit->quizzes()->firstOrFail();
+        $this->assertSame('checkbox', $quiz->question_format);
+        $this->assertSame(['B', 'C'], $quiz->answer_keys);
+
+        $this->post(route('admin.units.quizzes.store', $unit), $this->questionData([
+            'question_format' => 'true_false',
+            'correct_keys' => ['A'],
+        ]))->assertRedirect(route('admin.units.quizzes.index', $unit));
+
+        $trueFalseQuiz = $unit->quizzes()->where('question_format', 'true_false')->firstOrFail();
+        $this->assertSame(['A' => 'Benar', 'B' => 'Salah'], $trueFalseQuiz->options);
+        $this->assertSame(['A'], $trueFalseQuiz->answer_keys);
+    }
+
+    // FR-A05, FR-A11, AC-42: checkbox accepts multiple keys; single-answer formats reject them.
+    public function test_question_formats_validate_answer_key_cardinality(): void
+    {
+        $admin = $this->admin();
+        $module = $this->module($admin);
+
+        $this->actingAs($admin)
+            ->post(route('admin.modules.questions.store', [$module, 'pre']), $this->questionData([
+                'type' => 'pre',
+                'question_format' => 'multiple_choice',
+                'correct_keys' => ['A', 'B'],
+            ]))
+            ->assertSessionHasErrors(['correct_keys']);
+
+        $this->post(route('admin.modules.questions.store', [$module, 'pre']), $this->questionData([
+            'type' => 'pre',
+            'question_format' => 'checkbox',
+            'correct_keys' => ['A', 'Z'],
+        ]))->assertSessionHasErrors(['correct_keys.1']);
     }
 
     // FR-A05, AC-42: batch saves are all-or-nothing and derive test type from the selected tab.
@@ -133,17 +206,26 @@ class AdminQuestionManagementTest extends TestCase
                         ],
                         'correct_key' => 'C',
                     ]),
+                    $this->questionData([
+                        'question_text' => 'Soal checkbox',
+                        'question_format' => 'checkbox',
+                        'correct_keys' => ['A', 'C'],
+                    ]),
                 ],
             ])
             ->assertRedirect(route('admin.modules.questions.index', [$module, 'pre']))
-            ->assertSessionHas('status', '2 soal berhasil ditambahkan.');
+            ->assertSessionHas('status', '3 soal berhasil ditambahkan.');
 
-        $this->assertDatabaseCount('test_questions', 2);
+        $this->assertDatabaseCount('test_questions', 3);
         $this->assertDatabaseHas('test_questions', [
             'module_id' => $module->id,
             'type' => 'pre',
             'question_text' => 'Soal batch dua',
         ]);
+        $this->assertSame(
+            ['A', 'C'],
+            $module->testQuestions()->where('question_text', 'Soal checkbox')->firstOrFail()->answer_keys,
+        );
 
         $this->post(route('admin.modules.questions.bulk', [$module, 'post']), [
             'source' => 'manual',
@@ -154,9 +236,9 @@ class AdminQuestionManagementTest extends TestCase
                     'correct_key' => 'D',
                 ]),
             ],
-        ])->assertSessionHasErrors(['questions.1.question_text', 'questions.1.correct_key']);
+        ])->assertSessionHasErrors(['questions.1.question_text', 'questions.1.correct_keys.0']);
 
-        $this->assertDatabaseCount('test_questions', 2);
+        $this->assertDatabaseCount('test_questions', 3);
     }
 
     // FR-A05, AC-48: CSV review has a dedicated Admin page isolated from the existing question list.
@@ -171,6 +253,9 @@ class AdminQuestionManagementTest extends TestCase
             ->assertSee('Pratinjau Impor CSV')
             ->assertSee('Soal untuk ditambahkan')
             ->assertSee('Soal yang sudah ada di bank tidak ikut diubah.')
+            ->assertSee('question_format')
+            ->assertSee('A|C')
+            ->assertSee('Benar/Salah')
             ->assertDontSee('Tambah beberapa soal sekaligus');
 
         foreach ([Role::Learner, Role::Superadmin] as $role) {

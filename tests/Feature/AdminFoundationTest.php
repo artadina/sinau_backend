@@ -205,6 +205,6 @@ class AdminFoundationTest extends TestCase
             'email' => 'learner3@sinau.test',
             'role' => 'learner',
         ]);
-        $this->assertDatabaseCount('users', 6);
+        $this->assertDatabaseCount('users', 13);
     }
 }

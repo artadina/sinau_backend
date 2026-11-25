@@ -169,6 +169,7 @@ Aplikasi kasir atau pencatatan transaksi, perekrutan staf pencatat, pendampingan
 | AB-14 | Admin yang login dengan password sementara wajib membuat password baru sebelum memakai panel. | BR-A01, Y05 |
 | AB-15 | Satu email hanya untuk satu akun. | BR-L01 |
 | AB-16 | Field wajib divalidasi; pesan error berbahasa Indonesia, ramah, dan tampil di dekat field yang bermasalah. | BR-L01 |
+| AB-17 | Soal dapat berformat pilihan ganda (satu jawaban benar), checkbox (satu atau lebih jawaban benar), atau benar/salah. Skor per soal checkbox adalah jumlah kunci benar yang dipilih dibagi jumlah seluruh kunci benar; pilihan salah tidak menambah nilai. | BR-L11 – L13, A04, A05 |
 
 **Keputusan tim yang berlaku di seluruh dokumen:**
 
@@ -217,12 +218,12 @@ Prioritas: **Must** = wajib, **Should** = penting, **Could** = opsional bila kap
 |---|---|---|---|
 | FR-L17 | Pengguna dapat mengerjakan pre-test sebelum memulai unit, dengan layar pembuka berisi judul tes, jumlah soal, estimasi waktu, dan keterangan "Ini hanya untuk mengetahui pemahaman awalmu, bukan penilaian" | Must | AB-03, AB-05; BR-L11 |
 | FR-L18 | Pengguna dapat mengerjakan post-test setelah seluruh unit modul selesai; sebelum itu post-test terkunci | Must | AB-03; BR-L11 |
-| FR-L19 | Soal ditampilkan satu per layar dari bank soal (pilihan ganda) dengan indikator "Soal 3 dari 10", tombol Sebelumnya, Berikutnya, dan Selesai di soal terakhir, konfirmasi bila masih ada soal kosong, dan tanpa batas waktu per soal | Must | AB-05; BR-L11 |
-| FR-L20 | Sistem menghitung dan menampilkan skor otomatis setelah tes selesai | Must | BR-L12 |
+| FR-L19 | Soal ditampilkan satu per layar dari bank soal (pilihan ganda, checkbox, atau benar/salah) dengan indikator "Soal 3 dari 10", tombol Sebelumnya, Berikutnya, dan Selesai di soal terakhir, konfirmasi bila masih ada soal kosong, dan tanpa batas waktu per soal | Must | AB-05, AB-17; BR-L11 |
+| FR-L20 | Sistem menghitung dan menampilkan skor otomatis setelah tes selesai; jawaban checkbox memperoleh kredit parsial sesuai AB-17 | Must | AB-17; BR-L12 |
 | FR-L21 | Sistem menampilkan kalimat apresiasi netral, daftar jawaban benar dan salah, serta pembahasan singkat tiap soal, dengan tombol Lihat riwayat dan Kembali ke modul | Must | BR-L12 |
 | FR-L22 | Progres pengerjaan tes tersimpan otomatis sehingga dapat dilanjutkan jika terhenti | Must | BR-L11, Y03 |
 | FR-L23 | Pengguna dapat mengulang post-test; setiap pengerjaan tercatat | Must | AB-05; BR-L11 |
-| FR-L28 | Setiap unit memiliki kuis atau studi kasus berisi 3–5 soal pilihan ganda yang dikerjakan setelah materi unit | Must | AB-04; BR-L13 |
+| FR-L28 | Setiap unit memiliki kuis atau studi kasus berisi 3–5 soal berformat pilihan ganda, checkbox, atau benar/salah yang dikerjakan setelah materi unit | Must | AB-04, AB-17; BR-L13 |
 | FR-L29 | Setelah kuis unit selesai, sistem menampilkan hasil dan pembahasan singkat; pengguna dapat kembali (rollback) ke materi unit dan mengulang kuis kapan saja | Must | AB-04; BR-L13 |
 | FR-L30 | Hasil kuis unit tersimpan sebagai bagian progres unit, tidak dihitung dalam skor pre-test maupun post-test, dan tidak mengunci unit berikutnya (lihat catatan data 7.4 nomor 5) | Must | AB-04; BR-L13 |
 
@@ -253,15 +254,26 @@ Prioritas: **Must** = wajib, **Should** = penting, **Could** = opsional bila kap
 | ID | Kebutuhan | Prioritas | Aturan / Ref. |
 |---|---|---|---|
 | FR-A01 | Admin dapat login ke panel web dengan akun dari Superadmin (tidak bisa didaftarkan dari aplikasi), lupa password lewat email, dan logout | Must | AB-01, AB-02; BR-A01 |
+<<<<<<< Updated upstream
 | FR-A02 | Admin dapat membuat dan menghapus modul miliknya serta mengubah metadata sesuai status workflow; perubahan isi signifikan pada versi terbit dilakukan pada salinan versi baru | Must | AB-12; BR-A02 |
 | FR-A03 | Admin dapat menambah, mengubah, dan menghapus unit materi pada modul miliknya yang dapat diedit, serta melihat pratinjau seperti tampilan Learner | Must | AB-12; BR-A03 |
 | FR-A04 | Admin dapat mengatur urutan unit pada modul yang dapat diedit dan mengajukan modul untuk review; Admin tidak dapat menerbitkan atau menurunkan modul secara langsung | Must | AB-08, AB-12; BR-A02, A03 |
 | FR-A05 | Admin dapat mengelola bank soal pre-test dan post-test pada modul miliknya yang dapat diedit (teks soal, 3–4 pilihan, kunci, pembahasan, jenis pre atau post), menambah beberapa soal sekaligus atau mengimpor CSV, menentukan jumlah soal yang diambil per tes, dan mengaktifkan acak urutan soal | Must | AB-12; BR-A04 |
+=======
+| FR-A02 | Admin dapat menambah, mengubah, dan menghapus modul (judul, deskripsi, gambar sampul, tujuan belajar), dengan konfirmasi saat menghapus | Must | AB-12; BR-A02 |
+| FR-A03 | Admin dapat menambah, mengubah, dan menghapus unit materi (judul, tujuan belajar satu kalimat, tautan video, durasi, materi singkat) dan melihat pratinjau seperti tampilan Learner | Must | AB-12; BR-A03 |
+| FR-A04 | Admin dapat mengatur urutan unit (drag atau tombol naik dan turun) dan status modul draft atau terbit | Must | AB-08; BR-A02, A03 |
+| FR-A05 | Admin dapat mengelola bank soal pre-test dan post-test per modul dalam format pilihan ganda (3–4 pilihan, satu kunci), checkbox (3–4 pilihan, satu atau lebih kunci), atau benar/salah (pilihan Benar dan Salah); Admin dapat menambah beberapa soal sekaligus atau mengimpor CSV, menentukan jumlah soal yang diambil per tes, dan mengaktifkan acak urutan soal | Must | AB-12, AB-17; BR-A04 |
+>>>>>>> Stashed changes
 | FR-A06 | Admin dapat melihat daftar Learner (nama, email, nama usaha, tanggal daftar) dengan pencarian dan filter; Admin hanya melihat | Must | AB-13; BR-A06 |
 | FR-A08 | Admin dapat melihat rekap skor dan progres seluruh Learner dalam tabel (pengguna, modul, skor pre, skor post, selisih, unit selesai) dengan filter modul atau periode | Must | AB-09; BR-A07 |
 | FR-A09 | Admin dapat mengekspor rekap skor dan progres ke CSV untuk analisis hasil uji | Must | BR-A07 |
 | FR-A10 | Admin melihat dashboard ringkas: jumlah pengguna, jumlah modul, jumlah tes selesai, rata-rata skor pre vs post per modul, dan pintasan ke Kelola Modul dan Kelola Soal | Should | BR-A08 |
+<<<<<<< Updated upstream
 | FR-A11 | Admin dapat mengelola soal kuis atau studi kasus per unit pada modul miliknya yang dapat diedit; Quality Gate menolak pengajuan bila unit memiliki kurang dari 3 atau lebih dari 5 soal | Must | AB-04, AB-12; BR-A05 |
+=======
+| FR-A11 | Admin dapat menambah, mengubah, dan menghapus soal kuis atau studi kasus per unit dalam format pilihan ganda, checkbox, atau benar/salah (teks soal atau kasus, pilihan, kunci, pembahasan); sistem menolak penerbitan unit bila jumlah soal kurang dari 3 atau lebih dari 5 | Must | AB-04, AB-17; BR-A05 |
+>>>>>>> Stashed changes
 | FR-A12 | Admin yang login dengan password sementara diwajibkan membuat password baru sebelum dapat memakai panel | Must | AB-14; BR-A01 |
 | FR-A16 | Admin dapat menyusun materi singkat dengan editor teks kaya untuk paragraf, judul, bold, miring, daftar, dan gambar; mengimpor DOCX atau PDF berbasis teks menjadi konten yang dapat diedit; serta meninjau dan mengubah hasil sebelum disimpan. DOC lama dan PDF hasil scan belum didukung. | Must | AB-12; BR-A03 |
 | FR-A17 | Admin dapat mengajukan modul miliknya untuk review setelah seluruh Quality Gate otomatis lulus dan menyatakan hak penggunaan konten; konten terkunci selama menunggu keputusan. Setelah catatan revisi, Admin dapat mengubah dan mengajukan ulang modul; Admin dapat mengajukan perpanjangan, tetapi tidak dapat menyetujui, meminta revisi, menolak, atau melakukan takedown. | Must | AB-12, AB-13; BR-A11 |
@@ -481,7 +493,7 @@ Catatan berikut berasal dari audit awal terhadap ERD. Keputusan final sudah dite
 | No | Temuan | Dampak | Rekomendasi |
 |---|---|---|---|
 | 1 | `test_questions` tidak memiliki kolom jenis soal | Soal pre dan post tidak dapat dibedakan (FR-A05) | Tambahkan `type` wajib dengan nilai `pre` atau `post`. |
-| 2 | Jawaban per soal tidak tersimpan | Hasil tes dan melanjutkan tes (FR-L21, L22) tidak dapat dipenuhi | Tambahkan `test_attempt_answers` (attempt_id, question_id, selected_key, is_correct); `completed_at` kosong berarti tes belum selesai. |
+| 2 | Jawaban per soal tidak tersimpan | Hasil tes dan melanjutkan tes (FR-L21, L22) tidak dapat dipenuhi | Tambahkan `test_attempt_answers` (attempt_id, question_id, selected_keys, is_correct); `selected_key` tetap dipertahankan sebagai pilihan pertama untuk kompatibilitas, dan `completed_at` kosong berarti tes belum selesai. |
 | 3 | `users` tidak memiliki nama usaha | FR-L01 dan FR-L05 meminta nama usaha opsional | Tambahkan `business_name` nullable. |
 | 4 | `modules` tanpa metadata dan `units` tanpa tujuan belajar | FR-A02, A03, A05 memintanya | Tambahkan `cover_image`, `learning_objectives`, `pre_question_count`, `post_question_count`, `shuffle_questions` pada `modules`, serta `learning_objective` pada `units`. |
 | 5 | Hasil kuis unit tidak disimpan | FR-L30 meminta hasil tersimpan sebagai progres | Dipilih opsi **(b)**: tambah `unit_quiz_attempts`; hasilnya tidak masuk skor pre/post. |
@@ -491,6 +503,7 @@ Catatan berikut berasal dari audit awal terhadap ERD. Keputusan final sudah dite
 | 9 | Pemicu pembukaan forum berbeda antar dokumen | ERD menulis “memulai pre-test”, flowchart dan BRD menulis setelah selesai | Forum terbuka setelah pre-test selesai; memulai tes saja tidak cukup. |
 | 10 | ENUM role terpotong (“Learner, Admin...”) | Role Superadmin harus tercantum | Tetapkan `ENUM(learner, admin, superadmin)`. |
 | 11 | Batas 3–5 soal kuis tidak ada sebagai constraint basis data | Aturan tidak boleh hanya divalidasi di UI | Validasi di server saat modul diterbitkan; tabel `units` memiliki `is_active`, tetapi aksi untuk menonaktifkan unit belum tersedia. |
+| 12 | Bank soal hanya mendukung satu kunci jawaban | Checkbox tidak dapat menyimpan beberapa kunci dan benar/salah memerlukan pilihan baku | Tambahkan `question_format`, `correct_keys`, dan `selected_keys`; data lama dimigrasikan sebagai pilihan ganda satu-kunci. Gunakan format pilihan ganda, checkbox, atau benar/salah dan aturan penilaian checkbox pada AB-17. |
 
 ## 8. Daftar Halaman (Sitemap)
 
@@ -654,6 +667,7 @@ Kasus berikut harus ditangani sistem dan diuji saat uji pengguna. Kasus bertanda
 | AC-45 | Admin menulis materi singkat dengan paragraf, bold, miring, daftar, dan gambar; Learner/pratinjau membuka unit | Format dan gambar tampil sesuai konten yang disimpan, sementara elemen aktif atau atribut berbahaya tidak dijalankan | FR-A16, FR-L11, NFR-18 |
 | AC-46 | Admin mengimpor DOCX atau PDF digital, lalu meninjau dan mengubah hasil | Teks dapat diedit; format dasar dan gambar DOCX didukung sesuai batas; berkas sumber diproses di browser dan tidak disimpan | FR-A16, NFR-17 |
 | AC-47 | Admin memilih DOC lama, PDF scan/tanpa teks, berkas di atas batas ukuran/halaman, atau gambar di atas batas ukuran/jumlah | Format yang belum didukung atau berkas tidak valid ditolak dengan pesan Indonesia; editor tetap dapat digunakan manual dan materi lama tetap utuh | FR-A16, AB-16 |
+<<<<<<< Updated upstream
 | AC-48 | Admin menambah beberapa soal pada satu form atau mengimpor CSV ke bank Pre/Post | Soal CSV tampil sebagai pratinjau yang dapat diedit; jenis mengikuti tab aktif; seluruh batch divalidasi dan disimpan bersama atau tidak ada yang disimpan bila ada kesalahan | FR-A05, AB-12, AC-42 |
 | AC-49 | Admin membuka atau mengubah modul Admin lain, atau Superadmin mencoba mengubah isi modul | Request Admin lintas pemilik tidak dapat membuka detail; Superadmin hanya dapat membuka pratinjau baca-saja; semua perubahan isi ditolak oleh middleware | FR-A02, FR-SA07, FR-SA08, PS-30 |
 | AC-50 | Admin mengajukan modul dengan Quality Gate gagal, atau tanpa deklarasi hak konten | Pengajuan ditolak dengan pesan Indonesia; modul tetap pada status sebelumnya dan tidak tercatat sebagai submitted | FR-A17, PS-01–PS-20 |
@@ -665,6 +679,11 @@ Kasus berikut harus ditangani sistem dan diuji saat uji pengguna. Kasus bertanda
 | AC-56 | Pengajuan review melewati hari kerja | Penanda SLA muncul mulai 2 hari kerja dan SLA terlewati setelah 3 hari kerja; Sabtu/Minggu dan kalender hari libur tidak mengubah hitungan | FR-SA08, PS-27 |
 | AC-57 | Admin mengubah modul published | Hanya judul, deskripsi, dan sampul dapat diubah langsung; perubahan signifikan membuat salinan terpisah, dan persetujuan versi baru mengarsipkan versi published sebelumnya | FR-A02, PS-30 |
 | AC-58 | Status/keputusan workflow berubah atau notifikasi dibaca | Riwayat mencatat aksi, aktor, waktu, status/metadata terkait; notifikasi hanya dapat dibaca/ditandai oleh penerimanya | FR-A17, FR-SA08, PS-29 |
+=======
+| AC-48 | Admin menambah beberapa soal pada satu form atau mengimpor CSV ke bank Pre/Post | Soal CSV tampil sebagai pratinjau yang dapat diedit; `question_format` menerima Pilihan ganda, Checkbox, atau Benar/Salah; kunci checkbox dipisahkan dengan `|`; jenis tes mengikuti tab aktif; seluruh batch divalidasi dan disimpan bersama atau tidak ada yang disimpan bila ada kesalahan | FR-A05, AB-12, AC-42 |
+| AC-49 | Admin menambah atau mengubah soal Pre/Post dan kuis unit dengan format pilihan ganda, checkbox, dan benar/salah | Pilihan ganda menyimpan satu kunci; checkbox menyimpan satu atau lebih kunci; benar/salah hanya menyediakan pilihan Benar dan Salah; input tidak valid ditolak server dengan pesan Indonesia | FR-A05, FR-A11, AB-17 |
+| AC-50 | Learner menjawab sebagian kunci benar pada soal checkbox | Kredit soal sama dengan jumlah kunci benar yang dipilih dibagi jumlah seluruh kunci benar; pilihan salah tidak menambah nilai | FR-L20, FR-L29, AB-17 |
+>>>>>>> Stashed changes
 
 ## 13. Asumsi dan Ketergantungan
 
@@ -794,7 +813,7 @@ Kebutuhan bisnis pada BRD ditelusuri ke kebutuhan fungsional, user story, dan kr
 |---|---|---|
 | 1 | Makna rollback pada kuis unit | Kembali ke materi unit lalu mengulang kuis; tidak mengunci unit berikutnya |
 | 2 | Syarat unit dianggap selesai | Materi dipelajari dan kuis unit dikerjakan, tanpa nilai minimum |
-| 3 | Bentuk soal kuis unit dan studi kasus | Pilihan ganda; studi kasus berupa soal berbasis skenario |
+| 3 | Format soal dan penilaian checkbox | Diputuskan: pilihan ganda (satu kunci), checkbox (satu atau lebih kunci; kredit parsial mengikuti AB-17), atau benar/salah |
 | 4 | Sumber tautan video dan dukungan pilihan kualitas | URL YouTube dengan embed atau URL file video langsung; video harus dapat diakses dan mengizinkan pemutaran/embed |
 | 5 | Hosting/deployment dan stack Android | Stack backend/panel web sudah ditetapkan di ARCHITECTURE.md; layanan hosting/deployment dan stack Android belum ditetapkan |
 | 6 | Bentuk notifikasi laporan forum | Hanya di panel web Admin, tanpa push atau email |
