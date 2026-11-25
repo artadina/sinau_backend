@@ -14,6 +14,8 @@ app/
       Superadmin/
     Middleware/
       EnsureRole.php
+      EnsureModuleOwner.php
+      EnsureEditableModule.php
       RequireAdminPasswordChange.php
     Requests/
       Auth/
@@ -22,6 +24,8 @@ app/
   Models/
     User.php
     Module.php
+    ModuleReview.php
+    ModuleExtensionRequest.php
     Unit.php
     UnitQuiz.php
     TestQuestion.php
@@ -31,8 +35,12 @@ app/
   Services/
     AdminResultsService.php
     MaterialHtmlSanitizer.php
-    ModulePublishValidator.php
+    ModuleGovernanceService.php
+    ModuleQualityGate.php
+    ModuleVersionFamily.php
     VideoUrlParser.php
+  Console/Commands/
+    ProcessModuleGovernanceSchedule.php
 resources/
   views/
     auth/
@@ -56,14 +64,14 @@ Tabel `test_attempt_answers`, `learner_unit_progress`, `unit_quiz_attempts`, dan
 | Area | Kondisi implementasi saat ini |
 |---|---|
 | Autentikasi web Admin | Login, logout, lupa/reset password melalui email, session, serta ganti password sementara tersedia. Pengiriman email mengikuti konfigurasi Laravel; untuk pengembangan gunakan `MAIL_MAILER=log`. Reset password dibatasi pada akun Admin. |
-| Akses role | Role backend `learner`, `admin`, `superadmin`. Route Admin menolak Superadmin dan Learner; grup akun `/superadmin` hanya dapat diakses Superadmin. |
+| Akses role | Role backend `learner`, `admin`, `superadmin`. Middleware memisahkan route Admin/Superadmin; Admin dibatasi ke modul miliknya, Superadmin hanya mendapat pratinjau konten baca-saja dan endpoint keputusan governance, tanpa skor/forum. |
 | Dashboard Admin | Ringkasan Learner, modul, tes selesai, skor, dan pintasan tersedia. |
-| Modul | CRUD, sampul, status draft/terbit; validasi penerbitan berjalan di server. Penghapusan ditolak jika modul punya riwayat tes atau kuis unit. |
+| Modul dan Content Governance | Daftar Admin menampilkan modul; detail dan perubahan hanya tersedia untuk Admin pemilik. Admin membuat modul miliknya, mengelola draft/revisi, mengajukan review dan perpanjangan; Quality Gate PS-01–PS-20 dijalankan di server. Superadmin membaca detail/pratinjau, menyetujui, meminta revisi, takedown, dan memutuskan perpanjangan. Workflow tercatat, notifikasi dikirim, dan scheduler mengelola periode, arsip, pengingat H-14/H-3. Penghapusan ditolak bila ada riwayat tes atau kuis unit. |
 | Unit dan kuis | CRUD unit, urutan naik/turun, pratinjau, bank soal kuis unit, dan penjagaan riwayat kuis tersedia. Editor materi, impor DOCX/PDF, serta gambar privat tersedia. |
 | Bank soal tes | Bank soal Pre/Post, pengaturan jumlah soal, input beberapa soal, pratinjau/impor CSV, validasi batch, dan penyimpanan transaksional tersedia. |
 | Forum dan laporan | Admin dapat membaca topik/balasan, membalas, menghapus posting, menyelesaikan laporan, dan menghapus topik beserta balasan sambil menutup laporan terkait dalam satu transaksi. |
 | Learner dan rekap | Daftar Learner hanya-baca, rekap hasil, filter, dan ekspor CSV tersedia. Superadmin tidak memperoleh akses ke data skor. |
-| Superadmin | Daftar, pencarian, detail, tambah Admin, ubah dan hapus akun Admin/Learner, ubah role lewat endpoint khusus, serta anonimisasi Learner tersedia. Login mengarah ke `/superadmin/admins`; akses dibatasi middleware dan route binding per role. |
+| Superadmin | Daftar, pencarian, detail, tambah Admin, ubah dan hapus akun Admin/Learner, ubah role lewat endpoint khusus, anonimisasi Learner, serta Content Governance tersedia. Login mengarah ke `/superadmin/admins`; akses dibatasi middleware dan route binding per role. Tidak ada route untuk menulis konten, forum, rekap, test attempts, atau skor. |
 | Learner/mobile | Aplikasi Android, alur belajar, pengambilan tes/kuis, forum Learner, progres, dan lencana belum diimplementasikan. API saat ini hanya `GET /api/user` (Sanctum) dan endpoint gambar materi yang dibatasi role Learner. |
 | Status aktif unit | Kolom `units.is_active` tersedia dan rekap menghitung unit aktif. Belum ada aksi UI/route Admin untuk menonaktifkan unit; daftar unit Admin tetap menampilkan semuanya. Alur Learner yang seharusnya menyembunyikan unit nonaktif belum tersedia. |
 
@@ -73,9 +81,9 @@ Kebutuhan PRD tetap menjadi target walaupun implementasinya belum ada. Secara kh
 
 1. Login, lupa/reset password, dan logout memakai session Laravel. Tidak ada route registrasi web.
 2. `EnsureRole` (alias `role`) memeriksa role dari akun terautentikasi. Akses role yang tidak sesuai menghasilkan HTTP 403; menyembunyikan menu hanya untuk UX.
-3. Grup `/admin` memakai `auth`, `role:admin`, dan `temporary.password`. Learner dan Superadmin ditolak pada seluruh fungsi Admin, termasuk konten, forum, dan rekap.
+3. Grup `/admin` memakai `auth`, `role:admin`, dan `temporary.password`. `EnsureModuleOwner` membatasi modul ke Admin pembuat; `EnsureEditableModule` menolak mutasi konten bila status tidak dapat diedit. Learner dan Superadmin ditolak pada route Admin.
 4. `RequireAdminPasswordChange` (alias `temporary.password`) mengarahkan Admin dengan `is_temp_password = true` ke form penggantian password. Route form itu sendiri hanya untuk Admin yang sudah login. Perubahan role mandiri bukan fitur yang tersedia.
-5. Grup `/superadmin` memakai `auth` dan `role:superadmin`; akun Admin/Learner dibatasi dengan route binding berdasarkan role. Superadmin tidak mempunyai route konten, forum, atau skor.
+5. Grup `/superadmin` memakai `auth` dan `role:superadmin`; akun Admin/Learner dibatasi dengan route binding berdasarkan role. Superadmin memiliki daftar/detail modul dan pratinjau baca-saja serta endpoint keputusan governance, tetapi tidak memiliki route tulis isi modul, forum, rekap, test attempts, atau skor.
 6. API menggunakan `auth:sanctum`. Endpoint gambar materi Learner menambahkan `role:learner`; endpoint Admin untuk gambar memakai grup role Admin. Skor tidak tersedia pada API Learner saat ini.
 
 ## 4. Pemetaan Route Web Saat Ini
@@ -103,9 +111,9 @@ Semua URI berikut memakai prefix `/admin` dan middleware `auth`, `role:admin`, s
 | `POST /forum/{post}/replies` | Balas sebagai Admin/Pengajar | FR-A13 |
 | `DELETE /forum/{post}` | Hapus posting; laporan terkait ditutup, penghapusan topik juga menghapus turunannya | FR-A14, FR-A15, EC-12 |
 | `GET /forum-reports`, `PUT /forum-reports/{report}/resolve` | Daftar/filter laporan dan tandai selesai | FR-A15 |
-| `GET /modules`, `/modules/create`; `POST /modules` | Daftar dan buat modul | FR-A02 |
-| `GET /modules/{module}/edit`; `PUT`, `DELETE /modules/{module}` | Ubah/hapus modul; hapus ditolak bila ada riwayat tes atau kuis unit | FR-A02, EC-22 |
-| `PUT /modules/{module}/status` | Ubah draft/terbit; publikasi memvalidasi isi modul | FR-A04, FR-A05, FR-A11 |
+| `GET /modules`, `/modules/create`; `POST /modules` | Daftar modul dan buat draft baru | FR-A02 |
+| `GET /modules/{module}`; `GET /modules/{module}/edit`; `PUT`, `DELETE /modules/{module}` | Detail/edit modul milik Admin; edit hanya sesuai status (minor edit khusus modul published); hapus ditolak bila ada riwayat tes atau kuis unit | FR-A02, PS-30, EC-22 |
+| `POST /modules/{module}/submit`, `POST /modules/{module}/revision`, `POST /modules/{module}/extensions` | Ajukan review/ulang, buat salinan versi, dan minta perpanjangan | FR-A17, PS-01–PS-30 |
 | `/modules/{module}/units` | Daftar, tambah, ubah, dan hapus unit | FR-A03 |
 | `PATCH /modules/{module}/units/{unit}/move/{direction}` | Atur urutan unit naik/turun | FR-A04 |
 | `GET /units/{unit}/preview` | Pratinjau unit | FR-A03 |
@@ -121,6 +129,9 @@ Semua URI berikut memakai prefix `/admin` dan middleware `auth`, `role:admin`, s
 | Method | URI | Kondisi |
 |---|---|---|
 | GET | `/superadmin` | Arahkan ke daftar akun Admin; Superadmin saja |
+| GET | `/superadmin/modules`, `/superadmin/modules/{module}` | Antrean dan detail/pratinjau modul baca-saja |
+| POST | `/superadmin/modules/{module}/approve`, `/revision`, `/takedown` | Setujui, minta revisi, atau takedown; Superadmin saja |
+| POST | `/superadmin/extensions/{extension}/decision` | Setujui/tolak permintaan perpanjangan |
 | GET, POST | `/superadmin/admins`, `/superadmin/admins/create` | Daftar, pencarian, dan tambah Admin; password sementara hanya ditampilkan satu kali |
 | GET, PUT, DELETE | `/superadmin/admins/{user}` | Detail, ubah, dan soft-delete Admin; binding hanya untuk role Admin |
 | PUT | `/superadmin/admins/{user}/role` | Ubah role Admin menjadi `learner` atau `admin` |
@@ -128,15 +139,15 @@ Semua URI berikut memakai prefix `/admin` dan middleware `auth`, `role:admin`, s
 | GET, PUT, DELETE | `/superadmin/learners/{user}` | Detail, ubah, dan soft-delete + anonimisasi Learner; binding hanya untuk role Learner |
 | PUT | `/superadmin/learners/{user}/role` | Ubah role Learner menjadi `learner` atau `admin` |
 | GET | `/api/user` | Mengembalikan pengguna yang terautentikasi dengan Sanctum |
-| GET | `/api/units/{unit}/material/images/{image}` | Learner terautentikasi saja; gambar hanya tersedia jika modul terbit |
+| GET | `/api/units/{unit}/material/images/{image}` | Learner terautentikasi saja; gambar hanya tersedia jika modul published dalam periode aktif |
 
 Tidak ada route lain untuk alur belajar mobile atau API CRUD Superadmin saat ini.
 
 ## 5. Validasi Konten dan Materi
 
-- Penerbitan modul memerlukan setidaknya satu unit; setiap unit harus memiliki 3–5 kuis; jumlah soal Pre/Post harus diatur dan tersedia di bank soal. Validasi dilakukan server-side terhadap semua unit modul, termasuk unit dengan `is_active = false`.
+- Pengajuan review mensyaratkan Quality Gate PS-01–PS-20; semua unit harus lengkap dan memiliki 3–5 kuis serta bank Pre/Post sesuai standar. Validasi dilakukan server-side terhadap semua unit modul, termasuk unit dengan `is_active = false`.
 - Form unit memvalidasi judul, tujuan, URL video, durasi positif opsional, urutan unik per modul, dan maksimal 10 gambar referensi. Durasi dari input menit dikonversi ke detik dan dapat `NULL`.
-- Unit dengan riwayat kuis tidak dapat dihapus. Modul dengan riwayat tes atau kuis unit tidak dapat dihapus; pesan mengarahkan Admin mengembalikannya ke draft.
+- Unit dengan riwayat kuis tidak dapat dihapus. Modul dengan riwayat tes atau kuis unit tidak dapat dihapus; bila akses perlu ditutup, Superadmin dapat melakukan takedown melalui workflow.
 - Materi disimpan pada `units.reading_content` sebagai HTML terbatas dan disanitasi server. DOCX dan PDF digital diproses di browser (maksimal 10 MB; PDF maksimal 50 halaman). Gambar JPG/PNG maksimal 5 MB per file dan 10 per unit, disimpan privat melalui route terkontrol.
 - Nilai tes dihitung dan jawaban disimpan per attempt. Rekap hanya menggunakan tes selesai dan mengambil attempt terbaru; ekspor CSV memuat semua baris yang cocok filter dan menetralkan sel yang diawali formula.
 
@@ -150,7 +161,7 @@ API menggunakan token Sanctum, tetapi belum menyediakan fitur belajar. Saat ini 
 |---|---|
 | Sitemap Admin PRD 8.2 | Belum sama persis: dua menu Kelola Unit & Kuis dan Kelola Bank Soal belum menjadi item sidebar sendiri. |
 | Penonaktifan unit | Kolom skema dan penggunaan aktif di rekap tersedia; aksi Admin serta perilaku Learner belum tersedia. |
-| Superadmin | Manajemen akun Admin dan Learner tersedia; belum ada fitur di luar cakupan FR-SA01–FR-SA07. |
+| Superadmin | Manajemen akun Admin/Learner serta Content Governance tersedia; tidak memiliki akses tulis isi modul maupun skor/forum/rekap. |
 | Akun Learner | Daftar Admin hanya-baca tersedia; alur permintaan hapus akun dan anonimisasi belum tersedia. |
 | Produk Learner/mobile | Sebagian besar belum tersedia; lihat cakupan API di atas. |
 

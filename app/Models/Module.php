@@ -16,11 +16,20 @@ class Module extends Model
         'description',
         'cover_image',
         'learning_objectives',
+        'category',
+        'target_audience',
+        'difficulty',
         'status',
         'created_by',
         'pre_question_count',
         'post_question_count',
         'shuffle_questions',
+        'active_from',
+        'active_until',
+        'submitted_at',
+        'approved_by',
+        'approved_at',
+        'revision_of_id',
     ];
 
     protected function casts(): array
@@ -29,22 +38,28 @@ class Module extends Model
             'pre_question_count' => 'integer',
             'post_question_count' => 'integer',
             'shuffle_questions' => 'boolean',
+            'active_from' => 'date',
+            'active_until' => 'date',
+            'submitted_at' => 'datetime',
+            'approved_at' => 'datetime',
         ];
     }
 
-    // AC-14: learner-facing module queries can explicitly select published modules only.
+    // PS-21: Learner-facing content requires publication within the active period.
     public function scopePublished(Builder $query): Builder
     {
-        return $query->where('status', 'published');
+        return $query->where('status', 'published')
+            ->whereDate('active_from', '<=', today())
+            ->whereDate('active_until', '>=', today());
     }
 
-    // FR-A03, FR-A04
+    // FR-A03, PS-30
     public function units(): HasMany
     {
         return $this->hasMany(Unit::class)->orderBy('sequence_order');
     }
 
-    // FR-A05, AB-12
+    // FR-A05, PS-30
     public function testQuestions(): HasMany
     {
         return $this->hasMany(TestQuestion::class);
@@ -59,5 +74,30 @@ class Module extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by')->withTrashed();
+    }
+
+    public function approver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by')->withTrashed();
+    }
+
+    public function revisionOf(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'revision_of_id');
+    }
+
+    public function revisions(): HasMany
+    {
+        return $this->hasMany(self::class, 'revision_of_id');
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(ModuleReview::class)->orderByDesc('created_at');
+    }
+
+    public function extensionRequests(): HasMany
+    {
+        return $this->hasMany(ModuleExtensionRequest::class)->latest();
     }
 }

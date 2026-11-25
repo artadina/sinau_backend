@@ -23,6 +23,24 @@
             </button>
         </div>
         <nav class="flex-1 space-y-1 overflow-y-auto px-3 py-5" aria-label="Navigasi Superadmin">
+            @foreach ([
+                ['Antrean Review Modul', route('superadmin.modules.index'), 'modules', 'book-open-check'],
+                ['Notifikasi', route('superadmin.notifications.index'), 'notifications', 'bell'],
+            ] as [$label, $url, $section, $icon])
+                <a href="{{ $url }}" @class([
+                    'group flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition',
+                    'bg-gradient-to-r from-maroon-600 to-maroon-700 text-white shadow-md shadow-black/15' => request()->routeIs("superadmin.{$section}.*"),
+                    'text-maroon-100 hover:bg-white/10 hover:text-white' => ! request()->routeIs("superadmin.{$section}.*"),
+                ]) @if (request()->routeIs("superadmin.{$section}.*")) aria-current="page" @endif>
+                    <i data-lucide="{{ $icon }}" class="h-4 w-4 shrink-0"></i>
+                    <span>{{ $label }}</span>
+                    @if ($section === 'notifications' && auth()->user()->unreadNotifications()->count() > 0)
+                        <span class="ml-auto rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                            {{ auth()->user()->unreadNotifications()->count() }}
+                        </span>
+                    @endif
+                </a>
+            @endforeach
             <p class="mb-3 px-4 text-[10px] font-bold uppercase tracking-[0.16em] text-maroon-300">Kelola Akun</p>
             @foreach ([
                 ['Kelola Akun Admin', route('superadmin.admins.index'), 'admins', 'shield-check'],

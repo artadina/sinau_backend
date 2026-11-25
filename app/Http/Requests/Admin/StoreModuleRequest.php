@@ -19,6 +19,11 @@ class StoreModuleRequest extends FormRequest
             'description' => ['nullable', 'string', 'max:255'],
             'cover_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
             'learning_objectives' => ['nullable', 'string'],
+            'category' => ['nullable', 'string', 'max:100'],
+            'target_audience' => ['nullable', 'string', 'max:1000'],
+            'difficulty' => ['nullable', 'string', 'in:Dasar,Menengah'],
+            'active_from' => ['nullable', 'date'],
+            'active_until' => ['nullable', 'date', 'after_or_equal:active_from'],
         ];
     }
 
@@ -29,6 +34,11 @@ class StoreModuleRequest extends FormRequest
             'description' => 'Deskripsi',
             'cover_image' => 'Gambar sampul',
             'learning_objectives' => 'Tujuan belajar',
+            'category' => 'Kategori/topik',
+            'target_audience' => 'Target peserta',
+            'difficulty' => 'Tingkat kesulitan',
+            'active_from' => 'Tanggal mulai aktif',
+            'active_until' => 'Tanggal berakhir aktif',
         ];
     }
 
