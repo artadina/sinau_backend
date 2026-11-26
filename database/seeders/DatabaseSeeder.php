@@ -53,7 +53,9 @@ class DatabaseSeeder extends Seeder
             ['email' => 'learner1@sinau.test', 'name' => 'Learner Demo 1'],
             ['email' => 'learner2@sinau.test', 'name' => 'Learner Demo 2'],
             ['email' => 'learner3@sinau.test', 'name' => 'Learner Demo 3'],
+            ['email' => 'learner4@sinau.test', 'name' => 'Learner Demo 4'],
         ] as $learner) {
+            $consentGiven = $learner['email'] !== 'learner4@sinau.test';
             User::firstOrCreate(
                 ['email' => $learner['email']],
                 [
@@ -61,22 +63,17 @@ class DatabaseSeeder extends Seeder
                     'password' => 'LearnerDemo!123',
                     'role' => Role::Learner->value,
                     'is_temp_password' => false,
-                    'consent_given' => true,
+                    'consent_given' => $consentGiven,
+                    'consent_at' => $consentGiven ? now() : null,
                 ],
             );
         }
 
-<<<<<<< Updated upstream
-        // FR-A06, FR-A08, FR-A10, FR-A13, FR-A15: local-only panel examples.
-        if (app()->environment('local')) {
-            $this->call(DemoHistorySeeder::class);
-            $this->call(DemoForumSeeder::class);
-            $this->call(ContentGovernanceSeeder::class);
-        }
-=======
         // FR-A06, FR-A08, FR-A10, FR-A13, FR-A15: non-production panel examples.
         $this->call(DemoHistorySeeder::class);
         $this->call(DemoForumSeeder::class);
->>>>>>> Stashed changes
+        if (app()->environment('local')) {
+            $this->call(ContentGovernanceSeeder::class);
+        }
     }
 }

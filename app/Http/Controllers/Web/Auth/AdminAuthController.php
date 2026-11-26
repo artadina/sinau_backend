@@ -66,13 +66,16 @@ class AdminAuthController extends Controller
         return view('auth.forgot-password');
     }
 
-    // FR-A01, NFR-05: send reset links only to Admin accounts; response does not reveal account existence.
+    // FR-A01, FR-L04, NFR-05: Admin and Learner reset requests share a non-enumerating response.
     public function sendResetLink(SendAdminPasswordResetLinkRequest $request): RedirectResponse
     {
         $email = $request->validated('email');
-        $isAdmin = User::query()->where('email', $email)->where('role', Role::Admin->value)->exists();
+        $isEligible = User::query()
+            ->where('email', $email)
+            ->whereIn('role', [Role::Admin->value, Role::Learner->value])
+            ->exists();
 
-        if ($isAdmin) {
+        if ($isEligible) {
             $status = Password::sendResetLink(['email' => $email]);
 
             if ($status === Password::RESET_THROTTLED) {
@@ -82,7 +85,7 @@ class AdminAuthController extends Controller
             }
         }
 
-        return back()->with('status', 'Jika email terdaftar sebagai Admin, tautan reset akan dikirim melalui email.');
+        return back()->with('status', 'Jika email terdaftar pada Sinau, tautan reset kata sandi telah dikirim.');
     }
 
     // FR-A01
@@ -94,22 +97,24 @@ class AdminAuthController extends Controller
         ]);
     }
 
-    // FR-A01, NFR-05, AB-16
+    // FR-A01, FR-L04, NFR-05, AB-16: the shared reset flow supports Learner and Admin.
     public function updateResetPassword(ResetAdminPasswordRequest $request): RedirectResponse
     {
         $credentials = $request->validated();
-        $isAdmin = User::query()
+        $isEligible = User::query()
             ->where('email', $credentials['email'])
-            ->where('role', Role::Admin->value)
+            ->whereIn('role', [Role::Admin->value, Role::Learner->value])
             ->exists();
 
-        if (! $isAdmin) {
+        if (! $isEligible) {
             return back()->withErrors(['email' => 'Tautan reset tidak valid atau sudah kedaluwarsa.']);
         }
 
+        $isLearner = false;
         $status = Password::reset(
             $credentials,
-            function (User $user, string $password): void {
+            function (User $user, string $password) use (&$isLearner): void {
+                $isLearner = $user->role === Role::Learner->value;
                 $user->forceFill(['password' => $password])->save();
             },
         );
@@ -118,7 +123,11 @@ class AdminAuthController extends Controller
             return back()->withErrors(['email' => 'Tautan reset tidak valid atau sudah kedaluwarsa.']);
         }
 
-        return redirect()->route('login')->with('status', 'Kata sandi berhasil diperbarui. Silakan masuk.');
+        $message = $isLearner
+            ? 'Password berhasil diubah, silakan kembali ke aplikasi Sinau.'
+            : 'Kata sandi berhasil diperbarui. Silakan masuk.';
+
+        return redirect()->route('login')->with('status', $message);
     }
 
     // FR-A12, FR-S06, AC-08
