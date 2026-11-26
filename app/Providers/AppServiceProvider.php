@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Models\ForumReport;
+use App\Models\User;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -26,6 +28,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // FR-L04: password reset links always use the configured application host.
+        ResetPassword::createUrlUsing(static function (User $user, string $token): string {
+            $path = route('password.reset', [
+                'token' => $token,
+                'email' => $user->getEmailForPasswordReset(),
+            ], false);
+
+            return rtrim((string) config('app.url'), '/').$path;
+        });
+
         // FR-A15: keep the sidebar badge accurate on every Admin page.
         View::composer('layouts.admin', function (ViewInstance $view): void {
             $view->with(

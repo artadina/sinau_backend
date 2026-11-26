@@ -111,13 +111,16 @@ class LearnerAccountApiTest extends TestCase
     public function test_forgot_password_is_generic_and_reset_token_allows_new_password_login(): void
     {
         Notification::fake();
+        $appUrl = 'https://sinau.example.test/';
+        config(['app.url' => $appUrl]);
         $learner = User::factory()->create([
             'email' => 'reset@example.test',
             'password' => 'PasswordLama123',
             'role' => Role::Learner->value,
         ]);
 
-        $known = $this->postJson('/api/forgot-password', ['email' => $learner->email]);
+        $known = $this->withHeader('Host', 'request-host.example.test')
+            ->postJson('/api/forgot-password', ['email' => $learner->email]);
         $unknown = $this->postJson('/api/forgot-password', ['email' => 'missing@example.test']);
 
         $known->assertOk()->assertExactJson([
@@ -128,12 +131,15 @@ class LearnerAccountApiTest extends TestCase
         ]);
 
         $resetToken = null;
-        Notification::assertSentTo($learner, ResetPassword::class, function (ResetPassword $notification) use (&$resetToken): bool {
+        $resetUrl = null;
+        Notification::assertSentTo($learner, ResetPassword::class, function (ResetPassword $notification) use ($learner, &$resetToken, &$resetUrl): bool {
             $resetToken = $notification->token;
+            $resetUrl = $notification->toMail($learner)->actionUrl;
 
             return true;
         });
         $this->assertNotNull($resetToken);
+        $this->assertStringStartsWith(rtrim($appUrl, '/'), $resetUrl);
 
         $this->get(route('password.reset', [
             'token' => $resetToken,

@@ -1,5 +1,5 @@
-@baseUrl = http://127.0.0.1:8000/api
-@token = 2|I4h2OpFqw9LLi70MAsLclLdO8gq3h7hqln8PfbqE0081b487
+@baseUrl = http://192.168.110.65:8000/api
+@token = 3|CKuHTVBygHl7glDCYcHL3GLgz008kleIP2DcAQky488b1274
 
 ### Register Learner (role is ignored if supplied)
 POST {{baseUrl}}/register
@@ -22,7 +22,7 @@ Content-Type: application/json
 
 {
   "email": "rani@example.test",
-  "password": "Rahasia123"
+  "password": "halohalobandung"
 }
 
 ### Request password reset (open the emailed web link to set the new password)
