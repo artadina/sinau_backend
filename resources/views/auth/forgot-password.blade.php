@@ -9,7 +9,7 @@
                 <i data-lucide="key-round" class="h-5 w-5"></i>
             </div>
             <h1 class="text-2xl font-bold text-slate-900">Lupa kata sandi?</h1>
-            <p class="mt-2 text-sm leading-6 text-slate-600">Masukkan email akun Admin. Kami akan mengirim tautan untuk membuat kata sandi baru.</p>
+            <p class="mt-2 text-sm leading-6 text-slate-600">Masukkan email akun Sinau. Kami akan mengirim tautan untuk membuat kata sandi baru.</p>
         </div>
 
         @if (session('status'))

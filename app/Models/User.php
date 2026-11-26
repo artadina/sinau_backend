@@ -30,6 +30,7 @@ class User extends Authenticatable
         'role',
         'is_temp_password',
         'consent_given',
+        'consent_at',
     ];
 
     /**
@@ -54,6 +55,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_temp_password' => 'boolean',
             'consent_given' => 'boolean',
+            'consent_at' => 'datetime',
         ];
     }
 

@@ -33,6 +33,7 @@ class DemoHistorySeeder extends Seeder
                     'role' => Role::Learner->value,
                     'is_temp_password' => false,
                     'consent_given' => true,
+                    'consent_at' => now()->subDays(30 - $number),
                     'created_at' => now()->subDays(30 - $number),
                     'updated_at' => now()->subDays(30 - $number),
                 ],

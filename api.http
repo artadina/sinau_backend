@@ -1,0 +1,88 @@
+@baseUrl = http://127.0.0.1:8000/api
+@token = 2|I4h2OpFqw9LLi70MAsLclLdO8gq3h7hqln8PfbqE0081b487
+
+### Register Learner (role is ignored if supplied)
+POST {{baseUrl}}/register
+Accept: application/json
+Content-Type: application/json
+
+{
+  "name": "Rani",
+  "email": "rani@example.test",
+  "password": "Rahasia123",
+  "password_confirmation": "Rahasia123",
+  "business_name": "Usaha Rani",
+  "role": "admin"
+}
+
+### Login Learner
+POST {{baseUrl}}/login
+Accept: application/json
+Content-Type: application/json
+
+{
+  "email": "rani@example.test",
+  "password": "Rahasia123"
+}
+
+### Request password reset (open the emailed web link to set the new password)
+POST {{baseUrl}}/forgot-password
+Accept: application/json
+Content-Type: application/json
+
+{
+  "email": "rani@example.test"
+}
+
+### Get current Learner
+GET {{baseUrl}}/me
+Accept: application/json
+Authorization: Bearer {{token}}
+
+### Record consent
+POST {{baseUrl}}/consent
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "consent_given": true
+}
+
+### Update profile
+PUT {{baseUrl}}/profile
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "Rani A.",
+  "business_name": "Toko Rani"
+}
+
+### Change password
+PUT {{baseUrl}}/profile/password
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "current_password": "Rahasia123",
+  "password": "RahasiaBaru123",
+  "password_confirmation": "RahasiaBaru123"
+}
+
+### Logout current token
+POST {{baseUrl}}/logout
+Accept: application/json
+Authorization: Bearer {{token}}
+
+### Delete account (irreversible)
+DELETE {{baseUrl}}/account
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "password": "Rahasia123"
+}

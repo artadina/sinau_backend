@@ -41,6 +41,7 @@ class DemoForumSeeder extends Seeder
                 'role' => Role::Learner->value,
                 'is_temp_password' => false,
                 'consent_given' => true,
+                'consent_at' => now(),
             ],
         ));
 

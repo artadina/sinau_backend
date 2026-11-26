@@ -182,7 +182,7 @@ class AdminFoundationTest extends TestCase
         $this->assertTrue(Hash::check('updated-password', $admin->fresh()->password));
     }
 
-    // FR-SA01, FR-A01, FR-A12: the development seeder creates all specified role accounts.
+    // FR-SA01, FR-A01, FR-A12, FR-L02: the development seeder creates role and consent demo accounts.
     public function test_development_seeder_creates_demo_accounts_and_temporary_admin_password(): void
     {
         $this->seed();
@@ -204,7 +204,14 @@ class AdminFoundationTest extends TestCase
         $this->assertDatabaseHas('users', [
             'email' => 'learner3@sinau.test',
             'role' => 'learner',
+            'consent_given' => true,
         ]);
-        $this->assertDatabaseCount('users', 13);
+        $this->assertDatabaseHas('users', [
+            'email' => 'learner4@sinau.test',
+            'role' => 'learner',
+            'consent_given' => false,
+        ]);
+        $this->assertNotNull(User::query()->where('email', 'learner1@sinau.test')->value('consent_at'));
+        $this->assertDatabaseCount('users', 14);
     }
 }

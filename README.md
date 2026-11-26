@@ -27,8 +27,10 @@ Kredensial berikut hanya untuk lingkungan non-production:
 | Learner | `learner1@sinau.test` | `LearnerDemo!123` |
 | Learner | `learner2@sinau.test` | `LearnerDemo!123` |
 | Learner | `learner3@sinau.test` | `LearnerDemo!123` |
+| Learner (consent belum disetujui) | `learner4@sinau.test` | `LearnerDemo!123` |
 
 Akun Admin demo ditandai sebagai password sementara dan harus mengganti password saat login pertama. Seeder tidak menimpa akun yang sudah ada. Superadmin dapat mengelola akun Admin dan Learner melalui panel khusus. Jangan gunakan kredensial ini di production.
+Learner demo 1–3 dan akun riwayat sudah menyetujui consent; Learner demo 4 belum menyetujuinya.
 
 ## Email reset password lokal
 
