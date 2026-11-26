@@ -1,5 +1,8 @@
 @baseUrl = http://192.168.110.65:8000/api
-@token = 3|CKuHTVBygHl7glDCYcHL3GLgz008kleIP2DcAQky488b1274
+@token = 2|AdpaqcKREgUea0TnyqYW39rwlT6sqvPsR1CbCjXUdcdce345
+@moduleId = 1
+@unitId = 1
+@imageName = 123e4567-e89b-12d3-a456-426614174000.png
 
 ### Register Learner (role is ignored if supplied)
 POST {{baseUrl}}/register
@@ -22,7 +25,7 @@ Content-Type: application/json
 
 {
   "email": "rani@example.test",
-  "password": "halohalobandung"
+  "password": "Rahasia123"
 }
 
 ### Request password reset (open the emailed web link to set the new password)
@@ -86,3 +89,42 @@ Authorization: Bearer {{token}}
 {
   "password": "Rahasia123"
 }
+
+### List published, active learning modules
+GET {{baseUrl}}/modules
+Accept: application/json
+Authorization: Bearer {{token}}
+
+### Get module details and active-unit progress
+GET {{baseUrl}}/modules/{{moduleId}}
+Accept: application/json
+Authorization: Bearer {{token}}
+
+### Open a unit (pre-test must be completed)
+GET {{baseUrl}}/units/{{unitId}}
+Accept: application/json
+Authorization: Bearer {{token}}
+
+### Save video position (seconds)
+PUT {{baseUrl}}/units/{{unitId}}/progress
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "last_video_pos": 75
+}
+
+### Mark a unit complete
+POST {{baseUrl}}/units/{{unitId}}/complete
+Accept: application/json
+Authorization: Bearer {{token}}
+
+### Get home continuation card
+GET {{baseUrl}}/home
+Accept: application/json
+Authorization: Bearer {{token}}
+
+### Fetch a private material image referenced by a published unit
+GET {{baseUrl}}/units/{{unitId}}/material/images/{{imageName}}
+Authorization: Bearer {{token}}

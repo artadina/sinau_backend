@@ -137,7 +137,11 @@ class AdminUnitMaterialTest extends TestCase
         $unit->update([
             'reading_content' => '<p><img src="'.route('admin.units.material-images.show', [$unit, $filename], false).'"></p>',
         ]);
-        $learner = User::factory()->create(['role' => Role::Learner->value]);
+        $learner = User::factory()->create([
+            'role' => Role::Learner->value,
+            'consent_given' => true,
+            'consent_at' => now(),
+        ]);
 
         $this->actingAs($learner)
             ->get("/api/units/{$unit->id}/material/images/{$filename}")
