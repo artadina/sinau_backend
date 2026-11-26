@@ -51,11 +51,18 @@ class DemoHistorySeeder extends Seeder
                     'learning_objectives' => 'Memahami materi dan hasil belajar.',
                     'status' => 'published',
                     'created_by' => $admin->id,
+                    'active_from' => today()->subDays(30),
+                    'active_until' => today()->addDays(30),
                     'pre_question_count' => 4,
                     'post_question_count' => 4,
                     'shuffle_questions' => true,
                 ],
             );
+            $module->forceFill([
+                'status' => 'published',
+                'active_from' => today()->subDays(30),
+                'active_until' => today()->addDays(30),
+            ])->save();
 
             for ($sequence = 1; $sequence <= $definition['unit_count']; $sequence++) {
                 Unit::query()->firstOrCreate(
@@ -96,6 +103,8 @@ class DemoHistorySeeder extends Seeder
         $mainModule = $modules->first();
         $secondModule = $modules->last();
 
+        // AC-17, AC-19: riwayat1 has a completed pre-test and partial unit progress;
+        // riwayat4 intentionally has no pre-test attempt.
         $attempts = [
             [0, $mainModule, 'pre', 50, 20],
             [0, $mainModule, 'post', 75, 12],

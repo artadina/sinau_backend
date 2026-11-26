@@ -524,19 +524,196 @@ Aturan validasi:
 
 ## Bagian B — Materi Pembelajaran
 
-Semua endpoint di bagian ini butuh token Learner dan consent. Tanpa consent, respons `403` dengan `code: "consent_required"`.
+Semua endpoint di bagian ini membutuhkan Bearer token Sanctum milik akun ber-role `learner` dan consent yang sudah disetujui. Admin/Superadmin ditolak walaupun token mereka valid. Consent yang belum disetujui menghasilkan `403` dengan `code: "consent_required"`. Semua data progres dibatasi pada pengguna di token; request tidak menerima ID pengguna.
+
+Modul tersedia hanya bila statusnya `published` dan tanggal hari ini berada di antara `active_from` dan `active_until` (inklusif). Unit yang ditampilkan atau diproses harus aktif. Unit berstatus `belum` bila belum memiliki baris progres, `sedang` bila memiliki progres yang belum selesai, dan `selesai` bila `is_completed=true`. Status tes adalah `belum`, `sedang`, atau `selesai`; post-test memakai `terkunci` sebelum semua unit aktif selesai, lalu `belum`/`sedang`/`selesai`. Durasi dan posisi video menggunakan detik.
 
 | Method | URL | Tujuan | FR/AC |
 |---|---|---|---|
-| `GET` | `/api/modules` | Daftar modul published dalam periode aktif, beserta progres ringkas | FR-L08, FR-L26; AC-14, AC-30 |
-| `GET` | `/api/modules/{module}` | Detail modul, tujuan, unit berurutan, status pre/post, dan progres | FR-L09, FR-L26; AB-03 |
-| `GET` | `/api/modules/{module}/continue` | Mengambil unit terakhir untuk kartu lanjutkan belajar | FR-L14; AC-17 |
-| `GET` | `/api/units/{unit}` | Membuka unit aktif dan mengambil materi serta status | FR-L11, FR-L12; AC-18, AC-19 |
-| `GET` | `/api/units/{unit}/video` | Data pemutar video dan posisi terakhir | FR-L10, FR-S07; AC-15, AC-16 |
-| `PUT` | `/api/units/{unit}/video-position` | Menyimpan posisi video | FR-L10, FR-S03; AC-15 |
-| `POST` | `/api/units/{unit}/complete` | Menandai unit selesai dan memperbarui progres | FR-L13; AC-17 |
+| `GET` | `/api/modules` | Daftar modul aktif-terbit, jumlah unit aktif, estimasi durasi, dan progres pemilik token | FR-L08; AB-08; AC-14 |
+| `GET` | `/api/modules/{module}` | Detail tujuan, unit aktif berurutan, status pre-test/post-test, dan progres | FR-L09; AB-03; AC-14 |
+| `GET` | `/api/units/{unit}` | Materi unit aktif, data video aman, posisi terakhir, dan status selesai | FR-L10, FR-L11, FR-L12, FR-S07; AC-15, AC-16, AC-18, AC-19; EC-03 |
+| `PUT` | `/api/units/{unit}/progress` | Simpan posisi video terakhir untuk pemilik token | FR-S03, FR-L10; AC-15 |
+| `POST` | `/api/units/{unit}/complete` | Tandai unit selesai, hitung ulang progres modul, dan berikan unit aktif berikutnya | FR-L13; AC-17 |
+| `GET` | `/api/home` | Ambil unit terakhir dipelajari untuk kartu “Lanjutkan belajar” | FR-L14; AC-17 |
+| `GET` | `/api/units/{unit}/material/images/{image}` | Ambil gambar privat yang dirujuk materi unit dari modul aktif-terbit | FR-L11; AB-08; AC-14, AC-45 |
 
-Materi yang ditampilkan tidak boleh memuat `correct_key` atau pembahasan soal. Soal baru dirinci pada tahap implementasi evaluasi.
+### GET /api/modules
+
+**Auth:** Bearer token Learner + consent.
+**FR/AC:** FR-L08, AB-08, AC-14.
+
+**Respons sukses `200 OK`** — hanya modul published dalam periode aktif:
+
+```json
+{
+  "data": [
+    {
+      "id": 8,
+      "title": "Manajemen Rantai Pasok",
+      "description": "Pelajari pengelolaan bahan baku dan persediaan.",
+      "cover": "/storage/module-covers/supply-chain.jpg",
+      "active_unit_count": 3,
+      "estimated_duration": 900,
+      "progress_percentage": 33
+    }
+  ]
+}
+```
+
+`cover` adalah URL/path gambar sampul atau `null`. `active_unit_count` menghitung unit aktif saja. `estimated_duration` adalah jumlah durasi unit aktif yang memiliki durasi, dalam detik. `progress_percentage` adalah jumlah unit aktif selesai dibagi jumlah unit aktif, dibulatkan ke bilangan bulat; modul tanpa unit aktif bernilai `0`.
+
+**Error:** `401` sesi tidak valid; `403` role bukan Learner atau consent belum diberikan (`consent_required`); `429` terlalu banyak permintaan.
+
+### GET /api/modules/{module}
+
+**Auth:** Bearer token Learner + consent.
+**FR/AC:** FR-L09, AB-03, AB-08, AC-14.
+
+**Respons sukses `200 OK`**
+
+```json
+{
+  "data": {
+    "id": 8,
+    "title": "Manajemen Rantai Pasok",
+    "description": "Pelajari pengelolaan bahan baku dan persediaan.",
+    "learning_objectives": "Mampu mengelola bahan baku dan persediaan.",
+    "progress_percentage": 33,
+    "pre_test": { "status": "completed" },
+    "post_test": { "status": "locked" },
+    "units": [
+      { "id": 21, "title": "Pemetaan pemasok", "sequence_order": 1, "status": "selesai" },
+      { "id": 22, "title": "Pengendalian stok", "sequence_order": 2, "status": "sedang" },
+      { "id": 23, "title": "Pencegahan waste", "sequence_order": 3, "status": "belum" }
+    ]
+  }
+}
+```
+
+`pre_test.status` bernilai `belum`, `sedang`, atau `selesai` berdasarkan attempt pre-test milik Learner. `post_test.status` bernilai `terkunci` sampai seluruh unit aktif selesai; setelah itu `belum`, `sedang`, atau `selesai`. Endpoint ini hanya mencantumkan unit aktif. Modul tidak ditemukan atau tidak tersedia (termasuk draft, belum aktif, dan kedaluwarsa) menghasilkan `404`.
+
+**Error:** `401`; `403` role/consent; `404` modul tidak ditemukan atau tidak tersedia; `429`.
+
+### GET /api/units/{unit}
+
+**Auth:** Bearer token Learner + consent.
+**FR/AC:** FR-L10, FR-L11, FR-L12, FR-S07, AB-03, AB-08; AC-14, AC-15, AC-16, AC-18, AC-19; EC-03.
+
+**Respons sukses `200 OK`**
+
+```json
+{
+  "data": {
+    "id": 22,
+    "module": { "id": 8, "title": "Manajemen Rantai Pasok" },
+    "title": "Pengendalian stok",
+    "learning_objective": "Menentukan jumlah stok yang sesuai.",
+    "duration": 300,
+    "reading_content": "<p>Periksa stok secara berkala.</p>",
+    "video": { "type": "youtube", "video_id": "dQw4w9WgXcQ" },
+    "last_video_pos": 75,
+    "is_completed": false
+  }
+}
+```
+
+`reading_content` adalah HTML tersanitasi; referensi gambar privat memakai URL API `/api/units/{unit}/material/images/{image}` dan memerlukan Bearer token. Video YouTube dikirim sebagai ID 11 karakter tervalidasi server dan `type: "youtube"`; URL sumber tidak dikirim. URL file langsung dikirim sebagai `{ "type": "file", "url": "https://cdn.example.test/video.mp4" }`. `duration`, `learning_objective`, atau `last_video_pos` dapat `null` bila tidak tersedia; `is_completed` default `false`.
+
+Unit yang sudah selesai boleh dibuka kembali tanpa batas. Bila modul unit tidak tersedia/terbit, unit nonaktif, atau pre-test modul belum selesai, request ditolak dengan `403` dan kode:
+
+| `code` | Makna | Pesan ramah |
+|---|---|---|
+| `module_unavailable` | Modul belum/tidak lagi tersedia | `Materi ini belum dapat diakses saat ini.` |
+| `unit_inactive` | Unit dinonaktifkan | `Unit ini sedang tidak tersedia.` |
+| `pretest_required` | Pre-test modul belum selesai | `Selesaikan pre-test modul terlebih dahulu untuk membuka materi.` |
+| `consent_required` | Consent belum disetujui | `Anda perlu menyetujui penggunaan data sebelum mulai belajar.` |
+
+Unit yang tidak ditemukan menghasilkan `404`. Error `422` dengan `code: "video_unavailable"` berarti URL video tersimpan belum valid/aman untuk dikirim; pesan: `Video unit belum dapat diputar.` Error lainnya: `401`, `403` untuk role/consent/kondisi akses di atas, `429`.
+
+### PUT /api/units/{unit}/progress
+
+**Auth:** Bearer token Learner + consent.
+**FR/AC:** FR-S03, FR-L10; AC-15.
+
+**Body request**
+
+```json
+{ "last_video_pos": 75 }
+```
+
+`last_video_pos` wajib bilangan bulat minimal `0` (detik). Server melakukan upsert dengan kunci unik pengguna-token dan unit; update posisi tidak mengubah `is_completed`. Baris baru dimulai dengan `is_completed=false`.
+
+**Respons sukses `200 OK`**
+
+```json
+{
+  "message": "Posisi belajar berhasil disimpan.",
+  "data": { "unit_id": 22, "last_video_pos": 75, "is_completed": false }
+}
+```
+
+**Error:** `401`; `403` untuk role, consent, modul/unit tidak tersedia, atau `pretest_required`; `404` unit tidak ditemukan; `422` validasi field (format error seragam); `429`.
+
+### POST /api/units/{unit}/complete
+
+**Auth:** Bearer token Learner + consent.
+**FR/AC:** FR-L13, AB-03; AC-17.
+
+**Body request:** tidak ada.
+
+**Respons sukses `200 OK`** — panggilan berulang tetap sukses dan tidak menggandakan progres:
+
+```json
+{
+  "message": "Unit berhasil ditandai selesai.",
+  "data": {
+    "unit_id": 22,
+    "is_completed": true,
+    "module_progress_percentage": 67,
+    "next_unit": { "id": 23, "title": "Pencegahan waste" }
+  }
+}
+```
+
+`next_unit` adalah unit aktif berikutnya menurut `sequence_order`, atau `null` bila tidak ada. Persentase dihitung dari unit aktif saja. Error: `401`; `403` untuk role, consent, modul/unit tidak tersedia, atau `pretest_required`; `404` unit tidak ditemukan; `429`.
+
+### GET /api/home
+
+**Auth:** Bearer token Learner + consent.
+**FR/AC:** FR-L14; AC-17.
+
+**Respons sukses `200 OK`**
+
+```json
+{
+  "data": {
+    "continue_learning": {
+      "unit_id": 22,
+      "unit_title": "Pengendalian stok",
+      "module_id": 8,
+      "module_title": "Manajemen Rantai Pasok",
+      "remaining_duration": 225
+    }
+  }
+}
+```
+
+Unit terakhir adalah progres milik pemilik token dengan `updated_at` paling baru. Modul yang tidak published/dalam periode aktif dan unit nonaktif diabaikan. `remaining_duration` adalah sisa durasi dalam detik (minimal `0`), atau `null` bila durasi unit tidak diketahui. Jika tidak ada progres yang dapat ditampilkan, `continue_learning` bernilai `null`.
+
+**Error:** `401`; `403` role atau consent; `429`.
+
+### GET /api/units/{unit}/material/images/{image}
+
+**Auth:** Wajib Bearer token Learner dan consent; tidak publik. Ini mengikuti `auth:sanctum` + role Learner pada arsitektur, ditambah pemeriksaan consent endpoint belajar. Gambar hanya dapat diambil bila modul unit published dalam periode aktif dan nama gambar dirujuk oleh materi unit tersebut; gambar dari modul draft/tidak tersedia tidak dapat diakses.
+
+**Respons sukses `200 OK`:** byte gambar inline (`Content-Type: image/jpeg` atau `image/png`, `X-Content-Type-Options: nosniff`), bukan JSON.
+
+**Error:** `401`; `403` role atau consent; `404` gambar tidak ditemukan, tidak dirujuk materi, atau modul tidak tersedia; `429`.
+
+---
+
+Semua endpoint di Bagian B tidak pernah mengirim skor, kunci jawaban, atau pembahasan soal. Endpoint gambar juga tidak mengizinkan akses lintas ke modul yang tidak tersedia. Respons error validasi `422` mengikuti format seragam di bagian Konvensi Umum.
 
 ---
 
