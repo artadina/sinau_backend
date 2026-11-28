@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 // FR-A08, FR-A10
 class TestAttempt extends Model
@@ -35,5 +36,11 @@ class TestAttempt extends Model
     public function module(): BelongsTo
     {
         return $this->belongsTo(Module::class);
+    }
+
+    // FR-L22: answers are locked to the attempt and preserve insertion order.
+    public function answers(): HasMany
+    {
+        return $this->hasMany(TestAttemptAnswer::class, 'attempt_id')->orderBy('id');
     }
 }

@@ -2,6 +2,7 @@
 
 use App\Enums\Role;
 use App\Http\Controllers\Api\AccountController;
+use App\Http\Controllers\Api\LearnerEvaluationController;
 use App\Http\Controllers\Api\LearnerMaterialController;
 use App\Http\Controllers\Web\Admin\UnitMaterialImageController;
 use Illuminate\Support\Facades\Route;
@@ -38,6 +39,22 @@ Route::middleware(['auth:sanctum', 'role:'.Role::Learner->value, 'learner.consen
     Route::post('/units/{unit}/complete', [LearnerMaterialController::class, 'complete'])
         ->name('api.units.complete');
     Route::get('/home', [LearnerMaterialController::class, 'home'])->name('api.home');
+
+    // FR-L17–FR-L23, FR-L28–FR-L30: learner evaluation API.
+    Route::get('/modules/{module}/tests/{type}', [LearnerEvaluationController::class, 'testInfo'])
+        ->name('api.tests.info');
+    Route::post('/modules/{module}/tests/{type}/start', [LearnerEvaluationController::class, 'startTest'])
+        ->name('api.tests.start');
+    Route::put('/test-attempts/{attempt}/answers', [LearnerEvaluationController::class, 'saveAnswers'])
+        ->name('api.test-attempts.answers');
+    Route::post('/test-attempts/{attempt}/finish', [LearnerEvaluationController::class, 'finishTest'])
+        ->name('api.test-attempts.finish');
+    Route::get('/test-attempts/{attempt}/result', [LearnerEvaluationController::class, 'testResult'])
+        ->name('api.test-attempts.result');
+    Route::get('/units/{unit}/quiz', [LearnerEvaluationController::class, 'unitQuiz'])
+        ->name('api.units.quiz');
+    Route::post('/units/{unit}/quiz/submit', [LearnerEvaluationController::class, 'submitUnitQuiz'])
+        ->name('api.units.quiz.submit');
 });
 
 Route::get('/units/{unit}/material/images/{image}', [UnitMaterialImageController::class, 'showForLearner'])

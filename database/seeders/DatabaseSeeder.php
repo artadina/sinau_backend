@@ -71,6 +71,7 @@ class DatabaseSeeder extends Seeder
 
         // FR-A06, FR-A08, FR-A10, FR-A13, FR-A15: non-production panel examples.
         $this->call(DemoHistorySeeder::class);
+        $this->call(EvaluationDemoSeeder::class);
         $this->call(DemoForumSeeder::class);
         if (app()->environment('local')) {
             $this->call(ContentGovernanceSeeder::class);

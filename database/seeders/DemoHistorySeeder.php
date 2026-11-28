@@ -7,6 +7,7 @@ use App\Models\Module;
 use App\Models\TestAttempt;
 use App\Models\TestQuestion;
 use App\Models\Unit;
+use App\Models\UnitQuiz;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
@@ -65,7 +66,7 @@ class DemoHistorySeeder extends Seeder
             ])->save();
 
             for ($sequence = 1; $sequence <= $definition['unit_count']; $sequence++) {
-                Unit::query()->firstOrCreate(
+                $unit = Unit::query()->firstOrCreate(
                     ['module_id' => $module->id, 'sequence_order' => $sequence],
                     [
                         'title' => "Unit {$sequence}",
@@ -76,10 +77,22 @@ class DemoHistorySeeder extends Seeder
                         'is_active' => true,
                     ],
                 );
+                for ($quizNumber = 1; $quizNumber <= 4; $quizNumber++) {
+                    UnitQuiz::query()->firstOrCreate(
+                        ['unit_id' => $unit->id, 'question_text' => "Kuis unit {$sequence} soal {$quizNumber}"],
+                        [
+                            'question_format' => 'multiple_choice',
+                            'options' => ['A' => 'Jawaban benar', 'B' => 'Jawaban salah', 'C' => 'Pilihan lain'],
+                            'correct_key' => 'A',
+                            'correct_keys' => ['A'],
+                            'explanation' => "Pembahasan kuis unit {$sequence} soal {$quizNumber}.",
+                        ],
+                    );
+                }
             }
 
             foreach (['pre', 'post'] as $type) {
-                for ($number = 1; $number <= 4; $number++) {
+                for ($number = 1; $number <= 6; $number++) {
                     TestQuestion::query()->firstOrCreate(
                         [
                             'module_id' => $module->id,
