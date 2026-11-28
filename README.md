@@ -32,6 +32,14 @@ Kredensial berikut hanya untuk lingkungan non-production:
 Akun Admin demo ditandai sebagai password sementara dan harus mengganti password saat login pertama. Seeder tidak menimpa akun yang sudah ada. Superadmin dapat mengelola akun Admin dan Learner melalui panel khusus. Jangan gunakan kredensial ini di production.
 Learner demo 1–3 dan akun riwayat sudah menyetujui consent; Learner demo 4 belum menyetujuinya.
 
+Tiga akun evaluasi demo pada modul published pertama memiliki kondisi berikut:
+
+| Learner | Kondisi evaluasi |
+|---|---|
+| `learner1@sinau.test` | Belum menyelesaikan pre-test |
+| `learner2@sinau.test` | Pre-test selesai, unit belum selesai seluruhnya |
+| `learner3@sinau.test` | Pre-test selesai dan semua unit aktif selesai |
+
 ## Email reset password lokal
 
 Dengan `MAIL_MAILER=log`, tautan reset tercatat di `storage/logs/laravel.log`; email tidak dikirim ke alamat eksternal.

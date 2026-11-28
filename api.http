@@ -128,3 +128,64 @@ Authorization: Bearer {{token}}
 ### Fetch a private material image referenced by a published unit
 GET {{baseUrl}}/units/{{unitId}}/material/images/{{imageName}}
 Authorization: Bearer {{token}}
+
+### Evaluation C: pre/post test info
+GET {{baseUrl}}/modules/{{moduleId}}/tests/pre
+Accept: application/json
+Authorization: Bearer {{token}}
+
+### Start or resume a test
+POST {{baseUrl}}/modules/{{moduleId}}/tests/pre/start
+Accept: application/json
+Authorization: Bearer {{token}}
+
+### Autosave test answers
+PUT {{baseUrl}}/test-attempts/1/answers
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "answers": [
+    {"question_id": 1, "selected_keys": ["A"]},
+    {"question_id": 2, "selected_keys": ["B", "C"]}
+  ]
+}
+
+### Finish test
+POST {{baseUrl}}/test-attempts/1/finish
+Accept: application/json
+Authorization: Bearer {{token}}
+
+### Read finished test result
+GET {{baseUrl}}/test-attempts/1/result
+Accept: application/json
+Authorization: Bearer {{token}}
+
+### Post-test info
+GET {{baseUrl}}/modules/{{moduleId}}/tests/post
+Accept: application/json
+Authorization: Bearer {{token}}
+
+### Start a post-test attempt
+POST {{baseUrl}}/modules/{{moduleId}}/tests/post/start
+Accept: application/json
+Authorization: Bearer {{token}}
+
+### Unit quiz questions
+GET {{baseUrl}}/units/{{unitId}}/quiz
+Accept: application/json
+Authorization: Bearer {{token}}
+
+### Submit unit quiz as one attempt
+POST {{baseUrl}}/units/{{unitId}}/quiz/submit
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "answers": [
+    {"question_id": 1, "selected_keys": ["A"]},
+    {"question_id": 2, "selected_keys": ["A"]}
+  ]
+}

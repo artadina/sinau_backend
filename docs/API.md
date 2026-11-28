@@ -723,16 +723,280 @@ Semua endpoint di bagian ini butuh token Learner dan consent. Tanpa consent, res
 
 | Method | URL | Tujuan | FR/AC |
 |---|---|---|---|
-| `GET` | `/api/modules/{module}/pre-test` | Membuka pembuka pre-test sebelum unit dimulai | FR-L17, FR-L19; AC-19 |
-| `POST` | `/api/modules/{module}/pre-test/attempts` | Memulai atau melanjutkan attempt pre-test milik Learner | FR-L22; AC-21 |
-| `PUT` | `/api/test-attempts/{attempt}/answers/{question}` | Menyimpan jawaban dan progres tes | FR-L19, FR-L22; AC-21 |
-| `POST` | `/api/test-attempts/{attempt}/submit` | Mengirim tes, menghitung skor di server dalam satu transaksi | FR-L20, NFR-09; AC-28 |
-| `GET` | `/api/modules/{module}/post-test` | Membuka post-test setelah semua unit selesai | FR-L18; AC-27 |
-| `POST` | `/api/modules/{module}/post-test/attempts` | Memulai pengerjaan post-test baru | FR-L23; AC-29 |
+| `GET` | `/api/modules/{module}/tests/{type}` | Informasi pembuka, status pengerjaan, dan status kunci untuk pre/post; `type=pre|post` | FR-L17, FR-L18, FR-L19; AC-19, AC-20, AC-27 |
+| `POST` | `/api/modules/{module}/tests/{type}/start` | Memulai atau melanjutkan satu pengerjaan milik Learner; pre hanya satu selesai, post dapat mulai ulang | FR-L22, FR-L23, AB-05; AC-21, AC-29 |
+| `PUT` | `/api/test-attempts/{attempt}/answers` | Autosave satu atau beberapa jawaban milik pengerjaan itu | FR-L22, AB-17; AC-21 |
+| `POST` | `/api/test-attempts/{attempt}/finish` | Menyelesaikan pengerjaan, menghitung skor di server dalam satu transaksi | FR-L20, FR-L22, NFR-09; AC-22, AC-28 |
+| `GET` | `/api/test-attempts/{attempt}/result` | Hasil lengkap beserta kunci dan pembahasan hanya setelah selesai | FR-L20, FR-L21; AC-28 |
 | `GET` | `/api/units/{unit}/quiz` | Memuat kuis 3–5 soal milik unit | FR-L28; AC-24, AC-25 |
-| `POST` | `/api/units/{unit}/quiz/attempts` | Menyimpan hasil kuis unit sebagai latihan | FR-L29, FR-L30; AC-25, AC-26 |
+| `POST` | `/api/units/{unit}/quiz/submit` | Mengirim semua jawaban kuis sekali jalan dan menyimpan satu attempt latihan | FR-L29, FR-L30, AB-04; AC-25, AC-26 |
 
-Soal tes atau kuis hanya boleh mengirim teks soal, pilihan, dan format soal. Field `correct_key`, `correct_keys`, dan `explanation` tidak boleh dikirim saat soal ditampilkan. Pembahasan hanya boleh dikirim setelah submit atau hasil kuis selesai. Skor checkbox dihitung di server sesuai AB-17.
+`type` selain `pre` atau `post` ditolak `404`. Modul draft/tidak aktif menghasilkan `404`. Semua soal sebelum tes selesai atau kuis sebelum submit hanya memuat `id`, `question_text`, `question_format`, `options`, dan posisi soal. Field `correct_key`, `correct_keys`, dan `explanation` tidak boleh ada pada respons. Pembahasan dan kunci hanya ada pada hasil tes yang sudah selesai atau hasil submit kuis. Skor tes dan kuis dihitung dari jawaban yang diberikan; pilihan checkbox mendapat kredit parsial sesuai AB-17.
+
+### GET /api/modules/{module}/tests/{type}
+
+**Auth:** Bearer token Learner + consent.
+**FR/AC:** FR-L17, FR-L18, FR-L19; AB-05; AC-19, AC-20, AC-27.
+
+**Respons sukses `200 OK`**
+
+```json
+{
+  "data": {
+    "type": "pre",
+    "title": "Pre-test Manajemen Rantai Pasok",
+    "question_count": 5,
+    "estimated_minutes": 10,
+    "status": "belum_mulai",
+    "locked": false,
+    "pre_test_notice": "Ini hanya untuk mengetahui pemahaman awalmu, bukan penilaian",
+    "attempt_id": null
+  }
+}
+```
+
+Untuk post-test yang terkunci:
+
+```json
+{
+  "data": {
+    "type": "post",
+    "title": "Post-test Manajemen Rantai Pasok",
+    "question_count": 5,
+    "estimated_minutes": 10,
+    "status": "terkunci",
+    "locked": true,
+    "remaining_active_units": 2,
+    "message": "Selesaikan 2 unit tersisa untuk membuka post-test.",
+    "hint": "Kembali ke materi, lalu tandai setiap unit sebagai selesai."
+  }
+}
+```
+
+Status bernilai `belum_mulai`, `sedang_berjalan`, `selesai`, atau `terkunci`. Pre-test yang selesai tidak dapat dimulai lagi. Post-test selesai dapat dipergunakan hanya untuk menampilkan status; memulai akan membuat pengerjaan baru.
+
+**Error:** `401`; `403` consent/role; `404` modul tidak published/dalam periode aktif atau `type` tidak valid; `429`.
+
+### POST /api/modules/{module}/tests/{type}/start
+
+**Auth:** Bearer token Learner + consent.
+**FR/AC:** FR-L17, FR-L18, FR-L22, FR-L23; AB-05, NFR-09; AC-21, AC-27, AC-29.
+
+**Body request:** tidak ada.
+
+**Respons sukses `200 OK` atau `201 Created`**
+
+```json
+{
+  "message": "Pengerjaan tes dilanjutkan.",
+  "data": {
+    "attempt_id": 41,
+    "type": "pre",
+    "status": "sedang_berjalan",
+    "questions": [
+      {
+        "id": 301,
+        "position": 1,
+        "question_text": "Apa langkah pertama?",
+        "question_format": "multiple_choice",
+        "options": {"A": "Memeriksa kebutuhan", "B": "Membeli stok", "C": "Menunggu laporan"}
+      }
+    ],
+    "answers": {
+      "301": ["A"]
+    }
+  }
+}
+```
+
+Server memilih tepat jumlah soal yang dikonfigurasi. Bila `shuffle_questions=true`, urutan acak ditentukan saat attempt dibuat dan dipertahankan saat dilanjutkan. Jawaban awal kosong memakai `[]`; satu baris `test_attempt_answers` dibuat untuk setiap soal yang dipilih. Respons tidak memuat `correct_key`, `correct_keys`, atau `explanation`.
+
+**Error:** `403` post-test terkunci atau role/consent dengan kode `post_test_locked`; `404` modul/tipe tidak ditemukan; `422` `pretest_already_done` atau `insufficient_questions`; `429`.
+
+Contoh pre-test sudah selesai:
+
+```json
+{
+  "message": "Pre-test modul ini sudah pernah diselesaikan dan tidak dapat diulang.",
+  "code": "pretest_already_done"
+}
+```
+
+Contoh bank soal kurang:
+
+```json
+{
+  "message": "Bank soal modul belum memiliki cukup soal untuk tes ini.",
+  "code": "insufficient_questions",
+  "required": 5,
+  "available": 3
+}
+```
+
+### PUT /api/test-attempts/{attempt}/answers
+
+**Auth:** Bearer token Learner + consent.
+**FR/AC:** FR-L22, AB-17, AB-05; AC-21.
+
+**Body request**
+
+```json
+{
+  "answers": [
+    {"question_id": 301, "selected_keys": ["A"]},
+    {"question_id": 302, "selected_keys": ["B", "C"]}
+  ]
+}
+```
+
+Klien dapat mengirim satu atau beberapa jawaban. Untuk pilihan tunggal atau benar/salah, `selected_keys` dapat berisi nol atau satu kunci. Untuk soal pilihan ganda/benar-salah, gunakan `selected_key` tunggal sebagai alternatif kompatibel:
+
+```json
+{"question_id": 301, "selected_key": "A"}
+```
+
+Jawaban kosong boleh disimpan sebagai array kosong. `question_id` harus termasuk dalam kumpulan soal attempt; kunci harus valid untuk format soal.
+
+**Respons sukses `200 OK`**
+
+```json
+{
+  "message": "Jawaban berhasil disimpan.",
+  "data": {
+    "attempt_id": 41,
+    "saved_question_ids": [301, 302],
+    "status": "sedang_berjalan"
+  }
+}
+```
+
+**Error:** `401`; `403` role/consent atau attempt bukan milik pemilik token; `404` attempt tidak ditemukan untuk pemilik token; `422` validasi/soal diluar pengerjaan, format error seragam atau kode `question_outside_attempt`; `429`.
+
+### POST /api/test-attempts/{attempt}/finish
+
+**Auth:** Bearer token Learner + consent.
+**FR/AC:** FR-L20, FR-L21, NFR-09, AB-05; AC-22, AC-28.
+
+**Body request:** tidak ada. Klien harus mengonfirmasi soal kosong sebelum memanggil endpoint.
+
+**Respons sukses `200 OK`**
+
+```json
+{
+  "message": "Pengerjaan tes selesai.",
+  "data": {
+    "attempt_id": 41,
+    "type": "pre",
+    "status": "selesai",
+    "score": 75.00,
+    "appreciation": "Terima kasih sudah menyelesaikan tes.",
+    "results": [
+      {
+        "question_id": 301,
+        "position": 1,
+        "question_text": "Apa langkah pertama?",
+        "options": {"A": "Memeriksa kebutuhan", "B": "Membeli stok", "C": "Menunggu laporan"},
+        "learner_answers": ["A"],
+        "correct_keys": ["A"],
+        "is_correct": true,
+        "explanation": "Memeriksa kebutuhan adalah langkah awal."
+      }
+    ]
+  }
+}
+```
+
+Skor = jumlah nilai jawaban benar dibagi jumlah soal diberikan × 100, dibulatkan 2 desimal. Jawaban kosong bernilai salah. Untuk checkbox, nilai jawaban adalah jumlah kunci benar dipilih dibagi seluruh kunci benar, tanpa poin dari pilihan salah. Penyimpanan score, is_correct, dan completed_at dilakukan satu transaksi. Panggilan ulang attempt yang sudah selesai bersifat idempotent dan mengembalikan hasil yang sama.
+
+**Error:** `401`; `403` role/consent atau attempt bukan milik pemilik token; `404` attempt tidak ditemukan; `429`.
+
+### GET /api/test-attempts/{attempt}/result
+
+**Auth:** Bearer token Learner + consent.
+**FR/AC:** FR-L20, FR-L21; AB-05; AC-28.
+
+**Respons sukses `200 OK`:** bentuk data sama dengan respons finish. Jika attempt belum selesai menghasilkan `403` dengan `code: "attempt_not_finished"` dan pesan `"Hasil tes baru tersedia setelah pengerjaan diselesaikan."`
+
+**Error:** `401`; `403` role/consent, attempt bukan milik pemilik, atau belum selesai; `404` attempt tidak ditemukan; `429`.
+
+### GET /api/units/{unit}/quiz
+
+**Auth:** Bearer token Learner + consent.
+**FR/AC:** FR-L28, AB-04; AC-24, AC-25.
+
+**Respons sukses `200 OK`**
+
+```json
+{
+  "data": {
+    "unit_id": 22,
+    "title": "Kuis: Pengendalian stok",
+    "question_count": 4,
+    "questions": [
+      {
+        "id": 501,
+        "position": 1,
+        "question_text": "Stok aman ditentukan dengan...",
+        "question_format": "multiple_choice",
+        "options": {"A": "Memperhatikan kebutuhan", "B": "Menebak"}
+      }
+    ]
+  }
+}
+```
+
+Unit harus aktif dan modulnya published; pre-test modul harus sudah selesai seperti Bagian B. Unit dikembalikan dengan 3–5 soal. Respons tidak memuat kunci atau pembahasan.
+
+**Error:** `401`; `403` role/consent atau unit tidak tersedia/pre-test belum selesai; `404` unit tidak ditemukan; `422` kuis tidak memiliki 3–5 soal dengan `code: "invalid_quiz_question_count"`; `429`.
+
+### POST /api/units/{unit}/quiz/submit
+
+**Auth:** Bearer token Learner + consent.
+**FR/AC:** FR-L29, FR-L30, AB-04, AB-17; AC-25, AC-26.
+
+**Body request**
+
+```json
+{
+  "answers": [
+    {"question_id": 501, "selected_keys": ["A"]},
+    {"question_id": 502, "selected_keys": ["B", "C"]}
+  ]
+}
+```
+
+Semua soal kuis harus dikirim. Format dan validasi sama dengan autosave tes; jawaban yang kosong dapat dikirim sebagai array kosong. Untuk kuis yang kurang memuaskan, respons tetap menyimpan attempt dan menawarkan rollback.
+
+**Respons sukses `200 OK`**
+
+```json
+{
+  "message": "Kuis unit selesai.",
+  "data": {
+    "attempt_id": 77,
+    "unit_id": 22,
+    "score": 50.00,
+    "results": [
+      {
+        "question_id": 501,
+        "question_text": "Stok aman ditentukan dengan...",
+        "options": {"A": "Memperhatikan kebutuhan", "B": "Menebak"},
+        "learner_answers": ["A"],
+        "correct_keys": ["A"],
+        "is_correct": true,
+        "explanation": "Menentukan kebutuhan adalah dasar pengendalian stok."
+      }
+    ],
+    "satisfactory": false,
+    "return_to_material": true,
+    "hint": "Lihat kembali materi unit, lalu ulangi kuis kapan saja."
+  }
+}
+```
+
+Skor kuis memakai rumus yang sama dengan tes; kuis unit tidak mengubah `test_attempts`, status selesai unit, atau kunci pembuka unit berikutnya. Setiap submit disimpan sebagai baris baru `unit_quiz_attempts`.
+
+**Error:** `401`; `403` role/consent atau unit tidak tersedia/pre-test belum selesai; `404` unit tidak ditemukan; `422` validasi atau soal diluar unit/kunci tidak valid/soal kuis tidak lengkap; `429`.
 
 ---
 

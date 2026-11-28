@@ -218,6 +218,17 @@ erDiagram
 ## 9. Superadmin
 
 - **Akses dan batas role (FR-SA01–FR-SA08, FR-S05):** Superadmin memakai halaman login panel yang sama dengan Admin, tanpa registrasi. Route Superadmin hanya untuk role `superadmin`; route Admin tetap khusus role `admin`. Menu tiap role terpisah. Superadmin dapat melihat daftar/detail modul secara baca-saja dan memakai aksi review, takedown, dan keputusan perpanjangan; ia tidak dapat membuat/mengubah isi modul atau mengakses forum, rekap, test attempts, dan skor. Admin hanya dapat mengubah modul miliknya dan tidak dapat menyetujui, meminta revisi, melakukan takedown, atau memutuskan perpanjangan. Middleware server menegakkan semua batas ini.
+
+## 10. Evaluasi
+
+- Pre-test hanya memiliki satu pengerjaan selesai per Learner per modul (`test_attempts.completed_at` terisi); memulai setelah selesai ditolak. Pengerjaan pre-test yang belum selesai boleh dilanjutkan dan tidak membuat baris ganda.
+- Post-test boleh selesai berulang kali. Setiap pengerjaan selesai atau sedang berjalan memakai baris `test_attempts` baru; satu pengerjaan berjalan per tipe dan modul dipertahankan untuk memulai ulang yang idempoten.
+- Kuis unit adalah latihan. Setiap submit menyimpan satu baris `unit_quiz_attempts`, dapat diulang, tidak mengubah `test_attempts`, tidak menghitung skor pre/post, tidak mengubah status selesai unit, dan tidak mengunci unit berikutnya.
+- Soal kosong dihitung salah. Skor server adalah jumlah nilai jawaban dibagi jumlah soal diberikan dikali 100, dibulatkan 2 desimal.
+- Untuk checkbox, nilai satu soal adalah jumlah kunci benar yang dipilih dibagi seluruh kunci benar, sedangkan pilihan salah tidak menambah nilai.
+- Kumpulan soal setiap pengerjaan tes dikunci melalui `test_attempt_answers` saat attempt dibuat. Urutan dipertahankan pada autosave dan hasil lanjut; pilihan acak ditentukan sekali saat attempt dibuat.
+- `correct_key`, `correct_keys`, dan `explanation` tidak dikirim sebelum tes selesai atau sebelum submit kuis. Hasil tes hanya dapat dibaca pemilik attempt setelah `completed_at` terisi.
+- Tidak ada tabel baru pada fase evaluasi. Skema evaluasi memakai `test_attempts`, `test_attempt_answers`, dan `unit_quiz_attempts` yang sudah ada.
 - **Akun Superadmin sendiri:** Superadmin tidak dapat menghapus atau mengubah role akunnya sendiri. Tidak ada endpoint untuk membuat atau menetapkan role `superadmin`; API perubahan role hanya menerima `learner` atau `admin`.
 - **Tambah Admin (FR-SA02, AC-11):** input hanya nama dan email. Server menetapkan role `admin`, membuat password sementara acak kuat, dan menandai `is_temp_password = true`. Password ditampilkan sekali setelah akun dibuat, tidak dikirim lewat email, tidak disimpan di database dalam bentuk teks, dan tidak ditulis ke log.
 - **Ubah role (FR-SA04, FR-SA06, AC-12, EC-18):** perubahan hanya melalui endpoint role khusus. Perubahan role tidak mengubah password atau `is_temp_password`; akun tetap memakai password dan status penggantian password yang sudah dimiliki sebelum perubahan role. Keputusan EC-18 ini sudah dipastikan oleh pemilik kebutuhan dan tidak ambigu.
